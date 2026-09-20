@@ -1,0 +1,14 @@
+# Backend
+car-rental-backend/node_modules/
+car-rental-backend/dist/
+car-rental-backend/.env
+
+# Frontend
+car-rental-frontend/node_modules/
+car-rental-frontend/.next/
+car-rental-frontend/.env.local
+
+# General
+.DS_Store
+Thumbs.db
+*.log
