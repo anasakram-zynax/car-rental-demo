@@ -1,0 +1,139 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum CarStatus {
+  ACTIVE   @map("active")
+  INACTIVE @map("inactive")
+}
+
+enum BookingStatus {
+  CONFIRMED @map("confirmed")
+  CANCELLED @map("cancelled")
+}
+
+enum PaymentStatus {
+  UNPAID   @map("unpaid")
+  PAID     @map("paid")
+  REFUNDED @map("refunded")
+}
+
+model CarType {
+  id    String @id @default(uuid()) @db.Uuid
+  label String @unique
+
+  cars Car[]
+
+  @@map("car_type")
+}
+
+model Car {
+  id    String @id @default(uuid()) @db.Uuid
+  name  String
+  slug  String @unique
+  brand String
+  model String
+  year  Int
+
+  carTypeId String  @map("car_type_id") @db.Uuid
+  carType   CarType @relation(fields: [carTypeId], references: [id])
+
+  transmission String
+  fuelType     String @map("fuel_type")
+
+  doors      Int @default(4)
+  passengers Int @default(5)
+  baggage    Int @default(2)
+
+  amenities String[]
+
+  city String
+
+  dailyPrice Decimal @map("daily_price") @db.Decimal(10, 2)
+  currency   String  @default("USD")
+
+  isRefundable Boolean @default(true) @map("is_refundable")
+  featured     Boolean @default(false)
+
+  status CarStatus @default(ACTIVE)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  images   CarImage[]
+  bookings CarBooking[]
+
+  @@index([city])
+  @@index([carTypeId])
+  @@index([status])
+  @@map("car")
+}
+
+model CarImage {
+  id String @id @default(uuid()) @db.Uuid
+
+  carId String @map("car_id") @db.Uuid
+  car   Car    @relation(fields: [carId], references: [id], onDelete: Cascade)
+
+  url       String
+  isDefault Boolean @default(false) @map("is_default")
+
+  @@index([carId])
+  @@map("car_image")
+}
+
+model CarBooking {
+  id        String @id @default(uuid()) @db.Uuid
+  reference String @unique
+
+  carId String @map("car_id") @db.Uuid
+  car   Car    @relation(fields: [carId], references: [id])
+
+  pickupLocation  String @map("pickup_location")
+  dropoffLocation String @map("dropoff_location")
+
+  pickupAt DateTime @map("pickup_at") @db.Timestamptz()
+  returnAt DateTime @map("return_at") @db.Timestamptz()
+
+  rentalDays Int @map("rental_days")
+
+  dailyPrice Decimal @map("daily_price") @db.Decimal(10, 2)
+  taxAmount  Decimal @map("tax_amount") @db.Decimal(10, 2)
+  totalPrice Decimal @map("total_price") @db.Decimal(10, 2)
+
+  currency String
+
+  bookingStatus BookingStatus @default(CONFIRMED) @map("booking_status")
+  paymentStatus PaymentStatus @default(UNPAID) @map("payment_status")
+
+  cancelReason String? @map("cancel_reason")
+
+  driverFirstName     String   @map("driver_first_name")
+  driverLastName      String   @map("driver_last_name")
+  driverBirthDate     DateTime @map("driver_birth_date") @db.Date
+  driverLicenseNumber String   @map("driver_license_number")
+
+  contactEmail String @map("contact_email")
+  contactPhone String @map("contact_phone")
+
+  specialRequests String? @map("special_requests")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  @@index([carId])
+  @@index([bookingStatus])
+  @@index([paymentStatus])
+  @@index([pickupAt, returnAt])
+  @@map("car_booking")
+}
