@@ -25,5 +25,6 @@ import { GetPublicCarUseCase } from './application/use-cases/get-public-car.use-
       useExisting: PrismaCarRepository,
     },
   ],
+  exports:[CAR_REPOSITORY]
 })
 export class CatalogModule {}
