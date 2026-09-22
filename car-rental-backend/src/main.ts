@@ -38,7 +38,7 @@ async function bootstrap() {
   app.useGlobalFilters(new DomainErrorFilter());
   app.useGlobalInterceptors(new ResponseInterceptor());
 
-  const port = configService.get<number>('PORT') ?? 3000;
+  const port = configService.get<number>('PORT') ?? 4000;
 
   await app.listen(port);
 }

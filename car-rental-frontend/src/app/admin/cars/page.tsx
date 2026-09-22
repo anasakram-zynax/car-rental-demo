@@ -1,11 +1,10 @@
-import { RoutePlaceholder } from "@/components/layout/route-placeholder";
+import { Suspense } from "react";
+import { AdminCarsDashboard } from "@/features/cars/components/car/admin-cars-dashboard";
 
 export default function AdminCarsPage() {
   return (
-    <RoutePlaceholder
-      eyebrow="Admin foundation"
-      title="Fleet inventory"
-      description="The inventory table and car actions will be implemented in a later phase."
-    />
+    <Suspense fallback={<div className="min-h-svh" />}>
+      <AdminCarsDashboard />
+    </Suspense>
   );
 }
