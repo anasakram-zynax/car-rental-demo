@@ -1,6 +1,10 @@
-const AdminCarsPage = () => {
+import { Suspense } from "react";
+import { AdminCarsDashboard } from "@/features/cars/components/car/admin-cars-dashboard";
+
+export default function AdminCarsPage() {
   return (
-    <div>AdminCarsPage</div>
-  )
+    <Suspense fallback={<div className="min-h-svh" />}>
+      <AdminCarsDashboard />
+    </Suspense>
+  );
 }
-export default AdminCarsPage

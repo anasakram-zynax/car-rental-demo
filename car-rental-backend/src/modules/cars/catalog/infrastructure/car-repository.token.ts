@@ -1,0 +1,1 @@
+export const CAR_REPOSITORY = Symbol('CAR_REPOSITORY');
