@@ -1,4 +1,5 @@
 import { Car } from '../../domain/car.entity.js';
+import { CarStatus } from '../../domain/car-status.js';
 
 // ADMIN - SIDE
 export interface CreateCarData {
@@ -26,7 +27,9 @@ export interface CreateCarData {
   }[];
 }
 
-export type UpdateCarData = Partial<CreateCarData>;
+export type UpdateCarData = Partial<CreateCarData> & {
+  status?: CarStatus;
+};
 
 export interface CarRepositoryPort {
   create(data: CreateCarData): Promise<Car>;
@@ -39,6 +42,8 @@ export interface CarRepositoryPort {
 
   search(filters: SearchCarsFilters): Promise<SearchCarsResult>;
 
+  listAll(filters: PaginationFilters): Promise<SearchCarsResult>;
+
   findActiveById(id: string): Promise<Car | null>;
 }
 
@@ -49,6 +54,11 @@ export interface SearchCarsFilters {
   carTypeId?: string;
   minPrice?: number;
   maxPrice?: number;
+  page: number;
+  limit: number;
+}
+
+export interface PaginationFilters {
   page: number;
   limit: number;
 }

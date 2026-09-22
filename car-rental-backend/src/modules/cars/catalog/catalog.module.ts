@@ -9,6 +9,7 @@ import { PrismaCarRepository } from './infrastructure/persistance/prisma-car.rep
 import { CAR_REPOSITORY } from './infrastructure/car-repository.token.js';
 import { SearchCarsUseCase } from './application/use-cases/search-cars.use-case.js';
 import { GetPublicCarUseCase } from './application/use-cases/get-public-car.use-case.js';
+import { ListAdminCarsUseCase } from './application/use-cases/list-admin-cars.use-case.js';
 
 @Module({
   controllers: [AdminCarsController, PublicCarsController],
@@ -19,6 +20,7 @@ import { GetPublicCarUseCase } from './application/use-cases/get-public-car.use-
     RemoveCarUseCase,
     SearchCarsUseCase,
     GetPublicCarUseCase,
+    ListAdminCarsUseCase,
     PrismaCarRepository,
     {
       provide: CAR_REPOSITORY,

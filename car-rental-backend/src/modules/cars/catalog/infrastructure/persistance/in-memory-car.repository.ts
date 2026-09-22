@@ -3,6 +3,7 @@ import type {
   CreateCarData,
   SearchCarsFilters,
   SearchCarsResult,
+  PaginationFilters,
   UpdateCarData,
 } from '../../application/ports/car-repository.port.js';
 
@@ -117,6 +118,19 @@ export class InMemoryCarRepository implements CarRepositoryPort {
 
     return {
       cars,
+      total,
+      page: filters.page,
+      limit: filters.limit,
+      totalPages: Math.ceil(total / filters.limit),
+    };
+  }
+
+  async listAll(filters: PaginationFilters): Promise<SearchCarsResult> {
+    const total = this.cars.length;
+    const start = (filters.page - 1) * filters.limit;
+
+    return {
+      cars: this.cars.slice(start, start + filters.limit),
       total,
       page: filters.page,
       limit: filters.limit,
