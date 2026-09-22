@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { GradientWavesBackground } from "@/components/backgrounds";
+import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
 import { FadeUp, HoverLift, Reveal, ScaleFade } from "@/components/motion";
 import { Badge } from "@/components/ui/badge";
@@ -327,12 +328,7 @@ export default function Home() {
           </PageContainer>
         </section>
 
-        <footer className="py-8">
-          <PageContainer className="flex flex-col gap-3 border-t border-border/70 pt-7 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
-            <p>Northstar Car Rentals</p>
-            <p>Curated vehicles. Clear journeys.</p>
-          </PageContainer>
-        </footer>
+        <Footer />
       </main>
     </GradientWavesBackground>
   );

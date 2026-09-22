@@ -1,11 +1,14 @@
-import { RoutePlaceholder } from "@/components/layout/route-placeholder";
+import type { Metadata } from "next";
+import { CarDetails } from "@/features/cars/components/car/car-details";
 
-export default function CarsDetailPage() {
-  return (
-    <RoutePlaceholder
-      eyebrow="Customer experience"
-      title="Car details"
-      description="Vehicle media, specifications, and availability will be implemented in a later phase."
-    />
-  );
+export const metadata: Metadata = {
+  title: "Car Details",
+};
+
+export default async function CarsDetailPage({
+  params,
+}: PageProps<"/cars/[id]">) {
+  const { id } = await params;
+
+  return <CarDetails carId={id} />;
 }
