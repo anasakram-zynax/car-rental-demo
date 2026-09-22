@@ -1,9 +1,9 @@
-import { ArrowLeft, CalendarDays, CarFront, LayoutDashboard, Plus } from "lucide-react";
+import { ArrowLeft, CalendarDays, CarFront, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 
 const adminNavigation = [
-  { href: "/admin", label: "Dashboard / Cars", icon: LayoutDashboard },
-  { href: "/admin/cars/new", label: "Add Car", icon: Plus },
+  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/cars", label: "Cars", icon: CarFront },
   { href: "/admin/bookings", label: "Bookings", icon: CalendarDays },
   { href: "/", label: "Back to Site", icon: ArrowLeft },
 ] as const;
