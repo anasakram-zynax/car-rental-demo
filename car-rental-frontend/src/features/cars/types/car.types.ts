@@ -8,6 +8,36 @@ export interface CarImage {
   isDefault: boolean;
 }
 
+export interface CreateCarImageInput {
+  url: string;
+  isDefault: boolean;
+}
+
+export interface CreateCarInput {
+  name: string;
+  slug: string;
+  brand: string;
+  model: string;
+  year: number;
+  carTypeId: string;
+  transmission: string;
+  fuelType: string;
+  doors: number;
+  passengers: number;
+  baggage: number;
+  amenities: string[];
+  city: string;
+  dailyPrice: number;
+  currency: string;
+  isRefundable: boolean;
+  featured: boolean;
+  images: CreateCarImageInput[];
+}
+
+export interface UpdateCarInput extends Partial<CreateCarInput> {
+  status?: CarStatus;
+}
+
 export interface Car {
   id: string;
   name: string;

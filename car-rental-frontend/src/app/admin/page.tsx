@@ -14,7 +14,7 @@ export default function AdminPage() {
       </div>
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         <AdminSectionCard href="/admin/cars" icon={CarFront} title="Cars Management" description="View the current fleet and manage availability." />
-        <AdminSectionCard href="/admin/bookings" icon={CalendarDays} title="Bookings Management" description="Booking management will be available in the next phase." />
+        <AdminSectionCard href="/admin/bookings" icon={CalendarDays} title="Bookings Management" description="Review reservations and manage payment statuses." />
       </div>
     </PageContainer>
   );
