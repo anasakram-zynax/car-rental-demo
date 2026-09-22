@@ -60,6 +60,21 @@ export interface CarBooking {
   updatedAt: string;
 }
 
+export interface CreateCarBookingInput {
+  carId: string;
+  pickupLocation: string;
+  dropoffLocation: string;
+  pickupAt: string;
+  returnAt: string;
+  driverFirstName: string;
+  driverLastName: string;
+  driverBirthDate: string;
+  driverLicenseNumber: string;
+  contactEmail: string;
+  contactPhone: string;
+  specialRequests?: string;
+}
+
 export interface PaginationParams {
   page?: number;
   limit?: number;

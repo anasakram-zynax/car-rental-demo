@@ -8,6 +8,7 @@ export type {
   Car,
   CarBooking,
   CarImage,
+  CreateCarBookingInput,
   CarSearchResult,
   CarStatus,
   PaginatedResponse,

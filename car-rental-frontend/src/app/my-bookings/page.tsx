@@ -1,11 +1,10 @@
-import { RoutePlaceholder } from "@/components/layout/route-placeholder";
+import type { Metadata } from "next";
+import { MyBookings } from "@/features/cars/components/booking/my-bookings";
+
+export const metadata: Metadata = {
+  title: "My Bookings",
+};
 
 export default function MyBookingsPage() {
-  return (
-    <RoutePlaceholder
-      eyebrow="Customer experience"
-      title="Find a booking"
-      description="Booking lookup and management will be implemented in a later phase."
-    />
-  );
+  return <MyBookings />;
 }

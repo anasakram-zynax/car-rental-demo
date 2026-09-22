@@ -1,11 +1,12 @@
-import { RoutePlaceholder } from "@/components/layout/route-placeholder";
+import type { Metadata } from "next";
+import { BookingForm } from "@/features/cars/components/booking/booking-form";
 
-export default function CarBookPage() {
-  return (
-    <RoutePlaceholder
-      eyebrow="Customer experience"
-      title="Reserve your car"
-      description="The booking form and confirmation experience will be implemented in a later phase."
-    />
-  );
+export const metadata: Metadata = {
+  title: "Reserve Your Car",
+};
+
+export default async function CarBookPage({ params }: PageProps<"/cars/[id]/book">) {
+  const { id } = await params;
+
+  return <BookingForm carId={id} />;
 }
