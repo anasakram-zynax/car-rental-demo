@@ -1,113 +1,217 @@
 # Car Rental Demo
 
-A practice full-stack car rental application built with a structured backend and feature-based frontend architecture.
+A full-stack car rental application with a public booking experience and an administration workspace. Customers can browse the active fleet, inspect vehicle details, create and retrieve bookings, and cancel eligible reservations. Administrators can manage cars, review all bookings, and advance payment statuses through the supported workflow.
 
-## Tech Stack
+This is a demo application and intentionally has no authentication layer.
 
-### Backend
-
-* NestJS
-* TypeScript
-* Prisma ORM
-* PostgreSQL
-* Hexagonal Architecture
+## Tech stack
 
 ### Frontend
 
-* Next.js
-* TypeScript
-* Tailwind CSS
-* React Query
-* Feature-based architecture
+- Next.js 16 with the App Router
+- React 19 and TypeScript
+- Tailwind CSS 4
+- TanStack React Query
+- Motion for React
+- Lucide React
+- Radix UI Slider
+- OGL-powered visual backgrounds
 
-## Project Structure
+### Backend
+
+- NestJS 12 and TypeScript
+- Prisma ORM 7
+- PostgreSQL
+- Class Validator and Class Transformer
+- Vitest
+- Cloudinary Node SDK for the car-image import utility
+- Layered API, application, domain, and infrastructure architecture
+
+## Project structure
 
 ```text
 car-rental-demo/
-├── car-rental-backend/
-└── car-rental-frontend/
+├── car-rental-backend/   # NestJS API, Prisma schema, migrations and seed tools
+└── car-rental-frontend/  # Next.js application and feature-based UI
 ```
 
-The backend is organized using hexagonal architecture with separate API, application, domain, and infrastructure layers.
+The backend groups the car catalog and booking domains under `src/modules/cars`, with separate API, application, domain, and infrastructure layers. The frontend keeps route entries under `src/app`, generic UI under `src/components`, infrastructure under `src/lib`, and car/booking functionality under `src/features/cars`.
 
-The frontend is organized by feature, keeping route files separate from feature logic, API functions, hooks, and components.
+## Application routes
 
-## Backend Setup
+### Customer routes
 
-Move into the backend directory:
+| Route | Purpose |
+| --- | --- |
+| `/` | Landing page |
+| `/cars` | Active-car catalog with location and price filters |
+| `/cars/[id]` | Car details and image gallery |
+| `/cars/[id]/book` | Customer booking form |
+| `/my-bookings` | Saved bookings and manual reference lookup |
+
+### Admin routes
+
+| Route | Purpose |
+| --- | --- |
+| `/admin` | Admin workspace |
+| `/admin/cars` | Fleet list, pagination, activation and deactivation |
+| `/admin/cars/new` | Create a car |
+| `/admin/cars/[id]/edit` | Edit an existing car |
+| `/admin/bookings` | Booking list and client-side search |
+| `/admin/bookings/[reference]` | Booking details and valid payment-status action |
+
+## API routes
+
+All backend routes use the `/api` prefix. Successful and failed responses use a common `{ success, message, data }` envelope.
+
+### Public API
+
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/cars` | Search active cars; supports `city`, `carTypeId`, `minPrice`, `maxPrice`, `page`, and `limit` |
+| `GET` | `/api/cars/:id` | Get an active car |
+| `POST` | `/api/car-bookings` | Create a booking |
+| `GET` | `/api/car-bookings/:reference` | Retrieve a booking by reference |
+| `PATCH` | `/api/car-bookings/:reference/cancel` | Cancel an eligible booking |
+
+### Admin API
+
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/admin/cars` | List active and inactive cars with pagination |
+| `POST` | `/api/admin/cars` | Create a car |
+| `GET` | `/api/admin/cars/:id` | Get any car for administration |
+| `PATCH` | `/api/admin/cars/:id` | Update a car or its status |
+| `DELETE` | `/api/admin/cars/:id` | Soft-deactivate a car |
+| `GET` | `/api/admin/car-bookings` | List all bookings |
+| `GET` | `/api/admin/car-bookings/:reference` | Get admin booking details |
+| `PATCH` | `/api/admin/car-bookings/:reference/payment-status` | Advance payment status (`unpaid → paid → refunded`) |
+
+## Local setup
+
+Requirements:
+
+- Node.js and npm
+- PostgreSQL
+- A Cloudinary account only when running the real car-image importer
+
+Install dependencies separately because the repository does not use a root workspace package:
 
 ```bash
 cd car-rental-backend
-```
+npm install
 
-Install dependencies:
-
-```bash
+cd ../car-rental-frontend
 npm install
 ```
 
-Create a `.env` file and add:
+### Backend configuration
+
+Copy `car-rental-backend/.env.example` to `car-rental-backend/.env` and provide the required values:
 
 ```env
-DATABASE_URL=
-PORT=3000
+NODE_ENV=development
+PORT=4000
+FRONTEND_URL=http://localhost:3000
+DATABASE_URL=postgresql://...
+DIRECT_URL=postgresql://...
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_API_KEY=your-api-key
+CLOUDINARY_API_SECRET=your-api-secret
+CLOUDINARY_URL=your-cloudinary-url
 ```
 
-Run the Prisma migrations:
+`DATABASE_URL` is used by the running application. Prisma CLI configuration reads `DIRECT_URL`. Never commit real credentials.
+
+Prepare the database and start the API:
 
 ```bash
-npx prisma migrate dev
-```
-
-Generate the Prisma Client:
-
-```bash
+cd car-rental-backend
 npx prisma generate
-```
-
-Start the development server:
-
-```bash
+npx prisma migrate dev
+npm run seed
 npm run start:dev
 ```
 
-## Frontend Setup
+The backend runs at `http://localhost:4000`, and its API base is `http://localhost:4000/api`.
 
-Move into the frontend directory:
+### Frontend configuration
+
+Copy `car-rental-frontend/.env.example` to `car-rental-frontend/.env.local`:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:4000/api
+```
+
+Start the frontend in a second terminal:
 
 ```bash
 cd car-rental-frontend
-```
-
-Install dependencies:
-
-```bash
-npm install
-```
-
-Create a `.env.local` file:
-
-```env
-NEXT_PUBLIC_API_URL=http://localhost:3000
-```
-
-Start the development server:
-
-```bash
 npm run dev
 ```
 
-## Database
+The frontend runs at `http://localhost:3000`.
 
-The demo currently uses four main tables:
+## Build and validation commands
 
-* `car_type`
-* `car`
-* `car_image`
-* `car_booking`
+### Backend
 
-The database is managed through Prisma and PostgreSQL.
+Run from `car-rental-backend`:
 
-## Current Scope
+```bash
+npm run lint
+npm test
+npm run build
+```
 
-The application will support car management, public car search, booking creation, booking retrieval, customer cancellation according to the cancellation policy, and admin-managed payment status.
+Build and run the production server:
+
+```bash
+npm run build
+npm run start:prod
+```
+
+Additional backend commands:
+
+```bash
+npm run test:e2e
+npm run test:cov
+npm run seed
+npm run import:car-images -- --dry-run
+npm run import:car-images -- --test-upload
+```
+
+The real image import is intentionally not included in normal setup. Review its dry-run and Cloudinary configuration before running it without a diagnostic flag.
+
+### Frontend
+
+Run from `car-rental-frontend`:
+
+```bash
+npm run lint
+npm run build
+```
+
+Run the production frontend after building:
+
+```bash
+npm run start
+```
+
+## Core behavior
+
+- Only active cars appear in the public catalog; the admin fleet shows active and inactive cars.
+- Car deletion is implemented as soft deactivation.
+- Booking cancellation follows the backend cancellation policy.
+- Booking status and payment status are independent.
+- Admin payment transitions are limited to `unpaid → paid → refunded`.
+- Car images are served from Cloudinary; image upload management is not part of the frontend.
+
+## Database models
+
+The Prisma schema contains four main models:
+
+- `CarType`
+- `Car`
+- `CarImage`
+- `CarBooking`
