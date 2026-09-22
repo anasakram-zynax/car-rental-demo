@@ -1,11 +1,6 @@
-import { RoutePlaceholder } from "@/components/layout/route-placeholder";
+import { AdminEditCarScreen } from "@/features/cars/components/car/admin-car-editor";
 
-export default function AdminCarEditPage() {
-  return (
-    <RoutePlaceholder
-      eyebrow="Admin foundation"
-      title="Edit car"
-      description="The car editing workflow will be implemented in a later phase."
-    />
-  );
+export default async function AdminCarEditPage({ params }: PageProps<"/admin/cars/[id]/edit">) {
+  const { id } = await params;
+  return <AdminEditCarScreen carId={id} />;
 }
