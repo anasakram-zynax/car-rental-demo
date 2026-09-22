@@ -1,0 +1,12 @@
+import type { ReactNode } from "react";
+import { GhostFibersBackground } from "@/components/backgrounds";
+import { Header } from "@/components/layout/header";
+
+export default function MyBookingsLayout({ children }: { children: ReactNode }) {
+  return (
+    <GhostFibersBackground>
+      <Header />
+      <main>{children}</main>
+    </GhostFibersBackground>
+  );
+}

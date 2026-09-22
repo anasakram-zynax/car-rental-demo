@@ -21,7 +21,8 @@
     "test:debug": "vitest --inspect-brk --no-file-parallelism",
     "test:e2e": "vitest run --config ./vitest.config.e2e.ts",
     "postinstall": "prisma skills sync || exit 0",
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts",
+    "import:car-images": "tsx prisma/import-car-images.ts"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",
@@ -33,6 +34,7 @@
     "@prisma/client": "^7.10.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
+    "cloudinary": "^2.11.0",
     "dotenv": "^18.0.1",
     "pg": "^8.23.0",
     "reflect-metadata": "^0.2.2",

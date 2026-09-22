@@ -1,6 +1,11 @@
-const AdminNewCarPage = () => {
+import { RoutePlaceholder } from "@/components/layout/route-placeholder";
+
+export default function AdminNewCarPage() {
   return (
-    <div>AdminNewCarPage</div>
-  )
+    <RoutePlaceholder
+      eyebrow="Admin foundation"
+      title="Add a car"
+      description="The car creation form will be implemented in a later phase."
+    />
+  );
 }
-export default AdminNewCarPage
