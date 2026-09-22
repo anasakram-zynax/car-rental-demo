@@ -1,3 +1,8 @@
+export {
+  CarsCatalog,
+  CarsCatalogFallback,
+} from "./components/car/cars-catalog";
+
 export type {
   BookingStatus,
   Car,

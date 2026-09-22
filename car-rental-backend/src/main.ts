@@ -9,6 +9,24 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
+  const configuredFrontendUrl = configService.get<string>('FRONTEND_URL');
+  const allowedOrigins = new Set<string>();
+
+  if (configuredFrontendUrl) {
+    allowedOrigins.add(configuredFrontendUrl);
+  }
+
+  if (configService.get<string>('NODE_ENV') !== 'production') {
+    allowedOrigins.add('http://localhost:3000');
+    allowedOrigins.add('http://localhost:3001');
+  }
+
+  app.enableCors({
+    origin: [...allowedOrigins],
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type'],
+  });
+
   app.setGlobalPrefix('api');
 
   app.useGlobalPipes(
@@ -17,8 +35,8 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  app.useGlobalFilters(new DomainErrorFilter())
-  app.useGlobalInterceptors(new ResponseInterceptor())
+  app.useGlobalFilters(new DomainErrorFilter());
+  app.useGlobalInterceptors(new ResponseInterceptor());
 
   const port = configService.get<number>('PORT') ?? 3000;
 
