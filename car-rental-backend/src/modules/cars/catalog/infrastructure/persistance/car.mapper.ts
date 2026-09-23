@@ -1,5 +1,6 @@
 import { CarStatus } from '../../domain/car-status.js';
-import { Car, CarImage } from '../../domain/car.entity.js';
+import { Car, CarImage, CarTransferPackage } from '../../domain/car.entity.js';
+import { ServiceType } from '../../domain/service-type.js';
 
 export class CarMapper {
   static toDomain(data: any): Car {
@@ -30,6 +31,13 @@ export class CarMapper {
       isRefundable: data.isRefundable,
       featured: data.featured,
 
+      serviceType:
+        data.serviceType === 'TRANSFER'
+          ? ServiceType.TRANSFER
+          : ServiceType.RENTAL,
+      withDriver: data.withDriver,
+      availableQuantity: data.availableQuantity,
+
       status: data.status === 'ACTIVE' ? CarStatus.ACTIVE : CarStatus.INACTIVE,
 
       images: (data.images ?? []).map((image: any): CarImage => ({
@@ -37,6 +45,16 @@ export class CarMapper {
         url: image.url,
         isDefault: image.isDefault,
       })),
+
+      transferPackages: (data.transferPackages ?? []).map(
+        (transferPackage: any): CarTransferPackage => ({
+          id: transferPackage.id,
+          fromLocation: transferPackage.fromLocation,
+          toLocation: transferPackage.toLocation,
+          price: Number(transferPackage.price),
+          currency: transferPackage.currency,
+        }),
+      ),
 
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,

@@ -17,6 +17,11 @@ enum CarStatus {
   INACTIVE @map("inactive")
 }
 
+enum ServiceType {
+  RENTAL   @map("rental")
+  TRANSFER @map("transfer")
+}
+
 enum BookingStatus {
   CONFIRMED @map("confirmed")
   CANCELLED @map("cancelled")
@@ -65,13 +70,18 @@ model Car {
   isRefundable Boolean @default(true) @map("is_refundable")
   featured     Boolean @default(false)
 
+  serviceType       ServiceType @default(RENTAL) @map("service_type")
+  withDriver        Boolean     @default(false) @map("with_driver")
+  availableQuantity Int         @default(1) @map("available_quantity")
+
   status CarStatus @default(ACTIVE)
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz()
 
-  images   CarImage[]
-  bookings CarBooking[]
+  images           CarImage[]
+  transferPackages CarTransferPackage[]
+  bookings         CarBooking[]
 
   @@index([city])
   @@index([carTypeId])
@@ -90,6 +100,21 @@ model CarImage {
 
   @@index([carId])
   @@map("car_image")
+}
+
+model CarTransferPackage {
+  id String @id @default(uuid()) @db.Uuid
+
+  carId String @map("car_id") @db.Uuid
+  car   Car    @relation(fields: [carId], references: [id], onDelete: Cascade)
+
+  fromLocation String  @map("from_location")
+  toLocation   String  @map("to_location")
+  price        Decimal @db.Decimal(10, 2)
+  currency     String
+
+  @@index([carId])
+  @@map("car_transfer_package")
 }
 
 model CarBooking {

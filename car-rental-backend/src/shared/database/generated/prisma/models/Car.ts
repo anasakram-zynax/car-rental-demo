@@ -32,6 +32,7 @@ export type CarAvgAggregateOutputType = {
   passengers: number | null
   baggage: number | null
   dailyPrice: runtime.Decimal | null
+  availableQuantity: number | null
 }
 
 export type CarSumAggregateOutputType = {
@@ -40,6 +41,7 @@ export type CarSumAggregateOutputType = {
   passengers: number | null
   baggage: number | null
   dailyPrice: runtime.Decimal | null
+  availableQuantity: number | null
 }
 
 export type CarMinAggregateOutputType = {
@@ -60,6 +62,9 @@ export type CarMinAggregateOutputType = {
   currency: string | null
   isRefundable: boolean | null
   featured: boolean | null
+  serviceType: $Enums.ServiceType | null
+  withDriver: boolean | null
+  availableQuantity: number | null
   status: $Enums.CarStatus | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -83,6 +88,9 @@ export type CarMaxAggregateOutputType = {
   currency: string | null
   isRefundable: boolean | null
   featured: boolean | null
+  serviceType: $Enums.ServiceType | null
+  withDriver: boolean | null
+  availableQuantity: number | null
   status: $Enums.CarStatus | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -107,6 +115,9 @@ export type CarCountAggregateOutputType = {
   currency: number
   isRefundable: number
   featured: number
+  serviceType: number
+  withDriver: number
+  availableQuantity: number
   status: number
   createdAt: number
   updatedAt: number
@@ -120,6 +131,7 @@ export type CarAvgAggregateInputType = {
   passengers?: true
   baggage?: true
   dailyPrice?: true
+  availableQuantity?: true
 }
 
 export type CarSumAggregateInputType = {
@@ -128,6 +140,7 @@ export type CarSumAggregateInputType = {
   passengers?: true
   baggage?: true
   dailyPrice?: true
+  availableQuantity?: true
 }
 
 export type CarMinAggregateInputType = {
@@ -148,6 +161,9 @@ export type CarMinAggregateInputType = {
   currency?: true
   isRefundable?: true
   featured?: true
+  serviceType?: true
+  withDriver?: true
+  availableQuantity?: true
   status?: true
   createdAt?: true
   updatedAt?: true
@@ -171,6 +187,9 @@ export type CarMaxAggregateInputType = {
   currency?: true
   isRefundable?: true
   featured?: true
+  serviceType?: true
+  withDriver?: true
+  availableQuantity?: true
   status?: true
   createdAt?: true
   updatedAt?: true
@@ -195,6 +214,9 @@ export type CarCountAggregateInputType = {
   currency?: true
   isRefundable?: true
   featured?: true
+  serviceType?: true
+  withDriver?: true
+  availableQuantity?: true
   status?: true
   createdAt?: true
   updatedAt?: true
@@ -306,6 +328,9 @@ export type CarGroupByOutputType = {
   currency: string
   isRefundable: boolean
   featured: boolean
+  serviceType: $Enums.ServiceType
+  withDriver: boolean
+  availableQuantity: number
   status: $Enums.CarStatus
   createdAt: Date
   updatedAt: Date
@@ -353,11 +378,15 @@ export type CarWhereInput = {
   currency?: Prisma.StringFilter<"Car"> | string
   isRefundable?: Prisma.BoolFilter<"Car"> | boolean
   featured?: Prisma.BoolFilter<"Car"> | boolean
+  serviceType?: Prisma.EnumServiceTypeFilter<"Car"> | $Enums.ServiceType
+  withDriver?: Prisma.BoolFilter<"Car"> | boolean
+  availableQuantity?: Prisma.IntFilter<"Car"> | number
   status?: Prisma.EnumCarStatusFilter<"Car"> | $Enums.CarStatus
   createdAt?: Prisma.DateTimeFilter<"Car"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Car"> | Date | string
   carType?: Prisma.XOR<Prisma.CarTypeScalarRelationFilter, Prisma.CarTypeWhereInput>
   images?: Prisma.CarImageListRelationFilter
+  transferPackages?: Prisma.CarTransferPackageListRelationFilter
   bookings?: Prisma.CarBookingListRelationFilter
 }
 
@@ -380,11 +409,15 @@ export type CarOrderByWithRelationInput = {
   currency?: Prisma.SortOrder
   isRefundable?: Prisma.SortOrder
   featured?: Prisma.SortOrder
+  serviceType?: Prisma.SortOrder
+  withDriver?: Prisma.SortOrder
+  availableQuantity?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   carType?: Prisma.CarTypeOrderByWithRelationInput
   images?: Prisma.CarImageOrderByRelationAggregateInput
+  transferPackages?: Prisma.CarTransferPackageOrderByRelationAggregateInput
   bookings?: Prisma.CarBookingOrderByRelationAggregateInput
 }
 
@@ -410,11 +443,15 @@ export type CarWhereUniqueInput = Prisma.AtLeast<{
   currency?: Prisma.StringFilter<"Car"> | string
   isRefundable?: Prisma.BoolFilter<"Car"> | boolean
   featured?: Prisma.BoolFilter<"Car"> | boolean
+  serviceType?: Prisma.EnumServiceTypeFilter<"Car"> | $Enums.ServiceType
+  withDriver?: Prisma.BoolFilter<"Car"> | boolean
+  availableQuantity?: Prisma.IntFilter<"Car"> | number
   status?: Prisma.EnumCarStatusFilter<"Car"> | $Enums.CarStatus
   createdAt?: Prisma.DateTimeFilter<"Car"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Car"> | Date | string
   carType?: Prisma.XOR<Prisma.CarTypeScalarRelationFilter, Prisma.CarTypeWhereInput>
   images?: Prisma.CarImageListRelationFilter
+  transferPackages?: Prisma.CarTransferPackageListRelationFilter
   bookings?: Prisma.CarBookingListRelationFilter
 }, "id" | "slug">
 
@@ -437,6 +474,9 @@ export type CarOrderByWithAggregationInput = {
   currency?: Prisma.SortOrder
   isRefundable?: Prisma.SortOrder
   featured?: Prisma.SortOrder
+  serviceType?: Prisma.SortOrder
+  withDriver?: Prisma.SortOrder
+  availableQuantity?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -469,6 +509,9 @@ export type CarScalarWhereWithAggregatesInput = {
   currency?: Prisma.StringWithAggregatesFilter<"Car"> | string
   isRefundable?: Prisma.BoolWithAggregatesFilter<"Car"> | boolean
   featured?: Prisma.BoolWithAggregatesFilter<"Car"> | boolean
+  serviceType?: Prisma.EnumServiceTypeWithAggregatesFilter<"Car"> | $Enums.ServiceType
+  withDriver?: Prisma.BoolWithAggregatesFilter<"Car"> | boolean
+  availableQuantity?: Prisma.IntWithAggregatesFilter<"Car"> | number
   status?: Prisma.EnumCarStatusWithAggregatesFilter<"Car"> | $Enums.CarStatus
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Car"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Car"> | Date | string
@@ -492,11 +535,15 @@ export type CarCreateInput = {
   currency?: string
   isRefundable?: boolean
   featured?: boolean
+  serviceType?: $Enums.ServiceType
+  withDriver?: boolean
+  availableQuantity?: number
   status?: $Enums.CarStatus
   createdAt?: Date | string
   updatedAt?: Date | string
   carType: Prisma.CarTypeCreateNestedOneWithoutCarsInput
   images?: Prisma.CarImageCreateNestedManyWithoutCarInput
+  transferPackages?: Prisma.CarTransferPackageCreateNestedManyWithoutCarInput
   bookings?: Prisma.CarBookingCreateNestedManyWithoutCarInput
 }
 
@@ -519,10 +566,14 @@ export type CarUncheckedCreateInput = {
   currency?: string
   isRefundable?: boolean
   featured?: boolean
+  serviceType?: $Enums.ServiceType
+  withDriver?: boolean
+  availableQuantity?: number
   status?: $Enums.CarStatus
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.CarImageUncheckedCreateNestedManyWithoutCarInput
+  transferPackages?: Prisma.CarTransferPackageUncheckedCreateNestedManyWithoutCarInput
   bookings?: Prisma.CarBookingUncheckedCreateNestedManyWithoutCarInput
 }
 
@@ -544,11 +595,15 @@ export type CarUpdateInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   isRefundable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
+  withDriver?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  availableQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumCarStatusFieldUpdateOperationsInput | $Enums.CarStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   carType?: Prisma.CarTypeUpdateOneRequiredWithoutCarsNestedInput
   images?: Prisma.CarImageUpdateManyWithoutCarNestedInput
+  transferPackages?: Prisma.CarTransferPackageUpdateManyWithoutCarNestedInput
   bookings?: Prisma.CarBookingUpdateManyWithoutCarNestedInput
 }
 
@@ -571,10 +626,14 @@ export type CarUncheckedUpdateInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   isRefundable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
+  withDriver?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  availableQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumCarStatusFieldUpdateOperationsInput | $Enums.CarStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.CarImageUncheckedUpdateManyWithoutCarNestedInput
+  transferPackages?: Prisma.CarTransferPackageUncheckedUpdateManyWithoutCarNestedInput
   bookings?: Prisma.CarBookingUncheckedUpdateManyWithoutCarNestedInput
 }
 
@@ -597,6 +656,9 @@ export type CarCreateManyInput = {
   currency?: string
   isRefundable?: boolean
   featured?: boolean
+  serviceType?: $Enums.ServiceType
+  withDriver?: boolean
+  availableQuantity?: number
   status?: $Enums.CarStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -620,6 +682,9 @@ export type CarUpdateManyMutationInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   isRefundable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
+  withDriver?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  availableQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumCarStatusFieldUpdateOperationsInput | $Enums.CarStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -644,6 +709,9 @@ export type CarUncheckedUpdateManyInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   isRefundable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
+  withDriver?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  availableQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumCarStatusFieldUpdateOperationsInput | $Enums.CarStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -686,6 +754,9 @@ export type CarCountOrderByAggregateInput = {
   currency?: Prisma.SortOrder
   isRefundable?: Prisma.SortOrder
   featured?: Prisma.SortOrder
+  serviceType?: Prisma.SortOrder
+  withDriver?: Prisma.SortOrder
+  availableQuantity?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -697,6 +768,7 @@ export type CarAvgOrderByAggregateInput = {
   passengers?: Prisma.SortOrder
   baggage?: Prisma.SortOrder
   dailyPrice?: Prisma.SortOrder
+  availableQuantity?: Prisma.SortOrder
 }
 
 export type CarMaxOrderByAggregateInput = {
@@ -717,6 +789,9 @@ export type CarMaxOrderByAggregateInput = {
   currency?: Prisma.SortOrder
   isRefundable?: Prisma.SortOrder
   featured?: Prisma.SortOrder
+  serviceType?: Prisma.SortOrder
+  withDriver?: Prisma.SortOrder
+  availableQuantity?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -740,6 +815,9 @@ export type CarMinOrderByAggregateInput = {
   currency?: Prisma.SortOrder
   isRefundable?: Prisma.SortOrder
   featured?: Prisma.SortOrder
+  serviceType?: Prisma.SortOrder
+  withDriver?: Prisma.SortOrder
+  availableQuantity?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -751,6 +829,7 @@ export type CarSumOrderByAggregateInput = {
   passengers?: Prisma.SortOrder
   baggage?: Prisma.SortOrder
   dailyPrice?: Prisma.SortOrder
+  availableQuantity?: Prisma.SortOrder
 }
 
 export type CarScalarRelationFilter = {
@@ -829,6 +908,10 @@ export type BoolFieldUpdateOperationsInput = {
   set?: boolean
 }
 
+export type EnumServiceTypeFieldUpdateOperationsInput = {
+  set?: $Enums.ServiceType
+}
+
 export type EnumCarStatusFieldUpdateOperationsInput = {
   set?: $Enums.CarStatus
 }
@@ -849,6 +932,20 @@ export type CarUpdateOneRequiredWithoutImagesNestedInput = {
   upsert?: Prisma.CarUpsertWithoutImagesInput
   connect?: Prisma.CarWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.CarUpdateToOneWithWhereWithoutImagesInput, Prisma.CarUpdateWithoutImagesInput>, Prisma.CarUncheckedUpdateWithoutImagesInput>
+}
+
+export type CarCreateNestedOneWithoutTransferPackagesInput = {
+  create?: Prisma.XOR<Prisma.CarCreateWithoutTransferPackagesInput, Prisma.CarUncheckedCreateWithoutTransferPackagesInput>
+  connectOrCreate?: Prisma.CarCreateOrConnectWithoutTransferPackagesInput
+  connect?: Prisma.CarWhereUniqueInput
+}
+
+export type CarUpdateOneRequiredWithoutTransferPackagesNestedInput = {
+  create?: Prisma.XOR<Prisma.CarCreateWithoutTransferPackagesInput, Prisma.CarUncheckedCreateWithoutTransferPackagesInput>
+  connectOrCreate?: Prisma.CarCreateOrConnectWithoutTransferPackagesInput
+  upsert?: Prisma.CarUpsertWithoutTransferPackagesInput
+  connect?: Prisma.CarWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.CarUpdateToOneWithWhereWithoutTransferPackagesInput, Prisma.CarUpdateWithoutTransferPackagesInput>, Prisma.CarUncheckedUpdateWithoutTransferPackagesInput>
 }
 
 export type CarCreateNestedOneWithoutBookingsInput = {
@@ -883,10 +980,14 @@ export type CarCreateWithoutCarTypeInput = {
   currency?: string
   isRefundable?: boolean
   featured?: boolean
+  serviceType?: $Enums.ServiceType
+  withDriver?: boolean
+  availableQuantity?: number
   status?: $Enums.CarStatus
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.CarImageCreateNestedManyWithoutCarInput
+  transferPackages?: Prisma.CarTransferPackageCreateNestedManyWithoutCarInput
   bookings?: Prisma.CarBookingCreateNestedManyWithoutCarInput
 }
 
@@ -908,10 +1009,14 @@ export type CarUncheckedCreateWithoutCarTypeInput = {
   currency?: string
   isRefundable?: boolean
   featured?: boolean
+  serviceType?: $Enums.ServiceType
+  withDriver?: boolean
+  availableQuantity?: number
   status?: $Enums.CarStatus
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.CarImageUncheckedCreateNestedManyWithoutCarInput
+  transferPackages?: Prisma.CarTransferPackageUncheckedCreateNestedManyWithoutCarInput
   bookings?: Prisma.CarBookingUncheckedCreateNestedManyWithoutCarInput
 }
 
@@ -963,6 +1068,9 @@ export type CarScalarWhereInput = {
   currency?: Prisma.StringFilter<"Car"> | string
   isRefundable?: Prisma.BoolFilter<"Car"> | boolean
   featured?: Prisma.BoolFilter<"Car"> | boolean
+  serviceType?: Prisma.EnumServiceTypeFilter<"Car"> | $Enums.ServiceType
+  withDriver?: Prisma.BoolFilter<"Car"> | boolean
+  availableQuantity?: Prisma.IntFilter<"Car"> | number
   status?: Prisma.EnumCarStatusFilter<"Car"> | $Enums.CarStatus
   createdAt?: Prisma.DateTimeFilter<"Car"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Car"> | Date | string
@@ -986,10 +1094,14 @@ export type CarCreateWithoutImagesInput = {
   currency?: string
   isRefundable?: boolean
   featured?: boolean
+  serviceType?: $Enums.ServiceType
+  withDriver?: boolean
+  availableQuantity?: number
   status?: $Enums.CarStatus
   createdAt?: Date | string
   updatedAt?: Date | string
   carType: Prisma.CarTypeCreateNestedOneWithoutCarsInput
+  transferPackages?: Prisma.CarTransferPackageCreateNestedManyWithoutCarInput
   bookings?: Prisma.CarBookingCreateNestedManyWithoutCarInput
 }
 
@@ -1012,9 +1124,13 @@ export type CarUncheckedCreateWithoutImagesInput = {
   currency?: string
   isRefundable?: boolean
   featured?: boolean
+  serviceType?: $Enums.ServiceType
+  withDriver?: boolean
+  availableQuantity?: number
   status?: $Enums.CarStatus
   createdAt?: Date | string
   updatedAt?: Date | string
+  transferPackages?: Prisma.CarTransferPackageUncheckedCreateNestedManyWithoutCarInput
   bookings?: Prisma.CarBookingUncheckedCreateNestedManyWithoutCarInput
 }
 
@@ -1052,10 +1168,14 @@ export type CarUpdateWithoutImagesInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   isRefundable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
+  withDriver?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  availableQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumCarStatusFieldUpdateOperationsInput | $Enums.CarStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   carType?: Prisma.CarTypeUpdateOneRequiredWithoutCarsNestedInput
+  transferPackages?: Prisma.CarTransferPackageUpdateManyWithoutCarNestedInput
   bookings?: Prisma.CarBookingUpdateManyWithoutCarNestedInput
 }
 
@@ -1078,9 +1198,145 @@ export type CarUncheckedUpdateWithoutImagesInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   isRefundable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
+  withDriver?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  availableQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumCarStatusFieldUpdateOperationsInput | $Enums.CarStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  transferPackages?: Prisma.CarTransferPackageUncheckedUpdateManyWithoutCarNestedInput
+  bookings?: Prisma.CarBookingUncheckedUpdateManyWithoutCarNestedInput
+}
+
+export type CarCreateWithoutTransferPackagesInput = {
+  id?: string
+  name: string
+  slug: string
+  brand: string
+  model: string
+  year: number
+  transmission: string
+  fuelType: string
+  doors?: number
+  passengers?: number
+  baggage?: number
+  amenities?: Prisma.CarCreateamenitiesInput | string[]
+  city: string
+  dailyPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
+  currency?: string
+  isRefundable?: boolean
+  featured?: boolean
+  serviceType?: $Enums.ServiceType
+  withDriver?: boolean
+  availableQuantity?: number
+  status?: $Enums.CarStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  carType: Prisma.CarTypeCreateNestedOneWithoutCarsInput
+  images?: Prisma.CarImageCreateNestedManyWithoutCarInput
+  bookings?: Prisma.CarBookingCreateNestedManyWithoutCarInput
+}
+
+export type CarUncheckedCreateWithoutTransferPackagesInput = {
+  id?: string
+  name: string
+  slug: string
+  brand: string
+  model: string
+  year: number
+  carTypeId: string
+  transmission: string
+  fuelType: string
+  doors?: number
+  passengers?: number
+  baggage?: number
+  amenities?: Prisma.CarCreateamenitiesInput | string[]
+  city: string
+  dailyPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
+  currency?: string
+  isRefundable?: boolean
+  featured?: boolean
+  serviceType?: $Enums.ServiceType
+  withDriver?: boolean
+  availableQuantity?: number
+  status?: $Enums.CarStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  images?: Prisma.CarImageUncheckedCreateNestedManyWithoutCarInput
+  bookings?: Prisma.CarBookingUncheckedCreateNestedManyWithoutCarInput
+}
+
+export type CarCreateOrConnectWithoutTransferPackagesInput = {
+  where: Prisma.CarWhereUniqueInput
+  create: Prisma.XOR<Prisma.CarCreateWithoutTransferPackagesInput, Prisma.CarUncheckedCreateWithoutTransferPackagesInput>
+}
+
+export type CarUpsertWithoutTransferPackagesInput = {
+  update: Prisma.XOR<Prisma.CarUpdateWithoutTransferPackagesInput, Prisma.CarUncheckedUpdateWithoutTransferPackagesInput>
+  create: Prisma.XOR<Prisma.CarCreateWithoutTransferPackagesInput, Prisma.CarUncheckedCreateWithoutTransferPackagesInput>
+  where?: Prisma.CarWhereInput
+}
+
+export type CarUpdateToOneWithWhereWithoutTransferPackagesInput = {
+  where?: Prisma.CarWhereInput
+  data: Prisma.XOR<Prisma.CarUpdateWithoutTransferPackagesInput, Prisma.CarUncheckedUpdateWithoutTransferPackagesInput>
+}
+
+export type CarUpdateWithoutTransferPackagesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  brand?: Prisma.StringFieldUpdateOperationsInput | string
+  model?: Prisma.StringFieldUpdateOperationsInput | string
+  year?: Prisma.IntFieldUpdateOperationsInput | number
+  transmission?: Prisma.StringFieldUpdateOperationsInput | string
+  fuelType?: Prisma.StringFieldUpdateOperationsInput | string
+  doors?: Prisma.IntFieldUpdateOperationsInput | number
+  passengers?: Prisma.IntFieldUpdateOperationsInput | number
+  baggage?: Prisma.IntFieldUpdateOperationsInput | number
+  amenities?: Prisma.CarUpdateamenitiesInput | string[]
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  dailyPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  isRefundable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
+  withDriver?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  availableQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumCarStatusFieldUpdateOperationsInput | $Enums.CarStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  carType?: Prisma.CarTypeUpdateOneRequiredWithoutCarsNestedInput
+  images?: Prisma.CarImageUpdateManyWithoutCarNestedInput
+  bookings?: Prisma.CarBookingUpdateManyWithoutCarNestedInput
+}
+
+export type CarUncheckedUpdateWithoutTransferPackagesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  brand?: Prisma.StringFieldUpdateOperationsInput | string
+  model?: Prisma.StringFieldUpdateOperationsInput | string
+  year?: Prisma.IntFieldUpdateOperationsInput | number
+  carTypeId?: Prisma.StringFieldUpdateOperationsInput | string
+  transmission?: Prisma.StringFieldUpdateOperationsInput | string
+  fuelType?: Prisma.StringFieldUpdateOperationsInput | string
+  doors?: Prisma.IntFieldUpdateOperationsInput | number
+  passengers?: Prisma.IntFieldUpdateOperationsInput | number
+  baggage?: Prisma.IntFieldUpdateOperationsInput | number
+  amenities?: Prisma.CarUpdateamenitiesInput | string[]
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  dailyPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  isRefundable?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
+  withDriver?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  availableQuantity?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumCarStatusFieldUpdateOperationsInput | $Enums.CarStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  images?: Prisma.CarImageUncheckedUpdateManyWithoutCarNestedInput
   bookings?: Prisma.CarBookingUncheckedUpdateManyWithoutCarNestedInput
 }
 
@@ -1102,11 +1358,15 @@ export type CarCreateWithoutBookingsInput = {
   currency?: string
   isRefundable?: boolean
   featured?: boolean
+  serviceType?: $Enums.ServiceType
+  withDriver?: boolean
+  availableQuantity?: number
   status?: $Enums.CarStatus
   createdAt?: Date | string
   updatedAt?: Date | string
   carType: Prisma.CarTypeCreateNestedOneWithoutCarsInput
   images?: Prisma.CarImageCreateNestedManyWithoutCarInput
+  transferPackages?: Prisma.CarTransferPackageCreateNestedManyWithoutCarInput
 }
 
 export type CarUncheckedCreateWithoutBookingsInput = {
@@ -1128,10 +1388,14 @@ export type CarUncheckedCreateWithoutBookingsInput = {
   currency?: string
   isRefundable?: boolean
   featured?: boolean
+  serviceType?: $Enums.ServiceType
+  withDriver?: boolean
+  availableQuantity?: number
   status?: $Enums.CarStatus
   createdAt?: Date | string
   updatedAt?: Date | string
   images?: Prisma.CarImageUncheckedCreateNestedManyWithoutCarInput
+  transferPackages?: Prisma.CarTransferPackageUncheckedCreateNestedManyWithoutCarInput
 }
 
 export type CarCreateOrConnectWithoutBookingsInput = {
@@ -1168,11 +1432,15 @@ export type CarUpdateWithoutBookingsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   isRefundable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
+  withDriver?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  availableQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumCarStatusFieldUpdateOperationsInput | $Enums.CarStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   carType?: Prisma.CarTypeUpdateOneRequiredWithoutCarsNestedInput
   images?: Prisma.CarImageUpdateManyWithoutCarNestedInput
+  transferPackages?: Prisma.CarTransferPackageUpdateManyWithoutCarNestedInput
 }
 
 export type CarUncheckedUpdateWithoutBookingsInput = {
@@ -1194,10 +1462,14 @@ export type CarUncheckedUpdateWithoutBookingsInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   isRefundable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
+  withDriver?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  availableQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumCarStatusFieldUpdateOperationsInput | $Enums.CarStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.CarImageUncheckedUpdateManyWithoutCarNestedInput
+  transferPackages?: Prisma.CarTransferPackageUncheckedUpdateManyWithoutCarNestedInput
 }
 
 export type CarCreateManyCarTypeInput = {
@@ -1218,6 +1490,9 @@ export type CarCreateManyCarTypeInput = {
   currency?: string
   isRefundable?: boolean
   featured?: boolean
+  serviceType?: $Enums.ServiceType
+  withDriver?: boolean
+  availableQuantity?: number
   status?: $Enums.CarStatus
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1241,10 +1516,14 @@ export type CarUpdateWithoutCarTypeInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   isRefundable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
+  withDriver?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  availableQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumCarStatusFieldUpdateOperationsInput | $Enums.CarStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.CarImageUpdateManyWithoutCarNestedInput
+  transferPackages?: Prisma.CarTransferPackageUpdateManyWithoutCarNestedInput
   bookings?: Prisma.CarBookingUpdateManyWithoutCarNestedInput
 }
 
@@ -1266,10 +1545,14 @@ export type CarUncheckedUpdateWithoutCarTypeInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   isRefundable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
+  withDriver?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  availableQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumCarStatusFieldUpdateOperationsInput | $Enums.CarStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   images?: Prisma.CarImageUncheckedUpdateManyWithoutCarNestedInput
+  transferPackages?: Prisma.CarTransferPackageUncheckedUpdateManyWithoutCarNestedInput
   bookings?: Prisma.CarBookingUncheckedUpdateManyWithoutCarNestedInput
 }
 
@@ -1291,6 +1574,9 @@ export type CarUncheckedUpdateManyWithoutCarTypeInput = {
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   isRefundable?: Prisma.BoolFieldUpdateOperationsInput | boolean
   featured?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
+  withDriver?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  availableQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumCarStatusFieldUpdateOperationsInput | $Enums.CarStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1303,11 +1589,13 @@ export type CarUncheckedUpdateManyWithoutCarTypeInput = {
 
 export type CarCountOutputType = {
   images: number
+  transferPackages: number
   bookings: number
 }
 
 export type CarCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   images?: boolean | CarCountOutputTypeCountImagesArgs
+  transferPackages?: boolean | CarCountOutputTypeCountTransferPackagesArgs
   bookings?: boolean | CarCountOutputTypeCountBookingsArgs
 }
 
@@ -1326,6 +1614,13 @@ export type CarCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensio
  */
 export type CarCountOutputTypeCountImagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.CarImageWhereInput
+}
+
+/**
+ * CarCountOutputType without action
+ */
+export type CarCountOutputTypeCountTransferPackagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CarTransferPackageWhereInput
 }
 
 /**
@@ -1355,11 +1650,15 @@ export type CarSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = ru
   currency?: boolean
   isRefundable?: boolean
   featured?: boolean
+  serviceType?: boolean
+  withDriver?: boolean
+  availableQuantity?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   carType?: boolean | Prisma.CarTypeDefaultArgs<ExtArgs>
   images?: boolean | Prisma.Car$imagesArgs<ExtArgs>
+  transferPackages?: boolean | Prisma.Car$transferPackagesArgs<ExtArgs>
   bookings?: boolean | Prisma.Car$bookingsArgs<ExtArgs>
   _count?: boolean | Prisma.CarCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["car"]>
@@ -1383,6 +1682,9 @@ export type CarSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extension
   currency?: boolean
   isRefundable?: boolean
   featured?: boolean
+  serviceType?: boolean
+  withDriver?: boolean
+  availableQuantity?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1408,6 +1710,9 @@ export type CarSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extension
   currency?: boolean
   isRefundable?: boolean
   featured?: boolean
+  serviceType?: boolean
+  withDriver?: boolean
+  availableQuantity?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1433,15 +1738,19 @@ export type CarSelectScalar = {
   currency?: boolean
   isRefundable?: boolean
   featured?: boolean
+  serviceType?: boolean
+  withDriver?: boolean
+  availableQuantity?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type CarOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "brand" | "model" | "year" | "carTypeId" | "transmission" | "fuelType" | "doors" | "passengers" | "baggage" | "amenities" | "city" | "dailyPrice" | "currency" | "isRefundable" | "featured" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["car"]>
+export type CarOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "brand" | "model" | "year" | "carTypeId" | "transmission" | "fuelType" | "doors" | "passengers" | "baggage" | "amenities" | "city" | "dailyPrice" | "currency" | "isRefundable" | "featured" | "serviceType" | "withDriver" | "availableQuantity" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["car"]>
 export type CarInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   carType?: boolean | Prisma.CarTypeDefaultArgs<ExtArgs>
   images?: boolean | Prisma.Car$imagesArgs<ExtArgs>
+  transferPackages?: boolean | Prisma.Car$transferPackagesArgs<ExtArgs>
   bookings?: boolean | Prisma.Car$bookingsArgs<ExtArgs>
   _count?: boolean | Prisma.CarCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -1457,6 +1766,7 @@ export type $CarPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   objects: {
     carType: Prisma.$CarTypePayload<ExtArgs>
     images: Prisma.$CarImagePayload<ExtArgs>[]
+    transferPackages: Prisma.$CarTransferPackagePayload<ExtArgs>[]
     bookings: Prisma.$CarBookingPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -1478,6 +1788,9 @@ export type $CarPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
     currency: string
     isRefundable: boolean
     featured: boolean
+    serviceType: $Enums.ServiceType
+    withDriver: boolean
+    availableQuantity: number
     status: $Enums.CarStatus
     createdAt: Date
     updatedAt: Date
@@ -1877,6 +2190,7 @@ export interface Prisma__CarClient<T, Null = never, ExtArgs extends runtime.Type
   readonly [Symbol.toStringTag]: "PrismaPromise"
   carType<T extends Prisma.CarTypeDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CarTypeDefaultArgs<ExtArgs>>): Prisma.Prisma__CarTypeClient<runtime.Types.Result.GetResult<Prisma.$CarTypePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   images<T extends Prisma.Car$imagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Car$imagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CarImagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  transferPackages<T extends Prisma.Car$transferPackagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Car$transferPackagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CarTransferPackagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   bookings<T extends Prisma.Car$bookingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Car$bookingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CarBookingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1925,6 +2239,9 @@ export interface CarFieldRefs {
   readonly currency: Prisma.FieldRef<"Car", 'String'>
   readonly isRefundable: Prisma.FieldRef<"Car", 'Boolean'>
   readonly featured: Prisma.FieldRef<"Car", 'Boolean'>
+  readonly serviceType: Prisma.FieldRef<"Car", 'ServiceType'>
+  readonly withDriver: Prisma.FieldRef<"Car", 'Boolean'>
+  readonly availableQuantity: Prisma.FieldRef<"Car", 'Int'>
   readonly status: Prisma.FieldRef<"Car", 'CarStatus'>
   readonly createdAt: Prisma.FieldRef<"Car", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Car", 'DateTime'>
@@ -2350,6 +2667,30 @@ export type Car$imagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs
   take?: number
   skip?: number
   distinct?: Prisma.CarImageScalarFieldEnum | Prisma.CarImageScalarFieldEnum[]
+}
+
+/**
+ * Car.transferPackages
+ */
+export type Car$transferPackagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CarTransferPackage
+   */
+  select?: Prisma.CarTransferPackageSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CarTransferPackage
+   */
+  omit?: Prisma.CarTransferPackageOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CarTransferPackageInclude<ExtArgs> | null
+  where?: Prisma.CarTransferPackageWhereInput
+  orderBy?: Prisma.CarTransferPackageOrderByWithRelationInput | Prisma.CarTransferPackageOrderByWithRelationInput[]
+  cursor?: Prisma.CarTransferPackageWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CarTransferPackageScalarFieldEnum | Prisma.CarTransferPackageScalarFieldEnum[]
 }
 
 /**

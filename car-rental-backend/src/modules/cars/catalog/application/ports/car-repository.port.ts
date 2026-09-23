@@ -1,5 +1,13 @@
 import { Car } from '../../domain/car.entity.js';
 import { CarStatus } from '../../domain/car-status.js';
+import { ServiceType } from '../../domain/service-type.js';
+
+export interface CreateCarTransferPackageData {
+  fromLocation: string;
+  toLocation: string;
+  price: number;
+  currency: string;
+}
 
 // ADMIN - SIDE
 export interface CreateCarData {
@@ -21,10 +29,16 @@ export interface CreateCarData {
   isRefundable: boolean;
   featured: boolean;
 
+  serviceType?: ServiceType;
+  withDriver?: boolean;
+  availableQuantity?: number;
+
   images: {
     url: string;
     isDefault: boolean;
   }[];
+
+  transferPackages?: CreateCarTransferPackageData[];
 }
 
 export type UpdateCarData = Partial<CreateCarData> & {
