@@ -17,6 +17,14 @@ export const CarStatus = {
 export type CarStatus = (typeof CarStatus)[keyof typeof CarStatus]
 
 
+export const ServiceType = {
+  RENTAL: 'RENTAL',
+  TRANSFER: 'TRANSFER'
+} as const
+
+export type ServiceType = (typeof ServiceType)[keyof typeof ServiceType]
+
+
 export const BookingStatus = {
   CONFIRMED: 'CONFIRMED',
   CANCELLED: 'CANCELLED'

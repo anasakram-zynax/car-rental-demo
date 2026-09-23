@@ -9,6 +9,7 @@ import type {
 
 import type { Car } from '../../domain/car.entity.js';
 import { CarStatus } from '../../domain/car-status.js';
+import { ServiceType } from '../../domain/service-type.js';
 
 export class InMemoryCarRepository implements CarRepositoryPort {
   public cars: Car[] = [];
@@ -22,10 +23,21 @@ export class InMemoryCarRepository implements CarRepositoryPort {
 
       status: CarStatus.ACTIVE,
 
+      serviceType: data.serviceType ?? ServiceType.RENTAL,
+      withDriver: data.withDriver ?? false,
+      availableQuantity: data.availableQuantity ?? 1,
+
       images: data.images.map((image) => ({
         id: crypto.randomUUID(),
         ...image,
       })),
+
+      transferPackages: (data.transferPackages ?? []).map(
+        (transferPackage) => ({
+          id: crypto.randomUUID(),
+          ...transferPackage,
+        }),
+      ),
 
       createdAt: now,
       updatedAt: now,
@@ -67,6 +79,13 @@ export class InMemoryCarRepository implements CarRepositoryPort {
             ...image,
           }))
         : existing.images,
+
+      transferPackages: data.transferPackages
+        ? data.transferPackages.map((transferPackage) => ({
+            id: crypto.randomUUID(),
+            ...transferPackage,
+          }))
+        : existing.transferPackages,
 
       updatedAt: new Date(),
     };

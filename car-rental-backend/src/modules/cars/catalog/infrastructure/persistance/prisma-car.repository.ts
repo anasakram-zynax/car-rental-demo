@@ -11,6 +11,7 @@ import { PrismaService } from '../../../../../shared/database/prisma.service.js'
 import { Car } from '../../domain/car.entity.js';
 import { CarMapper } from './car.mapper.js';
 import { CarStatus } from '../../domain/car-status.js';
+import { ServiceType } from '../../domain/service-type.js';
 
 @Injectable()
 export class PrismaCarRepository implements CarRepositoryPort {
@@ -43,13 +44,23 @@ export class PrismaCarRepository implements CarRepositoryPort {
         isRefundable: data.isRefundable,
         featured: data.featured,
 
+        serviceType:
+          data.serviceType === ServiceType.TRANSFER ? 'TRANSFER' : 'RENTAL',
+        withDriver: data.withDriver ?? false,
+        availableQuantity: data.availableQuantity ?? 1,
+
         images: {
           create: data.images,
+        },
+
+        transferPackages: {
+          create: data.transferPackages ?? [],
         },
       },
 
       include: {
         images: true,
+        transferPackages: true,
       },
     });
 
@@ -62,6 +73,7 @@ export class PrismaCarRepository implements CarRepositoryPort {
 
       include: {
         images: true,
+        transferPackages: true,
       },
     });
 
@@ -73,7 +85,7 @@ export class PrismaCarRepository implements CarRepositoryPort {
   }
 
   async update(id: string, data: UpdateCarData): Promise<Car> {
-    const { images, status, ...carData } = data;
+    const { images, status, serviceType, transferPackages, ...carData } = data;
 
     const car = await this.prisma.car.update({
       where: { id },
@@ -85,16 +97,29 @@ export class PrismaCarRepository implements CarRepositoryPort {
           status: status === CarStatus.ACTIVE ? 'ACTIVE' : 'INACTIVE',
         }),
 
+        ...(serviceType && {
+          serviceType:
+            serviceType === ServiceType.TRANSFER ? 'TRANSFER' : 'RENTAL',
+        }),
+
         ...(images && {
           images: {
             deleteMany: {},
             create: images,
           },
         }),
+
+        ...(transferPackages && {
+          transferPackages: {
+            deleteMany: {},
+            create: transferPackages,
+          },
+        }),
       },
 
       include: {
         images: true,
+        transferPackages: true,
       },
     });
 
@@ -111,6 +136,7 @@ export class PrismaCarRepository implements CarRepositoryPort {
 
       include: {
         images: true,
+        transferPackages: true,
       },
     });
 
@@ -155,6 +181,7 @@ export class PrismaCarRepository implements CarRepositoryPort {
 
         include: {
           images: true,
+          transferPackages: true,
         },
 
         skip,
@@ -183,7 +210,7 @@ export class PrismaCarRepository implements CarRepositoryPort {
     const skip = (filters.page - 1) * filters.limit;
     const [cars, total] = await Promise.all([
       this.prisma.car.findMany({
-        include: { images: true },
+        include: { images: true, transferPackages: true },
         skip,
         take: filters.limit,
         orderBy: { createdAt: 'desc' },
@@ -209,6 +236,7 @@ export class PrismaCarRepository implements CarRepositoryPort {
 
       include: {
         images: true,
+        transferPackages: true,
       },
     });
 

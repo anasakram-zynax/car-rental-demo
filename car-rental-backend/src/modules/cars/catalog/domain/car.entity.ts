@@ -1,9 +1,18 @@
 import { CarStatus } from './car-status.js';
+import { ServiceType } from './service-type.js';
 
 export interface CarImage {
   id: string;
   url: string;
   isDefault: boolean;
+}
+
+export interface CarTransferPackage {
+  id: string;
+  fromLocation: string;
+  toLocation: string;
+  price: number;
+  currency: string;
 }
 
 export interface Car {
@@ -33,9 +42,14 @@ export interface Car {
   isRefundable: boolean;
   featured: boolean;
 
+  serviceType: ServiceType;
+  withDriver: boolean;
+  availableQuantity: number;
+
   status: CarStatus;
 
   images: CarImage[];
+  transferPackages: CarTransferPackage[];
 
   createdAt: Date;
   updatedAt: Date;

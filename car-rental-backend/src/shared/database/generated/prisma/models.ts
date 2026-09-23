@@ -11,5 +11,6 @@
 export type * from './models/CarType.js'
 export type * from './models/Car.js'
 export type * from './models/CarImage.js'
+export type * from './models/CarTransferPackage.js'
 export type * from './models/CarBooking.js'
 export type * from './commonInputTypes.js'

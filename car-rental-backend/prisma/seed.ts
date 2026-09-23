@@ -2,48 +2,96 @@ import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/shared/database/generated/prisma/client.js';
 
-const adapter = new PrismaPg({
-  connectionString: process.env.DATABASE_URL!,
-});
-
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
+
+type City = 'Lahore' | 'Islamabad' | 'Karachi';
+type Service = 'RENTAL' | 'TRANSFER';
+type TransferPackage = {
+  fromLocation: string;
+  toLocation: string;
+  price: number;
+  currency: 'USD';
+};
+
+type CarSeed = {
+  name: string;
+  slug: string;
+  brand: string;
+  model: string;
+  year: number;
+  carTypeId: string;
+  transmission: string;
+  fuelType: string;
+  doors: number;
+  passengers: number;
+  baggage: number;
+  amenities: string[];
+  city: City;
+  dailyPrice: number;
+  featured: boolean;
+  serviceType: Service;
+  withDriver: boolean;
+  availableQuantity: number;
+  transferPackages?: TransferPackage[];
+};
+
+const routes: Record<City, [string, string][]> = {
+  Lahore: [
+    ['Allama Iqbal International Airport', 'Gulberg'],
+    ['Allama Iqbal International Airport', 'DHA Lahore'],
+    ['Allama Iqbal International Airport', 'Johar Town'],
+  ],
+  Islamabad: [
+    ['Islamabad International Airport', 'Blue Area'],
+    ['Islamabad International Airport', 'F-7'],
+    ['Islamabad International Airport', 'DHA Islamabad/Rawalpindi'],
+  ],
+  Karachi: [
+    ['Jinnah International Airport', 'Shahrah-e-Faisal'],
+    ['Jinnah International Airport', 'Clifton'],
+    ['Jinnah International Airport', 'DHA Karachi'],
+  ],
+};
+
+function packages(city: City, prices: [number, number, number]) {
+  return routes[city].map(([fromLocation, toLocation], index) => ({
+    fromLocation,
+    toLocation,
+    price: prices[index],
+    currency: 'USD' as const,
+  }));
+}
+
+function imageUrl(name: string) {
+  return `https://placehold.co/800x500?text=${name.replaceAll(' ', '+')}`;
+}
 
 async function main() {
   console.log('Starting database seed...');
-
-  // -----------------------------
-  // 1. Car Types
-  // -----------------------------
 
   const sedan = await prisma.carType.upsert({
     where: { label: 'Sedan' },
     update: {},
     create: { label: 'Sedan' },
   });
-
   const suv = await prisma.carType.upsert({
     where: { label: 'SUV' },
     update: {},
     create: { label: 'SUV' },
   });
-
   const hatchback = await prisma.carType.upsert({
     where: { label: 'Hatchback' },
     update: {},
     create: { label: 'Hatchback' },
   });
-
   const luxury = await prisma.carType.upsert({
     where: { label: 'Luxury' },
     update: {},
     create: { label: 'Luxury' },
   });
 
-  // -----------------------------
-  // 2. Cars
-  // -----------------------------
-
-  const cars = [
+  const cars: CarSeed[] = [
     {
       name: 'Toyota Corolla 2025',
       slug: 'toyota-corolla-2025',
@@ -59,18 +107,11 @@ async function main() {
       amenities: ['Air Conditioning', 'Bluetooth', 'USB'],
       city: 'Lahore',
       dailyPrice: 50,
-      currency: 'USD',
-      isRefundable: true,
       featured: true,
-      status: 'ACTIVE' as const,
-      images: [
-        {
-          url: 'https://placehold.co/800x500?text=Toyota+Corolla',
-          isDefault: true,
-        },
-      ],
+      serviceType: 'RENTAL',
+      withDriver: false,
+      availableQuantity: 1,
     },
-
     {
       name: 'Honda Civic 2024',
       slug: 'honda-civic-2024',
@@ -86,18 +127,11 @@ async function main() {
       amenities: ['Air Conditioning', 'Bluetooth', 'Cruise Control'],
       city: 'Lahore',
       dailyPrice: 70,
-      currency: 'USD',
-      isRefundable: true,
       featured: false,
-      status: 'ACTIVE' as const,
-      images: [
-        {
-          url: 'https://placehold.co/800x500?text=Honda+Civic',
-          isDefault: true,
-        },
-      ],
+      serviceType: 'RENTAL',
+      withDriver: false,
+      availableQuantity: 2,
     },
-
     {
       name: 'Toyota Fortuner 2025',
       slug: 'toyota-fortuner-2025',
@@ -118,18 +152,12 @@ async function main() {
       ],
       city: 'Lahore',
       dailyPrice: 120,
-      currency: 'USD',
-      isRefundable: true,
       featured: true,
-      status: 'ACTIVE' as const,
-      images: [
-        {
-          url: 'https://placehold.co/800x500?text=Toyota+Fortuner',
-          isDefault: true,
-        },
-      ],
+      serviceType: 'TRANSFER',
+      withDriver: true,
+      availableQuantity: 1,
+      transferPackages: packages('Lahore', [45, 55, 60]),
     },
-
     {
       name: 'Kia Sportage 2024',
       slug: 'kia-sportage-2024',
@@ -150,18 +178,12 @@ async function main() {
       ],
       city: 'Islamabad',
       dailyPrice: 100,
-      currency: 'USD',
-      isRefundable: true,
       featured: true,
-      status: 'ACTIVE' as const,
-      images: [
-        {
-          url: 'https://placehold.co/800x500?text=Kia+Sportage',
-          isDefault: true,
-        },
-      ],
+      serviceType: 'TRANSFER',
+      withDriver: true,
+      availableQuantity: 2,
+      transferPackages: packages('Islamabad', [40, 45, 55]),
     },
-
     {
       name: 'Suzuki Swift 2024',
       slug: 'suzuki-swift-2024',
@@ -177,18 +199,11 @@ async function main() {
       amenities: ['Air Conditioning', 'Bluetooth', 'USB'],
       city: 'Lahore',
       dailyPrice: 40,
-      currency: 'USD',
-      isRefundable: true,
       featured: false,
-      status: 'ACTIVE' as const,
-      images: [
-        {
-          url: 'https://placehold.co/800x500?text=Suzuki+Swift',
-          isDefault: true,
-        },
-      ],
+      serviceType: 'RENTAL',
+      withDriver: false,
+      availableQuantity: 2,
     },
-
     {
       name: 'Mercedes C-Class 2024',
       slug: 'mercedes-c-class-2024',
@@ -210,18 +225,12 @@ async function main() {
       ],
       city: 'Islamabad',
       dailyPrice: 180,
-      currency: 'USD',
-      isRefundable: true,
       featured: true,
-      status: 'ACTIVE' as const,
-      images: [
-        {
-          url: 'https://placehold.co/800x500?text=Mercedes+C-Class',
-          isDefault: true,
-        },
-      ],
+      serviceType: 'TRANSFER',
+      withDriver: true,
+      availableQuantity: 1,
+      transferPackages: packages('Islamabad', [60, 65, 75]),
     },
-
     {
       name: 'Toyota Yaris 2024',
       slug: 'toyota-yaris-2024',
@@ -237,18 +246,11 @@ async function main() {
       amenities: ['Air Conditioning', 'Bluetooth', 'USB'],
       city: 'Karachi',
       dailyPrice: 55,
-      currency: 'USD',
-      isRefundable: true,
       featured: false,
-      status: 'ACTIVE' as const,
-      images: [
-        {
-          url: 'https://placehold.co/800x500?text=Toyota+Yaris',
-          isDefault: true,
-        },
-      ],
+      serviceType: 'RENTAL',
+      withDriver: false,
+      availableQuantity: 3,
     },
-
     {
       name: 'Range Rover Sport 2024',
       slug: 'range-rover-sport-2024',
@@ -270,44 +272,567 @@ async function main() {
       ],
       city: 'Lahore',
       dailyPrice: 250,
-      currency: 'USD',
-      isRefundable: true,
       featured: true,
-      status: 'ACTIVE' as const,
-      images: [
-        {
-          url: 'https://placehold.co/800x500?text=Range+Rover+Sport',
-          isDefault: true,
-        },
-      ],
+      serviceType: 'TRANSFER',
+      withDriver: true,
+      availableQuantity: 2,
+      transferPackages: packages('Lahore', [75, 90, 100]),
+    },
+    {
+      name: 'Suzuki Alto 2024',
+      slug: 'suzuki-alto-2024',
+      brand: 'Suzuki',
+      model: 'Alto',
+      year: 2024,
+      carTypeId: hatchback.id,
+      transmission: 'Automatic',
+      fuelType: 'Petrol',
+      doors: 5,
+      passengers: 4,
+      baggage: 1,
+      amenities: ['Air Conditioning', 'USB'],
+      city: 'Lahore',
+      dailyPrice: 28,
+      featured: false,
+      serviceType: 'RENTAL',
+      withDriver: false,
+      availableQuantity: 3,
+    },
+    {
+      name: 'Suzuki Cultus 2023',
+      slug: 'suzuki-cultus-2023',
+      brand: 'Suzuki',
+      model: 'Cultus',
+      year: 2023,
+      carTypeId: hatchback.id,
+      transmission: 'Automatic',
+      fuelType: 'Petrol',
+      doors: 5,
+      passengers: 5,
+      baggage: 2,
+      amenities: ['Air Conditioning', 'Bluetooth', 'USB'],
+      city: 'Karachi',
+      dailyPrice: 32,
+      featured: false,
+      serviceType: 'RENTAL',
+      withDriver: false,
+      availableQuantity: 2,
+    },
+    {
+      name: 'Kia Picanto 2024',
+      slug: 'kia-picanto-2024',
+      brand: 'Kia',
+      model: 'Picanto',
+      year: 2024,
+      carTypeId: hatchback.id,
+      transmission: 'Automatic',
+      fuelType: 'Petrol',
+      doors: 5,
+      passengers: 5,
+      baggage: 2,
+      amenities: ['Air Conditioning', 'Bluetooth', 'USB'],
+      city: 'Islamabad',
+      dailyPrice: 35,
+      featured: false,
+      serviceType: 'RENTAL',
+      withDriver: false,
+      availableQuantity: 2,
+    },
+    {
+      name: 'Toyota Vitz 2020',
+      slug: 'toyota-vitz-2020',
+      brand: 'Toyota',
+      model: 'Vitz',
+      year: 2020,
+      carTypeId: hatchback.id,
+      transmission: 'Automatic',
+      fuelType: 'Petrol',
+      doors: 5,
+      passengers: 5,
+      baggage: 2,
+      amenities: ['Air Conditioning', 'Bluetooth', 'USB'],
+      city: 'Karachi',
+      dailyPrice: 38,
+      featured: false,
+      serviceType: 'RENTAL',
+      withDriver: false,
+      availableQuantity: 1,
+    },
+    {
+      name: 'Honda City 2024',
+      slug: 'honda-city-2024',
+      brand: 'Honda',
+      model: 'City',
+      year: 2024,
+      carTypeId: sedan.id,
+      transmission: 'Automatic',
+      fuelType: 'Petrol',
+      doors: 4,
+      passengers: 5,
+      baggage: 2,
+      amenities: ['Air Conditioning', 'Bluetooth', 'Cruise Control'],
+      city: 'Lahore',
+      dailyPrice: 52,
+      featured: true,
+      serviceType: 'RENTAL',
+      withDriver: false,
+      availableQuantity: 3,
+    },
+    {
+      name: 'Hyundai Elantra 2024',
+      slug: 'hyundai-elantra-2024',
+      brand: 'Hyundai',
+      model: 'Elantra',
+      year: 2024,
+      carTypeId: sedan.id,
+      transmission: 'Automatic',
+      fuelType: 'Petrol',
+      doors: 4,
+      passengers: 5,
+      baggage: 3,
+      amenities: ['Climate Control', 'Bluetooth', 'Cruise Control'],
+      city: 'Karachi',
+      dailyPrice: 65,
+      featured: false,
+      serviceType: 'RENTAL',
+      withDriver: false,
+      availableQuantity: 2,
+    },
+    {
+      name: 'Changan Alsvin 2024',
+      slug: 'changan-alsvin-2024',
+      brand: 'Changan',
+      model: 'Alsvin',
+      year: 2024,
+      carTypeId: sedan.id,
+      transmission: 'Automatic',
+      fuelType: 'Petrol',
+      doors: 4,
+      passengers: 5,
+      baggage: 2,
+      amenities: ['Air Conditioning', 'Bluetooth', 'Cruise Control'],
+      city: 'Islamabad',
+      dailyPrice: 45,
+      featured: false,
+      serviceType: 'RENTAL',
+      withDriver: false,
+      availableQuantity: 2,
+    },
+    {
+      name: 'Toyota Camry 2023',
+      slug: 'toyota-camry-2023',
+      brand: 'Toyota',
+      model: 'Camry',
+      year: 2023,
+      carTypeId: sedan.id,
+      transmission: 'Automatic',
+      fuelType: 'Hybrid',
+      doors: 4,
+      passengers: 5,
+      baggage: 3,
+      amenities: ['Climate Control', 'Leather Seats', 'Cruise Control'],
+      city: 'Lahore',
+      dailyPrice: 95,
+      featured: true,
+      serviceType: 'RENTAL',
+      withDriver: false,
+      availableQuantity: 1,
+    },
+    {
+      name: 'Honda BR-V 2024',
+      slug: 'honda-br-v-2024',
+      brand: 'Honda',
+      model: 'BR-V',
+      year: 2024,
+      carTypeId: suv.id,
+      transmission: 'Automatic',
+      fuelType: 'Petrol',
+      doors: 5,
+      passengers: 7,
+      baggage: 3,
+      amenities: ['Air Conditioning', 'Bluetooth', 'Rear Camera'],
+      city: 'Karachi',
+      dailyPrice: 72,
+      featured: false,
+      serviceType: 'RENTAL',
+      withDriver: false,
+      availableQuantity: 2,
+    },
+    {
+      name: 'Toyota Corolla Cross 2024',
+      slug: 'toyota-corolla-cross-2024',
+      brand: 'Toyota',
+      model: 'Corolla Cross',
+      year: 2024,
+      carTypeId: suv.id,
+      transmission: 'Automatic',
+      fuelType: 'Hybrid',
+      doors: 5,
+      passengers: 5,
+      baggage: 3,
+      amenities: ['Climate Control', 'Apple CarPlay', 'Rear Camera'],
+      city: 'Islamabad',
+      dailyPrice: 88,
+      featured: true,
+      serviceType: 'RENTAL',
+      withDriver: false,
+      availableQuantity: 1,
+    },
+    {
+      name: 'Hyundai Tucson 2024',
+      slug: 'hyundai-tucson-2024',
+      brand: 'Hyundai',
+      model: 'Tucson',
+      year: 2024,
+      carTypeId: suv.id,
+      transmission: 'Automatic',
+      fuelType: 'Petrol',
+      doors: 5,
+      passengers: 5,
+      baggage: 3,
+      amenities: ['Climate Control', 'Panoramic Roof', 'Rear Camera'],
+      city: 'Lahore',
+      dailyPrice: 92,
+      featured: false,
+      serviceType: 'RENTAL',
+      withDriver: false,
+      availableQuantity: 2,
+    },
+    {
+      name: 'MG HS 2024',
+      slug: 'mg-hs-2024',
+      brand: 'MG',
+      model: 'HS',
+      year: 2024,
+      carTypeId: suv.id,
+      transmission: 'Automatic',
+      fuelType: 'Petrol',
+      doors: 5,
+      passengers: 5,
+      baggage: 3,
+      amenities: ['Climate Control', 'Panoramic Roof', '360 Camera'],
+      city: 'Karachi',
+      dailyPrice: 98,
+      featured: true,
+      serviceType: 'RENTAL',
+      withDriver: false,
+      availableQuantity: 1,
+    },
+    {
+      name: 'Haval H6 2024',
+      slug: 'haval-h6-2024',
+      brand: 'Haval',
+      model: 'H6',
+      year: 2024,
+      carTypeId: suv.id,
+      transmission: 'Automatic',
+      fuelType: 'Hybrid',
+      doors: 5,
+      passengers: 5,
+      baggage: 3,
+      amenities: ['Climate Control', 'Adaptive Cruise Control', '360 Camera'],
+      city: 'Islamabad',
+      dailyPrice: 105,
+      featured: true,
+      serviceType: 'RENTAL',
+      withDriver: false,
+      availableQuantity: 2,
+    },
+    {
+      name: 'Toyota Innova 2023',
+      slug: 'toyota-innova-2023',
+      brand: 'Toyota',
+      model: 'Innova',
+      year: 2023,
+      carTypeId: suv.id,
+      transmission: 'Automatic',
+      fuelType: 'Diesel',
+      doors: 5,
+      passengers: 7,
+      baggage: 4,
+      amenities: ['Air Conditioning', 'Bluetooth', 'Rear Camera'],
+      city: 'Lahore',
+      dailyPrice: 82,
+      featured: false,
+      serviceType: 'RENTAL',
+      withDriver: false,
+      availableQuantity: 1,
+    },
+    {
+      name: 'BMW 3 Series 2024',
+      slug: 'bmw-3-series-2024',
+      brand: 'BMW',
+      model: '3 Series',
+      year: 2024,
+      carTypeId: luxury.id,
+      transmission: 'Automatic',
+      fuelType: 'Petrol',
+      doors: 4,
+      passengers: 5,
+      baggage: 3,
+      amenities: ['Climate Control', 'Leather Seats', 'Parking Sensors'],
+      city: 'Islamabad',
+      dailyPrice: 165,
+      featured: true,
+      serviceType: 'RENTAL',
+      withDriver: false,
+      availableQuantity: 1,
+    },
+    {
+      name: 'Audi A6 2024',
+      slug: 'audi-a6-2024',
+      brand: 'Audi',
+      model: 'A6',
+      year: 2024,
+      carTypeId: luxury.id,
+      transmission: 'Automatic',
+      fuelType: 'Petrol',
+      doors: 4,
+      passengers: 5,
+      baggage: 3,
+      amenities: ['Climate Control', 'Leather Seats', '360 Camera'],
+      city: 'Karachi',
+      dailyPrice: 195,
+      featured: true,
+      serviceType: 'RENTAL',
+      withDriver: false,
+      availableQuantity: 1,
+    },
+    {
+      name: 'Toyota Land Cruiser 2024',
+      slug: 'toyota-land-cruiser-2024',
+      brand: 'Toyota',
+      model: 'Land Cruiser',
+      year: 2024,
+      carTypeId: suv.id,
+      transmission: 'Automatic',
+      fuelType: 'Petrol',
+      doors: 5,
+      passengers: 7,
+      baggage: 4,
+      amenities: ['Climate Control', 'Leather Seats', '360 Camera'],
+      city: 'Lahore',
+      dailyPrice: 220,
+      featured: true,
+      serviceType: 'TRANSFER',
+      withDriver: true,
+      availableQuantity: 3,
+      transferPackages: packages('Lahore', [70, 85, 95]),
+    },
+    {
+      name: 'Mercedes E-Class 2024',
+      slug: 'mercedes-e-class-2024',
+      brand: 'Mercedes-Benz',
+      model: 'E-Class',
+      year: 2024,
+      carTypeId: luxury.id,
+      transmission: 'Automatic',
+      fuelType: 'Petrol',
+      doors: 4,
+      passengers: 5,
+      baggage: 3,
+      amenities: ['Climate Control', 'Leather Seats', 'Rear Camera'],
+      city: 'Islamabad',
+      dailyPrice: 210,
+      featured: true,
+      serviceType: 'TRANSFER',
+      withDriver: true,
+      availableQuantity: 1,
+      transferPackages: packages('Islamabad', [70, 75, 85]),
+    },
+    {
+      name: 'BMW 5 Series 2024',
+      slug: 'bmw-5-series-2024',
+      brand: 'BMW',
+      model: '5 Series',
+      year: 2024,
+      carTypeId: luxury.id,
+      transmission: 'Automatic',
+      fuelType: 'Petrol',
+      doors: 4,
+      passengers: 5,
+      baggage: 3,
+      amenities: ['Climate Control', 'Leather Seats', 'Parking Sensors'],
+      city: 'Karachi',
+      dailyPrice: 205,
+      featured: true,
+      serviceType: 'TRANSFER',
+      withDriver: true,
+      availableQuantity: 1,
+      transferPackages: packages('Karachi', [65, 80, 90]),
+    },
+    {
+      name: 'Lexus ES 2024',
+      slug: 'lexus-es-2024',
+      brand: 'Lexus',
+      model: 'ES',
+      year: 2024,
+      carTypeId: luxury.id,
+      transmission: 'Automatic',
+      fuelType: 'Hybrid',
+      doors: 4,
+      passengers: 5,
+      baggage: 3,
+      amenities: ['Climate Control', 'Leather Seats', 'Rear Camera'],
+      city: 'Lahore',
+      dailyPrice: 190,
+      featured: true,
+      serviceType: 'TRANSFER',
+      withDriver: true,
+      availableQuantity: 2,
+      transferPackages: packages('Lahore', [65, 75, 85]),
+    },
+    {
+      name: 'Honda Accord 2024',
+      slug: 'honda-accord-2024',
+      brand: 'Honda',
+      model: 'Accord',
+      year: 2024,
+      carTypeId: sedan.id,
+      transmission: 'Automatic',
+      fuelType: 'Hybrid',
+      doors: 4,
+      passengers: 5,
+      baggage: 3,
+      amenities: ['Climate Control', 'Leather Seats', 'Cruise Control'],
+      city: 'Islamabad',
+      dailyPrice: 145,
+      featured: false,
+      serviceType: 'TRANSFER',
+      withDriver: true,
+      availableQuantity: 2,
+      transferPackages: packages('Islamabad', [55, 60, 70]),
+    },
+    {
+      name: 'Toyota Prado 2024',
+      slug: 'toyota-prado-2024',
+      brand: 'Toyota',
+      model: 'Prado',
+      year: 2024,
+      carTypeId: suv.id,
+      transmission: 'Automatic',
+      fuelType: 'Diesel',
+      doors: 5,
+      passengers: 7,
+      baggage: 4,
+      amenities: ['Climate Control', 'Leather Seats', 'Rear Camera'],
+      city: 'Karachi',
+      dailyPrice: 175,
+      featured: true,
+      serviceType: 'TRANSFER',
+      withDriver: true,
+      availableQuantity: 1,
+      transferPackages: packages('Karachi', [60, 75, 85]),
     },
   ];
 
-  // -----------------------------
-  // 3. Insert Cars
-  // -----------------------------
+  await Promise.all(
+    cars.map((carData) => {
+      const { transferPackages = [], ...car } = carData;
 
-  for (const carData of cars) {
-    const { images, ...car } = carData;
-
-    await prisma.car.upsert({
-      where: {
-        slug: car.slug,
-      },
-
-      update: {},
-
-      create: {
-        ...car,
-
-        images: {
-          create: images,
+      return prisma.car.upsert({
+        where: { slug: car.slug },
+        update: {
+          ...car,
+          currency: 'USD',
+          isRefundable: true,
+          status: 'ACTIVE',
+          transferPackages: { deleteMany: {}, create: transferPackages },
         },
-      },
-    });
+        create: {
+          ...car,
+          currency: 'USD',
+          isRefundable: true,
+          status: 'ACTIVE',
+          images: {
+            create: [{ url: imageUrl(car.name), isDefault: true }],
+          },
+          transferPackages: { create: transferPackages },
+        },
+      });
+    }),
+  );
+
+  const seededCars = await prisma.car.findMany({
+    include: { transferPackages: true },
+  });
+  const slugs = new Set(seededCars.map((car) => car.slug));
+  const byServiceType = Object.fromEntries(
+    ['RENTAL', 'TRANSFER'].map((serviceType) => [
+      serviceType,
+      seededCars.filter((car) => car.serviceType === serviceType).length,
+    ]),
+  );
+  const byCity = Object.fromEntries(
+    ['Lahore', 'Islamabad', 'Karachi'].map((city) => [
+      city,
+      seededCars.filter((car) => car.city === city).length,
+    ]),
+  );
+  const quantityDistribution = Object.fromEntries(
+    [1, 2, 3].map((quantity) => [
+      quantity,
+      seededCars.filter((car) => car.availableQuantity === quantity).length,
+    ]),
+  );
+  const transferCars = seededCars.filter(
+    (car) => car.serviceType === 'TRANSFER',
+  );
+  const rentalCars = seededCars.filter((car) => car.serviceType === 'RENTAL');
+  const packageCount = transferCars.reduce(
+    (total, car) => total + car.transferPackages.length,
+    0,
+  );
+
+  const checks = {
+    exactly30Cars: seededCars.length === 30,
+    uniqueSlugs: slugs.size === 30,
+    expectedServiceMix:
+      byServiceType.RENTAL === 20 && byServiceType.TRANSFER === 10,
+    transferPackages: transferCars.every(
+      (car) =>
+        car.transferPackages.length >= 2 &&
+        car.transferPackages.every((item) => item.price.greaterThan(0)),
+    ),
+    rentalsHaveNoPackages: rentalCars.every(
+      (car) => car.transferPackages.length === 0,
+    ),
+    positiveQuantities: seededCars.every((car) => car.availableQuantity >= 1),
+    rentalQuantityCases: [1, 2, 3].every((quantity) =>
+      rentalCars.some((car) => car.availableQuantity === quantity),
+    ),
+    transferQuantityCases: [1, 2, 3].every((quantity) =>
+      transferCars.some((car) => car.availableQuantity === quantity),
+    ),
+  };
+
+  if (Object.values(checks).some((passed) => !passed)) {
+    const expectedSlugs = new Set(cars.map((car) => car.slug));
+    const unexpectedSlugs = seededCars
+      .map((car) => car.slug)
+      .filter((slug) => !expectedSlugs.has(slug));
+
+    throw new Error(
+      `Seed validation failed: ${JSON.stringify({
+        checks,
+        totalCars: seededCars.length,
+        uniqueSlugs: slugs.size,
+        byServiceType,
+        byCity,
+        unexpectedSlugs,
+      })}`,
+    );
   }
 
-  console.log('Database seeded successfully.');
+  console.log('Database seeded and validated successfully.', {
+    totalCars: seededCars.length,
+    uniqueSlugs: slugs.size,
+    byServiceType,
+    byCity,
+    quantityDistribution,
+    transferPackageCount: packageCount,
+    checks,
+  });
 }
 
 main()

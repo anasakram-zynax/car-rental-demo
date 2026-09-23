@@ -33,6 +33,11 @@ export type Car = Prisma.CarModel
  */
 export type CarImage = Prisma.CarImageModel
 /**
+ * Model CarTransferPackage
+ * 
+ */
+export type CarTransferPackage = Prisma.CarTransferPackageModel
+/**
  * Model CarBooking
  * 
  */
