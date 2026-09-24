@@ -43,6 +43,7 @@ export class CarMapper {
       images: (data.images ?? []).map((image: any): CarImage => ({
         id: image.id,
         url: image.url,
+        publicId: image.publicId ?? null,
         isDefault: image.isDefault,
       })),
 

@@ -116,6 +116,7 @@ export const CarImageScalarFieldEnum = {
   id: 'id',
   carId: 'carId',
   url: 'url',
+  publicId: 'publicId',
   isDefault: 'isDefault'
 } as const
 

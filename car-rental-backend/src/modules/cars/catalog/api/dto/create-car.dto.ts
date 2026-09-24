@@ -1,5 +1,6 @@
 import {
   IsArray,
+  ArrayMaxSize,
   IsBoolean,
   IsEnum,
   IsInt,
@@ -8,6 +9,7 @@ import {
   IsPositive,
   IsString,
   IsUrl,
+  Max,
   Matches,
   Min,
   Validate,
@@ -81,7 +83,8 @@ export class CreateCarDto {
   model: string;
 
   @IsInt()
-  @Min(1900)
+  @Min(2000)
+  @Max(new Date().getFullYear())
   year: number;
 
   @IsString()
@@ -142,6 +145,7 @@ export class CreateCarDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateCarImageDto)
+  @ArrayMaxSize(0, { message: 'Create the car with images: [], then upload image files using the image endpoint.' })
   images: CreateCarImageDto[];
 
   @IsOptional()

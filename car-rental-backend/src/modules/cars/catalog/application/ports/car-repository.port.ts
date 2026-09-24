@@ -59,6 +59,21 @@ export interface CarRepositoryPort {
   listAll(filters: PaginationFilters): Promise<SearchCarsResult>;
 
   findActiveById(id: string): Promise<Car | null>;
+
+  getFilterOptions(serviceType?: ServiceType): Promise<CarFilterOptions>;
+
+  getAdminFormOptions(): Promise<CarFormOptions>;
+
+  findTransferPickupLocations(
+    search: string | undefined,
+    limit: number,
+  ): Promise<string[]>;
+
+  findTransferDropoffLocations(
+    pickupLocation: string,
+    search: string | undefined,
+    limit: number,
+  ): Promise<string[]>;
 }
 
 // PUBLIC - SIDE
@@ -90,4 +105,17 @@ export interface SearchCarsResult {
   page: number;
   limit: number;
   totalPages: number;
+}
+
+export interface CarFilterOptions {
+  transmissionTypes: string[];
+  fuelTypes: string[];
+  maxBaggage: number;
+  maxPrice: number;
+}
+
+export interface CarFormOptions {
+  carTypes: Array<{ id: string; label: string }>;
+  transmissions: string[];
+  fuelTypes: string[];
 }

@@ -99,4 +99,53 @@ describe('CreateCarDto service fields', () => {
 
     expect(errors.some((error) => error.property === 'serviceType')).toBe(true);
   });
+
+  it('accepts 2000 through the current year and rejects years outside that range', async () => {
+    const currentYear = new Date().getFullYear();
+    const minimum = plainToInstance(CreateCarDto, {
+      ...validCar,
+      year: 2000,
+    });
+    const current = plainToInstance(CreateCarDto, {
+      ...validCar,
+      year: currentYear,
+    });
+    const tooOld = plainToInstance(CreateCarDto, { ...validCar, year: 1999 });
+    const future = plainToInstance(CreateCarDto, {
+      ...validCar,
+      year: currentYear + 1,
+    });
+
+    await expect(validate(minimum)).resolves.toHaveLength(0);
+    await expect(validate(current)).resolves.toHaveLength(0);
+    expect(
+      (await validate(tooOld)).some((error) => error.property === 'year'),
+    ).toBe(true);
+    expect(
+      (await validate(future)).some((error) => error.property === 'year'),
+    ).toBe(true);
+  });
+
+  it('applies the same year range to updates', async () => {
+    const currentYear = new Date().getFullYear();
+
+    await expect(
+      validate(plainToInstance(UpdateCarDto, { year: 2000 })),
+    ).resolves.toHaveLength(0);
+    await expect(
+      validate(plainToInstance(UpdateCarDto, { year: currentYear })),
+    ).resolves.toHaveLength(0);
+    expect(
+      (await validate(plainToInstance(UpdateCarDto, { year: 1999 }))).some(
+        (error) => error.property === 'year',
+      ),
+    ).toBe(true);
+    expect(
+      (
+        await validate(
+          plainToInstance(UpdateCarDto, { year: currentYear + 1 }),
+        )
+      ).some((error) => error.property === 'year'),
+    ).toBe(true);
+  });
 });

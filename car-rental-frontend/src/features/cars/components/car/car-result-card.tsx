@@ -1,22 +1,44 @@
 "use client";
 
-import { ArrowUpRight, CarFront, MapPin, Users } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  CarFront,
+  Check,
+  MapPin,
+  Users,
+} from "lucide-react";
 import { motion } from "motion/react";
-import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import type { Car } from "@/features/cars/types/car.types";
 import { formatCurrency } from "@/lib/format";
+import Image from "next/image";
 
 interface CarCardProps {
   car: Car;
   index?: number;
+  pickupLocation?: string;
+  dropoffLocation?: string;
 }
 
-export function CarCard({ car, index = 0 }: CarCardProps) {
+export function CarCard({
+  car,
+  dropoffLocation,
+  index = 0,
+  pickupLocation,
+}: CarCardProps) {
   const [imageFailed, setImageFailed] = useState(false);
   const defaultImage =
     car.images.find((image) => image.isDefault) ?? car.images[0];
+  const lowestPackage = car.transferPackages.reduce(
+    (lowest, current) =>
+      !lowest || current.price < lowest.price ? current : lowest,
+    car.transferPackages[0],
+  );
+  const hasExactRoute = Boolean(
+    pickupLocation && dropoffLocation && lowestPackage,
+  );
 
   return (
     <Link
@@ -81,13 +103,48 @@ export function CarCard({ car, index = 0 }: CarCardProps) {
               {car.passengers} seats
             </span>
             <span className="capitalize">{car.transmission}</span>
+            {car.serviceType === "transfer" && car.withDriver ? (
+              <span className="inline-flex items-center gap-1 font-medium text-success">
+                <Check aria-hidden="true" size={15} /> With Driver
+              </span>
+            ) : null}
           </div>
+
+          {car.serviceType === "transfer" && hasExactRoute ? (
+            <p className="mt-4 flex items-center gap-2 text-sm font-medium text-foreground">
+              <span>{lowestPackage.fromLocation}</span>
+              <ArrowRight
+                aria-hidden="true"
+                className="shrink-0 text-muted"
+                size={15}
+              />
+              <span>{lowestPackage.toLocation}</span>
+            </p>
+          ) : null}
 
           <div className="mt-6 flex items-end justify-between gap-4 border-t border-border/80 pt-5">
             <div>
-              <p className="text-xs text-muted">Daily rate</p>
+              <p className="text-xs text-muted">
+                {car.serviceType === "rental"
+                  ? "Daily rate"
+                  : hasExactRoute
+                    ? "Route price"
+                    : "Transfer price"}
+              </p>
               <p className="mt-1 text-xl font-semibold tracking-[-0.03em] text-foreground">
-                {formatCurrency(car.dailyPrice, car.currency)}
+                {car.serviceType === "rental" ? (
+                  <>
+                    {formatCurrency(car.dailyPrice, car.currency)}{" "}
+                    <span className="text-sm font-medium text-muted">/ day</span>
+                  </>
+                ) : lowestPackage ? (
+                  <>
+                    {hasExactRoute ? "" : "From "}
+                    {formatCurrency(lowestPackage.price, lowestPackage.currency)}
+                  </>
+                ) : (
+                  <span className="text-sm text-muted">Price unavailable</span>
+                )}
               </p>
             </div>
             <span className="text-sm font-semibold text-accent-secondary">
