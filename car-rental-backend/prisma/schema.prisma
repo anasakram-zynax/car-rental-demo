@@ -96,6 +96,7 @@ model CarImage {
   car   Car    @relation(fields: [carId], references: [id], onDelete: Cascade)
 
   url       String
+  publicId  String? @map("public_id")
   isDefault Boolean @default(false) @map("is_default")
 
   @@index([carId])

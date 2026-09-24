@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { PageContainer } from "@/components/ui/page-container";
 import { useCreateBooking } from "@/features/cars/hooks/use-create-booking";
 import { useCar } from "@/features/cars/hooks/use-car";
-import type { Car, CarBooking, CreateCarBookingInput } from "@/features/cars/types/car.types";
+import type { Car, CarBooking, CreateRentalBookingInput } from "@/features/cars/types/car.types";
 import { calculateRentalEstimate } from "@/features/cars/utils/rental-price";
 import { saveBookingReference } from "@/features/cars/utils/booking-references";
 import { ApiError } from "@/lib/api-client";
@@ -21,7 +21,7 @@ interface BookingFormProps {
   carId: string;
 }
 
-type FormValues = Omit<CreateCarBookingInput, "carId" | "specialRequests"> & {
+type FormValues = Omit<CreateRentalBookingInput, "carId" | "specialRequests"> & {
   pickupAt: string;
   returnAt: string;
   driverBirthDate: string;
@@ -199,7 +199,7 @@ function BookingScreen({ car }: { car: Car }) {
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
-    const input: CreateCarBookingInput = {
+    const input: CreateRentalBookingInput = {
       carId: car.id,
       pickupLocation: values.pickupLocation.trim(),
       dropoffLocation: values.dropoffLocation.trim(),

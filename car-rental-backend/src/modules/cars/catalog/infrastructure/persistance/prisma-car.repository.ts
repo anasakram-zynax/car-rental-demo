@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import {
   CarRepositoryPort,
+  CarFilterOptions,
+  CarFormOptions,
   CreateCarData,
   SearchCarsFilters,
   SearchCarsResult,
@@ -13,6 +15,16 @@ import { CarMapper } from './car.mapper.js';
 import { CarStatus } from '../../domain/car-status.js';
 import { ServiceType } from '../../domain/service-type.js';
 import type { Prisma } from '../../../../../shared/database/generated/prisma/client.js';
+import { CarSlugAlreadyExistsError } from '../../domain/car-errors.js';
+
+function isUniqueConstraintError(error: unknown): error is { code: string } {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    error.code === 'P2002'
+  );
+}
 
 function textFilter(value: string): Prisma.StringFilter {
   return { contains: value.trim().replace(/\s+/g, ' '), mode: 'insensitive' };
@@ -28,58 +40,80 @@ function resultPrice(car: Car): number {
   return car.dailyPrice;
 }
 
+function distinctNormalized(values: string[], limit?: number) {
+  const unique = new Map<string, string>();
+
+  for (const value of values) {
+    const normalized = value.trim().replace(/\s+/g, ' ');
+    const key = normalized.toLowerCase();
+    if (normalized && !unique.has(key)) unique.set(key, normalized);
+  }
+
+  return [...unique.values()]
+    .sort((left, right) => left.localeCompare(right))
+    .slice(0, limit);
+}
+
 @Injectable()
 export class PrismaCarRepository implements CarRepositoryPort {
   constructor(private readonly prisma: PrismaService) {}
   async create(data: CreateCarData): Promise<Car> {
-    const car = await this.prisma.car.create({
-      data: {
-        name: data.name,
-        slug: data.slug,
-        brand: data.brand,
-        model: data.model,
-        year: data.year,
+    try {
+      const car = await this.prisma.car.create({
+        data: {
+          name: data.name,
+          slug: data.slug,
+          brand: data.brand,
+          model: data.model,
+          year: data.year,
 
-        carTypeId: data.carTypeId,
+          carTypeId: data.carTypeId,
 
-        transmission: data.transmission,
-        fuelType: data.fuelType,
+          transmission: data.transmission,
+          fuelType: data.fuelType,
 
-        doors: data.doors,
-        passengers: data.passengers,
-        baggage: data.baggage,
+          doors: data.doors,
+          passengers: data.passengers,
+          baggage: data.baggage,
 
-        amenities: data.amenities,
+          amenities: data.amenities,
 
-        city: data.city,
+          city: data.city,
 
-        dailyPrice: data.dailyPrice,
-        currency: data.currency,
+          dailyPrice: data.dailyPrice,
+          currency: data.currency,
 
-        isRefundable: data.isRefundable,
-        featured: data.featured,
+          isRefundable: data.isRefundable,
+          featured: data.featured,
 
-        serviceType:
-          data.serviceType === ServiceType.TRANSFER ? 'TRANSFER' : 'RENTAL',
-        withDriver: data.withDriver ?? false,
-        availableQuantity: data.availableQuantity ?? 1,
+          serviceType:
+            data.serviceType === ServiceType.TRANSFER ? 'TRANSFER' : 'RENTAL',
+          withDriver: data.withDriver ?? false,
+          availableQuantity: data.availableQuantity ?? 1,
 
-        images: {
-          create: data.images,
+          images: {
+            create: data.images,
+          },
+
+          transferPackages: {
+            create: data.transferPackages ?? [],
+          },
         },
 
-        transferPackages: {
-          create: data.transferPackages ?? [],
+        include: {
+          images: true,
+          transferPackages: true,
         },
-      },
+      });
 
-      include: {
-        images: true,
-        transferPackages: true,
-      },
-    });
+      return CarMapper.toDomain(car);
+    } catch (error) {
+      if (isUniqueConstraintError(error)) {
+        throw new CarSlugAlreadyExistsError();
+      }
 
-    return CarMapper.toDomain(car);
+      throw error;
+    }
   }
 
   async findById(id: string): Promise<Car | null> {
@@ -102,43 +136,51 @@ export class PrismaCarRepository implements CarRepositoryPort {
   async update(id: string, data: UpdateCarData): Promise<Car> {
     const { images, status, serviceType, transferPackages, ...carData } = data;
 
-    const car = await this.prisma.car.update({
-      where: { id },
+    try {
+      const car = await this.prisma.car.update({
+        where: { id },
 
-      data: {
-        ...carData,
+        data: {
+          ...carData,
 
-        ...(status && {
-          status: status === CarStatus.ACTIVE ? 'ACTIVE' : 'INACTIVE',
-        }),
+          ...(status && {
+            status: status === CarStatus.ACTIVE ? 'ACTIVE' : 'INACTIVE',
+          }),
 
-        ...(serviceType && {
-          serviceType:
-            serviceType === ServiceType.TRANSFER ? 'TRANSFER' : 'RENTAL',
-        }),
+          ...(serviceType && {
+            serviceType:
+              serviceType === ServiceType.TRANSFER ? 'TRANSFER' : 'RENTAL',
+          }),
 
-        ...(images && {
-          images: {
-            deleteMany: {},
-            create: images,
-          },
-        }),
+          ...(images && {
+            images: {
+              deleteMany: {},
+              create: images,
+            },
+          }),
 
-        ...(transferPackages && {
-          transferPackages: {
-            deleteMany: {},
-            create: transferPackages,
-          },
-        }),
-      },
+          ...(transferPackages && {
+            transferPackages: {
+              deleteMany: {},
+              create: transferPackages,
+            },
+          }),
+        },
 
-      include: {
-        images: true,
-        transferPackages: true,
-      },
-    });
+        include: {
+          images: true,
+          transferPackages: true,
+        },
+      });
 
-    return CarMapper.toDomain(car);
+      return CarMapper.toDomain(car);
+    } catch (error) {
+      if (isUniqueConstraintError(error)) {
+        throw new CarSlugAlreadyExistsError();
+      }
+
+      throw error;
+    }
   }
 
   async setInactive(id: string): Promise<Car> {
@@ -341,5 +383,108 @@ export class PrismaCarRepository implements CarRepositoryPort {
     }
 
     return CarMapper.toDomain(car);
+  }
+
+  async getFilterOptions(serviceType?: ServiceType): Promise<CarFilterOptions> {
+    const cars = await this.prisma.car.findMany({
+      where: {
+        status: 'ACTIVE',
+        ...(serviceType && {
+          serviceType:
+            serviceType === ServiceType.TRANSFER ? 'TRANSFER' : 'RENTAL',
+        }),
+      },
+      select: {
+        transmission: true,
+        fuelType: true,
+        baggage: true,
+        dailyPrice: true,
+        serviceType: true,
+        transferPackages: {
+          select: { price: true },
+        },
+      },
+    });
+    const prices = cars.flatMap((car) =>
+      car.serviceType === 'TRANSFER'
+        ? car.transferPackages.map((transferPackage) =>
+            Number(transferPackage.price),
+          )
+        : [Number(car.dailyPrice)],
+    );
+
+    return {
+      transmissionTypes: distinctNormalized(
+        cars.map((car) => car.transmission),
+      ),
+      fuelTypes: distinctNormalized(cars.map((car) => car.fuelType)),
+      maxBaggage: Math.max(0, ...cars.map((car) => car.baggage)),
+      maxPrice: Math.max(0, ...prices),
+    };
+  }
+
+  async getAdminFormOptions(): Promise<CarFormOptions> {
+    const [carTypes, cars] = await Promise.all([
+      this.prisma.carType.findMany({
+        select: { id: true, label: true },
+        orderBy: { label: 'asc' },
+      }),
+      this.prisma.car.findMany({
+        select: { transmission: true, fuelType: true },
+      }),
+    ]);
+
+    return {
+      carTypes,
+      transmissions: distinctNormalized(cars.map((car) => car.transmission)),
+      fuelTypes: distinctNormalized(cars.map((car) => car.fuelType)),
+    };
+  }
+
+  async findTransferPickupLocations(
+    search: string | undefined,
+    limit: number,
+  ): Promise<string[]> {
+    const packages = await this.prisma.carTransferPackage.findMany({
+      where: {
+        car: {
+          is: { status: 'ACTIVE', serviceType: 'TRANSFER' },
+        },
+        ...(search && { fromLocation: textFilter(search) }),
+      },
+      select: { fromLocation: true },
+      orderBy: { fromLocation: 'asc' },
+    });
+
+    return distinctNormalized(
+      packages.map((transferPackage) => transferPackage.fromLocation),
+      limit,
+    );
+  }
+
+  async findTransferDropoffLocations(
+    pickupLocation: string,
+    search: string | undefined,
+    limit: number,
+  ): Promise<string[]> {
+    const packages = await this.prisma.carTransferPackage.findMany({
+      where: {
+        car: {
+          is: { status: 'ACTIVE', serviceType: 'TRANSFER' },
+        },
+        fromLocation: {
+          equals: pickupLocation,
+          mode: 'insensitive',
+        },
+        ...(search && { toLocation: textFilter(search) }),
+      },
+      select: { toLocation: true },
+      orderBy: { toLocation: 'asc' },
+    });
+
+    return distinctNormalized(
+      packages.map((transferPackage) => transferPackage.toLocation),
+      limit,
+    );
   }
 }

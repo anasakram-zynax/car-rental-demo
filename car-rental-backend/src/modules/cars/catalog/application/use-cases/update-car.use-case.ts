@@ -4,7 +4,7 @@ import type {
   CarRepositoryPort,
   UpdateCarData,
 } from '../ports/car-repository.port.js';
-import { CarNotFoundError } from '../../domain/car-errors.js';
+import { CarNotFoundError, InvalidCarDataError } from '../../domain/car-errors.js';
 
 @Injectable()
 export class UpdateCarUseCase {
@@ -19,6 +19,9 @@ export class UpdateCarUseCase {
       throw new CarNotFoundError(id);
     }
 
+    if (data.images !== undefined) {
+      throw new InvalidCarDataError('Use the car image upload/delete endpoints to change images.');
+    }
     return this.carRepository.update(id, data);
   }
 }

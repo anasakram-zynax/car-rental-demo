@@ -196,6 +196,26 @@ describe('SearchCarsUseCase', () => {
     expect(result.cars[0]?.transferPackages[0]?.price).toBe(35);
   });
 
+  it('applies catalog filters before pagination', async () => {
+    const repository = new InMemoryCarRepository();
+    await repository.create(carInput('petrol-one'));
+    await repository.create(carInput('petrol-two'));
+    await repository.create(carInput('hybrid-one', { fuelType: 'Hybrid' }));
+    await repository.create(carInput('hybrid-two', { fuelType: 'Hybrid' }));
+    const useCase = new SearchCarsUseCase(repository);
+
+    const result = await useCase.execute({
+      serviceType: ServiceType.RENTAL,
+      fuelType: 'Hybrid',
+      page: 2,
+      limit: 1,
+    });
+
+    expect(result).toMatchObject({ total: 2, page: 2, totalPages: 2 });
+    expect(result.cars).toHaveLength(1);
+    expect(result.cars[0]?.fuelType).toBe('Hybrid');
+  });
+
   it('supports name sorting and normal empty results', async () => {
     const repository = new InMemoryCarRepository();
     await repository.create(carInput('zulu', { name: 'Zulu Car' }));

@@ -1,5 +1,7 @@
 import type {
   CarRepositoryPort,
+  CarFilterOptions,
+  CarFormOptions,
   CreateCarData,
   SearchCarsFilters,
   SearchCarsResult,
@@ -40,8 +42,23 @@ function resultPrice(car: Car): number {
     : car.dailyPrice;
 }
 
+function distinctNormalized(values: string[], limit?: number) {
+  const unique = new Map<string, string>();
+
+  for (const value of values) {
+    const normalized = value.trim().replace(/\s+/g, ' ');
+    const key = normalized.toLowerCase();
+    if (normalized && !unique.has(key)) unique.set(key, normalized);
+  }
+
+  return [...unique.values()]
+    .sort((left, right) => left.localeCompare(right))
+    .slice(0, limit);
+}
+
 export class InMemoryCarRepository implements CarRepositoryPort {
   public cars: Car[] = [];
+  public carTypes: CarFormOptions['carTypes'] = [];
 
   async create(data: CreateCarData): Promise<Car> {
     const now = new Date();
@@ -246,5 +263,79 @@ export class InMemoryCarRepository implements CarRepositoryPort {
       limit: filters.limit,
       totalPages: Math.ceil(total / filters.limit),
     };
+  }
+
+  async getFilterOptions(serviceType?: ServiceType): Promise<CarFilterOptions> {
+    const cars = this.cars.filter(
+      (car) =>
+        car.status === CarStatus.ACTIVE &&
+        (!serviceType || car.serviceType === serviceType),
+    );
+    const prices = cars.flatMap((car) =>
+      car.serviceType === ServiceType.TRANSFER
+        ? car.transferPackages.map((transferPackage) => transferPackage.price)
+        : [car.dailyPrice],
+    );
+
+    return {
+      transmissionTypes: distinctNormalized(
+        cars.map((car) => car.transmission),
+      ),
+      fuelTypes: distinctNormalized(cars.map((car) => car.fuelType)),
+      maxBaggage: Math.max(0, ...cars.map((car) => car.baggage)),
+      maxPrice: Math.max(0, ...prices),
+    };
+  }
+
+  async getAdminFormOptions(): Promise<CarFormOptions> {
+    return {
+      carTypes: [...this.carTypes].sort((left, right) =>
+        left.label.localeCompare(right.label),
+      ),
+      transmissions: distinctNormalized(
+        this.cars.map((car) => car.transmission),
+      ),
+      fuelTypes: distinctNormalized(this.cars.map((car) => car.fuelType)),
+    };
+  }
+
+  async findTransferPickupLocations(
+    search: string | undefined,
+    limit: number,
+  ): Promise<string[]> {
+    const locations = this.cars
+      .filter(
+        (car) =>
+          car.status === CarStatus.ACTIVE &&
+          car.serviceType === ServiceType.TRANSFER,
+      )
+      .flatMap((car) => car.transferPackages)
+      .map((transferPackage) => transferPackage.fromLocation)
+      .filter((location) => !search || includesText(location, search));
+
+    return distinctNormalized(locations, limit);
+  }
+
+  async findTransferDropoffLocations(
+    pickupLocation: string,
+    search: string | undefined,
+    limit: number,
+  ): Promise<string[]> {
+    const locations = this.cars
+      .filter(
+        (car) =>
+          car.status === CarStatus.ACTIVE &&
+          car.serviceType === ServiceType.TRANSFER,
+      )
+      .flatMap((car) => car.transferPackages)
+      .filter(
+        (transferPackage) =>
+          transferPackage.fromLocation.trim().toLowerCase() ===
+          pickupLocation.trim().toLowerCase(),
+      )
+      .map((transferPackage) => transferPackage.toLocation)
+      .filter((location) => !search || includesText(location, search));
+
+    return distinctNormalized(locations, limit);
   }
 }

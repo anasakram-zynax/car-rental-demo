@@ -4,6 +4,7 @@ import { ServiceType } from './service-type.js';
 export interface CarImage {
   id: string;
   url: string;
+  publicId?: string | null;
   isDefault: boolean;
 }
 

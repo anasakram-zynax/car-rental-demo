@@ -17,9 +17,11 @@ export function formatCurrency(
 }
 
 export function formatDate(
-  value: DateValue,
+  value: DateValue | null | undefined,
   { locale = "en-US", ...options }: DateFormatOptions = {},
 ) {
+  if (value === null || value === undefined) return "Not provided";
+
   return new Intl.DateTimeFormat(locale, {
     dateStyle: "medium",
     ...options,
