@@ -894,6 +894,7 @@ export const CarBookingScalarFieldEnum = {
   id: 'id',
   reference: 'reference',
   carId: 'carId',
+  transferPackageId: 'transferPackageId',
   pickupLocation: 'pickupLocation',
   dropoffLocation: 'dropoffLocation',
   pickupAt: 'pickupAt',

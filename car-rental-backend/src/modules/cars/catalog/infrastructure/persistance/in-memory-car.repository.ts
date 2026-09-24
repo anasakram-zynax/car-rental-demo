@@ -11,6 +11,35 @@ import type { Car } from '../../domain/car.entity.js';
 import { CarStatus } from '../../domain/car-status.js';
 import { ServiceType } from '../../domain/service-type.js';
 
+function includesText(value: string, query: string): boolean {
+  const normalize = (text: string) =>
+    text.trim().replace(/\s+/g, ' ').toLowerCase();
+
+  return normalize(value).includes(normalize(query));
+}
+
+function matchesPackage(
+  transferPackage: Car['transferPackages'][number],
+  filters: SearchCarsFilters,
+): boolean {
+  return (
+    (!filters.pickupLocation ||
+      includesText(transferPackage.fromLocation, filters.pickupLocation)) &&
+    (!filters.dropoffLocation ||
+      includesText(transferPackage.toLocation, filters.dropoffLocation)) &&
+    (filters.minPrice === undefined ||
+      transferPackage.price >= filters.minPrice) &&
+    (filters.maxPrice === undefined ||
+      transferPackage.price <= filters.maxPrice)
+  );
+}
+
+function resultPrice(car: Car): number {
+  return car.serviceType === ServiceType.TRANSFER
+    ? Math.min(...car.transferPackages.map((item) => item.price))
+    : car.dailyPrice;
+}
+
 export class InMemoryCarRepository implements CarRepositoryPort {
   public cars: Car[] = [];
 
@@ -111,23 +140,85 @@ export class InMemoryCarRepository implements CarRepositoryPort {
   async search(filters: SearchCarsFilters): Promise<SearchCarsResult> {
     let results = this.cars.filter((car) => car.status === CarStatus.ACTIVE);
 
-    if (filters.city) {
+    if (filters.search) {
       results = results.filter((car) =>
-        car.city.toLowerCase().includes(filters.city!.toLowerCase()),
+        [car.name, car.model, car.brand].some((value) =>
+          includesText(value, filters.search!),
+        ),
       );
     }
-
-    if (filters.carTypeId) {
-      results = results.filter((car) => car.carTypeId === filters.carTypeId);
+    if (filters.transmission) {
+      results = results.filter((car) =>
+        includesText(car.transmission, filters.transmission!),
+      );
+    }
+    if (filters.fuelType) {
+      results = results.filter((car) =>
+        includesText(car.fuelType, filters.fuelType!),
+      );
+    }
+    if (filters.minBaggage !== undefined) {
+      results = results.filter((car) => car.baggage >= filters.minBaggage!);
     }
 
-    if (filters.minPrice !== undefined) {
-      results = results.filter((car) => car.dailyPrice >= filters.minPrice!);
-    }
+    results = results.filter((car) => {
+      if (filters.serviceType && car.serviceType !== filters.serviceType) {
+        return false;
+      }
 
-    if (filters.maxPrice !== undefined) {
-      results = results.filter((car) => car.dailyPrice <= filters.maxPrice!);
-    }
+      if (car.serviceType === ServiceType.RENTAL) {
+        if (filters.dropoffLocation && !filters.serviceType) return false;
+        const location = filters.pickupLocation || filters.city;
+        return (
+          (!location || includesText(car.city, location)) &&
+          (filters.minPrice === undefined ||
+            car.dailyPrice >= filters.minPrice) &&
+          (filters.maxPrice === undefined || car.dailyPrice <= filters.maxPrice)
+        );
+      }
+
+      return (
+        (!filters.city || includesText(car.city, filters.city)) &&
+        car.transferPackages.some((item) => matchesPackage(item, filters))
+      );
+    });
+
+    const hasPackageFilters = Boolean(
+      filters.pickupLocation ||
+      filters.dropoffLocation ||
+      filters.minPrice !== undefined ||
+      filters.maxPrice !== undefined,
+    );
+    results = results.map((car) =>
+      car.serviceType === ServiceType.TRANSFER && hasPackageFilters
+        ? {
+            ...car,
+            transferPackages: car.transferPackages.filter((item) =>
+              matchesPackage(item, filters),
+            ),
+          }
+        : car,
+    );
+
+    results.sort((first, second) => {
+      if (filters.sort === 'name_asc') {
+        return (
+          first.name.localeCompare(second.name) ||
+          first.id.localeCompare(second.id)
+        );
+      }
+      if (filters.sort === 'price_asc' || filters.sort === 'price_desc') {
+        const difference = resultPrice(first) - resultPrice(second);
+        return (
+          (filters.sort === 'price_desc' ? -difference : difference) ||
+          first.id.localeCompare(second.id)
+        );
+      }
+      return (
+        second.createdAt.getTime() - first.createdAt.getTime() ||
+        first.id.localeCompare(second.id)
+      );
+    });
 
     const total = results.length;
 

@@ -22,9 +22,12 @@ export class CatalogCarLookupAdapter implements CarLookupPort {
 
     return {
       id: car.id,
+      serviceType: car.serviceType,
       dailyPrice: car.dailyPrice,
       currency: car.currency,
       active: car.status === 'active',
+      availableQuantity: car.availableQuantity,
+      transferPackages: car.transferPackages,
     };
   }
 }

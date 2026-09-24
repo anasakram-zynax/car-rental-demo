@@ -225,6 +225,7 @@ export type CarTransferPackageWhereInput = {
   price?: Prisma.DecimalFilter<"CarTransferPackage"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFilter<"CarTransferPackage"> | string
   car?: Prisma.XOR<Prisma.CarScalarRelationFilter, Prisma.CarWhereInput>
+  bookings?: Prisma.CarBookingListRelationFilter
 }
 
 export type CarTransferPackageOrderByWithRelationInput = {
@@ -235,6 +236,7 @@ export type CarTransferPackageOrderByWithRelationInput = {
   price?: Prisma.SortOrder
   currency?: Prisma.SortOrder
   car?: Prisma.CarOrderByWithRelationInput
+  bookings?: Prisma.CarBookingOrderByRelationAggregateInput
 }
 
 export type CarTransferPackageWhereUniqueInput = Prisma.AtLeast<{
@@ -248,6 +250,7 @@ export type CarTransferPackageWhereUniqueInput = Prisma.AtLeast<{
   price?: Prisma.DecimalFilter<"CarTransferPackage"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFilter<"CarTransferPackage"> | string
   car?: Prisma.XOR<Prisma.CarScalarRelationFilter, Prisma.CarWhereInput>
+  bookings?: Prisma.CarBookingListRelationFilter
 }, "id">
 
 export type CarTransferPackageOrderByWithAggregationInput = {
@@ -283,6 +286,7 @@ export type CarTransferPackageCreateInput = {
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency: string
   car: Prisma.CarCreateNestedOneWithoutTransferPackagesInput
+  bookings?: Prisma.CarBookingCreateNestedManyWithoutTransferPackageInput
 }
 
 export type CarTransferPackageUncheckedCreateInput = {
@@ -292,6 +296,7 @@ export type CarTransferPackageUncheckedCreateInput = {
   toLocation: string
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency: string
+  bookings?: Prisma.CarBookingUncheckedCreateNestedManyWithoutTransferPackageInput
 }
 
 export type CarTransferPackageUpdateInput = {
@@ -301,6 +306,7 @@ export type CarTransferPackageUpdateInput = {
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
   car?: Prisma.CarUpdateOneRequiredWithoutTransferPackagesNestedInput
+  bookings?: Prisma.CarBookingUpdateManyWithoutTransferPackageNestedInput
 }
 
 export type CarTransferPackageUncheckedUpdateInput = {
@@ -310,6 +316,7 @@ export type CarTransferPackageUncheckedUpdateInput = {
   toLocation?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  bookings?: Prisma.CarBookingUncheckedUpdateManyWithoutTransferPackageNestedInput
 }
 
 export type CarTransferPackageCreateManyInput = {
@@ -383,6 +390,11 @@ export type CarTransferPackageSumOrderByAggregateInput = {
   price?: Prisma.SortOrder
 }
 
+export type CarTransferPackageNullableScalarRelationFilter = {
+  is?: Prisma.CarTransferPackageWhereInput | null
+  isNot?: Prisma.CarTransferPackageWhereInput | null
+}
+
 export type CarTransferPackageCreateNestedManyWithoutCarInput = {
   create?: Prisma.XOR<Prisma.CarTransferPackageCreateWithoutCarInput, Prisma.CarTransferPackageUncheckedCreateWithoutCarInput> | Prisma.CarTransferPackageCreateWithoutCarInput[] | Prisma.CarTransferPackageUncheckedCreateWithoutCarInput[]
   connectOrCreate?: Prisma.CarTransferPackageCreateOrConnectWithoutCarInput | Prisma.CarTransferPackageCreateOrConnectWithoutCarInput[]
@@ -425,12 +437,29 @@ export type CarTransferPackageUncheckedUpdateManyWithoutCarNestedInput = {
   deleteMany?: Prisma.CarTransferPackageScalarWhereInput | Prisma.CarTransferPackageScalarWhereInput[]
 }
 
+export type CarTransferPackageCreateNestedOneWithoutBookingsInput = {
+  create?: Prisma.XOR<Prisma.CarTransferPackageCreateWithoutBookingsInput, Prisma.CarTransferPackageUncheckedCreateWithoutBookingsInput>
+  connectOrCreate?: Prisma.CarTransferPackageCreateOrConnectWithoutBookingsInput
+  connect?: Prisma.CarTransferPackageWhereUniqueInput
+}
+
+export type CarTransferPackageUpdateOneWithoutBookingsNestedInput = {
+  create?: Prisma.XOR<Prisma.CarTransferPackageCreateWithoutBookingsInput, Prisma.CarTransferPackageUncheckedCreateWithoutBookingsInput>
+  connectOrCreate?: Prisma.CarTransferPackageCreateOrConnectWithoutBookingsInput
+  upsert?: Prisma.CarTransferPackageUpsertWithoutBookingsInput
+  disconnect?: Prisma.CarTransferPackageWhereInput | boolean
+  delete?: Prisma.CarTransferPackageWhereInput | boolean
+  connect?: Prisma.CarTransferPackageWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.CarTransferPackageUpdateToOneWithWhereWithoutBookingsInput, Prisma.CarTransferPackageUpdateWithoutBookingsInput>, Prisma.CarTransferPackageUncheckedUpdateWithoutBookingsInput>
+}
+
 export type CarTransferPackageCreateWithoutCarInput = {
   id?: string
   fromLocation: string
   toLocation: string
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency: string
+  bookings?: Prisma.CarBookingCreateNestedManyWithoutTransferPackageInput
 }
 
 export type CarTransferPackageUncheckedCreateWithoutCarInput = {
@@ -439,6 +468,7 @@ export type CarTransferPackageUncheckedCreateWithoutCarInput = {
   toLocation: string
   price: runtime.Decimal | runtime.DecimalJsLike | number | string
   currency: string
+  bookings?: Prisma.CarBookingUncheckedCreateNestedManyWithoutTransferPackageInput
 }
 
 export type CarTransferPackageCreateOrConnectWithoutCarInput = {
@@ -479,6 +509,58 @@ export type CarTransferPackageScalarWhereInput = {
   currency?: Prisma.StringFilter<"CarTransferPackage"> | string
 }
 
+export type CarTransferPackageCreateWithoutBookingsInput = {
+  id?: string
+  fromLocation: string
+  toLocation: string
+  price: runtime.Decimal | runtime.DecimalJsLike | number | string
+  currency: string
+  car: Prisma.CarCreateNestedOneWithoutTransferPackagesInput
+}
+
+export type CarTransferPackageUncheckedCreateWithoutBookingsInput = {
+  id?: string
+  carId: string
+  fromLocation: string
+  toLocation: string
+  price: runtime.Decimal | runtime.DecimalJsLike | number | string
+  currency: string
+}
+
+export type CarTransferPackageCreateOrConnectWithoutBookingsInput = {
+  where: Prisma.CarTransferPackageWhereUniqueInput
+  create: Prisma.XOR<Prisma.CarTransferPackageCreateWithoutBookingsInput, Prisma.CarTransferPackageUncheckedCreateWithoutBookingsInput>
+}
+
+export type CarTransferPackageUpsertWithoutBookingsInput = {
+  update: Prisma.XOR<Prisma.CarTransferPackageUpdateWithoutBookingsInput, Prisma.CarTransferPackageUncheckedUpdateWithoutBookingsInput>
+  create: Prisma.XOR<Prisma.CarTransferPackageCreateWithoutBookingsInput, Prisma.CarTransferPackageUncheckedCreateWithoutBookingsInput>
+  where?: Prisma.CarTransferPackageWhereInput
+}
+
+export type CarTransferPackageUpdateToOneWithWhereWithoutBookingsInput = {
+  where?: Prisma.CarTransferPackageWhereInput
+  data: Prisma.XOR<Prisma.CarTransferPackageUpdateWithoutBookingsInput, Prisma.CarTransferPackageUncheckedUpdateWithoutBookingsInput>
+}
+
+export type CarTransferPackageUpdateWithoutBookingsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  fromLocation?: Prisma.StringFieldUpdateOperationsInput | string
+  toLocation?: Prisma.StringFieldUpdateOperationsInput | string
+  price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  car?: Prisma.CarUpdateOneRequiredWithoutTransferPackagesNestedInput
+}
+
+export type CarTransferPackageUncheckedUpdateWithoutBookingsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  carId?: Prisma.StringFieldUpdateOperationsInput | string
+  fromLocation?: Prisma.StringFieldUpdateOperationsInput | string
+  toLocation?: Prisma.StringFieldUpdateOperationsInput | string
+  price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+}
+
 export type CarTransferPackageCreateManyCarInput = {
   id?: string
   fromLocation: string
@@ -493,6 +575,7 @@ export type CarTransferPackageUpdateWithoutCarInput = {
   toLocation?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  bookings?: Prisma.CarBookingUpdateManyWithoutTransferPackageNestedInput
 }
 
 export type CarTransferPackageUncheckedUpdateWithoutCarInput = {
@@ -501,6 +584,7 @@ export type CarTransferPackageUncheckedUpdateWithoutCarInput = {
   toLocation?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   currency?: Prisma.StringFieldUpdateOperationsInput | string
+  bookings?: Prisma.CarBookingUncheckedUpdateManyWithoutTransferPackageNestedInput
 }
 
 export type CarTransferPackageUncheckedUpdateManyWithoutCarInput = {
@@ -512,6 +596,35 @@ export type CarTransferPackageUncheckedUpdateManyWithoutCarInput = {
 }
 
 
+/**
+ * Count Type CarTransferPackageCountOutputType
+ */
+
+export type CarTransferPackageCountOutputType = {
+  bookings: number
+}
+
+export type CarTransferPackageCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  bookings?: boolean | CarTransferPackageCountOutputTypeCountBookingsArgs
+}
+
+/**
+ * CarTransferPackageCountOutputType without action
+ */
+export type CarTransferPackageCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CarTransferPackageCountOutputType
+   */
+  select?: Prisma.CarTransferPackageCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * CarTransferPackageCountOutputType without action
+ */
+export type CarTransferPackageCountOutputTypeCountBookingsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CarBookingWhereInput
+}
+
 
 export type CarTransferPackageSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -521,6 +634,8 @@ export type CarTransferPackageSelect<ExtArgs extends runtime.Types.Extensions.In
   price?: boolean
   currency?: boolean
   car?: boolean | Prisma.CarDefaultArgs<ExtArgs>
+  bookings?: boolean | Prisma.CarTransferPackage$bookingsArgs<ExtArgs>
+  _count?: boolean | Prisma.CarTransferPackageCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["carTransferPackage"]>
 
 export type CarTransferPackageSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -555,6 +670,8 @@ export type CarTransferPackageSelectScalar = {
 export type CarTransferPackageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "carId" | "fromLocation" | "toLocation" | "price" | "currency", ExtArgs["result"]["carTransferPackage"]>
 export type CarTransferPackageInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   car?: boolean | Prisma.CarDefaultArgs<ExtArgs>
+  bookings?: boolean | Prisma.CarTransferPackage$bookingsArgs<ExtArgs>
+  _count?: boolean | Prisma.CarTransferPackageCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type CarTransferPackageIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   car?: boolean | Prisma.CarDefaultArgs<ExtArgs>
@@ -567,6 +684,7 @@ export type $CarTransferPackagePayload<ExtArgs extends runtime.Types.Extensions.
   name: "CarTransferPackage"
   objects: {
     car: Prisma.$CarPayload<ExtArgs>
+    bookings: Prisma.$CarBookingPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -970,6 +1088,7 @@ readonly fields: CarTransferPackageFieldRefs;
 export interface Prisma__CarTransferPackageClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   car<T extends Prisma.CarDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CarDefaultArgs<ExtArgs>>): Prisma.Prisma__CarClient<runtime.Types.Result.GetResult<Prisma.$CarPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  bookings<T extends Prisma.CarTransferPackage$bookingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CarTransferPackage$bookingsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CarBookingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1403,6 +1522,30 @@ export type CarTransferPackageDeleteManyArgs<ExtArgs extends runtime.Types.Exten
    * Limit how many CarTransferPackages to delete.
    */
   limit?: number
+}
+
+/**
+ * CarTransferPackage.bookings
+ */
+export type CarTransferPackage$bookingsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CarBooking
+   */
+  select?: Prisma.CarBookingSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CarBooking
+   */
+  omit?: Prisma.CarBookingOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CarBookingInclude<ExtArgs> | null
+  where?: Prisma.CarBookingWhereInput
+  orderBy?: Prisma.CarBookingOrderByWithRelationInput | Prisma.CarBookingOrderByWithRelationInput[]
+  cursor?: Prisma.CarBookingWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CarBookingScalarFieldEnum | Prisma.CarBookingScalarFieldEnum[]
 }
 
 /**

@@ -12,6 +12,21 @@ import { Car } from '../../domain/car.entity.js';
 import { CarMapper } from './car.mapper.js';
 import { CarStatus } from '../../domain/car-status.js';
 import { ServiceType } from '../../domain/service-type.js';
+import type { Prisma } from '../../../../../shared/database/generated/prisma/client.js';
+
+function textFilter(value: string): Prisma.StringFilter {
+  return { contains: value.trim().replace(/\s+/g, ' '), mode: 'insensitive' };
+}
+
+function resultPrice(car: Car): number {
+  if (car.serviceType === ServiceType.TRANSFER) {
+    return Math.min(
+      ...car.transferPackages.map((transferPackage) => transferPackage.price),
+    );
+  }
+
+  return car.dailyPrice;
+}
 
 @Injectable()
 export class PrismaCarRepository implements CarRepositoryPort {
@@ -144,61 +159,142 @@ export class PrismaCarRepository implements CarRepositoryPort {
   }
 
   async search(filters: SearchCarsFilters): Promise<SearchCarsResult> {
-    const { city, carTypeId, minPrice, maxPrice, page, limit } = filters;
+    const {
+      serviceType,
+      city,
+      pickupLocation,
+      dropoffLocation,
+      transmission,
+      fuelType,
+      minBaggage,
+      minPrice,
+      maxPrice,
+      search,
+      sort,
+      page,
+      limit,
+    } = filters;
 
-    const skip = (page - 1) * limit;
-
-    const where = {
-      status: 'ACTIVE' as const,
-
-      ...(city && {
-        city: {
-          contains: city,
-          mode: 'insensitive' as const,
-        },
-      }),
-
-      ...(carTypeId && {
-        carTypeId,
-      }),
-
+    const priceFilter: Prisma.DecimalFilter = {
+      ...(minPrice !== undefined && { gte: minPrice }),
+      ...(maxPrice !== undefined && { lte: maxPrice }),
+    };
+    const packageWhere: Prisma.CarTransferPackageWhereInput = {
+      ...(pickupLocation && { fromLocation: textFilter(pickupLocation) }),
+      ...(dropoffLocation && { toLocation: textFilter(dropoffLocation) }),
       ...((minPrice !== undefined || maxPrice !== undefined) && {
-        dailyPrice: {
-          ...(minPrice !== undefined && {
-            gte: minPrice,
-          }),
-
-          ...(maxPrice !== undefined && {
-            lte: maxPrice,
-          }),
-        },
+        price: priceFilter,
       }),
     };
+    const hasPackageFilters = Boolean(
+      pickupLocation ||
+      dropoffLocation ||
+      minPrice !== undefined ||
+      maxPrice !== undefined,
+    );
+    const and: Prisma.CarWhereInput[] = [];
 
-    const [cars, total] = await Promise.all([
-      this.prisma.car.findMany({
-        where,
+    if (search?.trim()) {
+      and.push({
+        OR: ['name', 'model', 'brand'].map((field) => ({
+          [field]: textFilter(search),
+        })),
+      });
+    }
+    if (transmission?.trim()) {
+      and.push({ transmission: textFilter(transmission) });
+    }
+    if (fuelType?.trim()) {
+      and.push({ fuelType: textFilter(fuelType) });
+    }
+    if (minBaggage !== undefined) {
+      and.push({ baggage: { gte: minBaggage } });
+    }
 
-        include: {
-          images: true,
-          transferPackages: true,
-        },
+    if (serviceType === ServiceType.RENTAL) {
+      and.push({ serviceType: 'RENTAL' });
+      const rentalLocation = pickupLocation || city;
+      if (rentalLocation?.trim()) {
+        and.push({ city: textFilter(rentalLocation) });
+      }
+      if (minPrice !== undefined || maxPrice !== undefined) {
+        and.push({ dailyPrice: priceFilter });
+      }
+    } else if (serviceType === ServiceType.TRANSFER) {
+      and.push({ serviceType: 'TRANSFER' });
+      if (city?.trim()) {
+        and.push({ city: textFilter(city) });
+      }
+      if (hasPackageFilters) {
+        and.push({ transferPackages: { some: packageWhere } });
+      }
+    } else {
+      if (city?.trim()) {
+        and.push({ city: textFilter(city) });
+      }
+      if (hasPackageFilters) {
+        const branches: Prisma.CarWhereInput[] = [
+          {
+            serviceType: 'TRANSFER',
+            transferPackages: { some: packageWhere },
+          },
+        ];
+        if (!dropoffLocation) {
+          branches.push({
+            serviceType: 'RENTAL',
+            ...(pickupLocation && { city: textFilter(pickupLocation) }),
+            ...((minPrice !== undefined || maxPrice !== undefined) && {
+              dailyPrice: priceFilter,
+            }),
+          });
+        }
+        and.push({ OR: branches });
+      }
+    }
 
-        skip,
-        take: limit,
+    const where: Prisma.CarWhereInput = {
+      status: 'ACTIVE',
+      ...(and.length > 0 && { AND: and }),
+    };
+    const filterReturnedPackages =
+      serviceType !== ServiceType.RENTAL && hasPackageFilters;
+    const records = await this.prisma.car.findMany({
+      where,
+      include: {
+        images: true,
+        transferPackages: filterReturnedPackages
+          ? { where: packageWhere, orderBy: { price: 'asc' } }
+          : { orderBy: { price: 'asc' } },
+      },
+    });
+    const cars = records.map((car) => CarMapper.toDomain(car));
 
-        orderBy: {
-          createdAt: 'desc',
-        },
-      }),
+    cars.sort((first, second) => {
+      if (sort === 'name_asc') {
+        return (
+          first.name.localeCompare(second.name) ||
+          first.id.localeCompare(second.id)
+        );
+      }
+      if (sort === 'price_asc' || sort === 'price_desc') {
+        const difference = resultPrice(first) - resultPrice(second);
+        return (
+          (sort === 'price_desc' ? -difference : difference) ||
+          first.id.localeCompare(second.id)
+        );
+      }
+      return (
+        second.createdAt.getTime() - first.createdAt.getTime() ||
+        first.id.localeCompare(second.id)
+      );
+    });
 
-      this.prisma.car.count({
-        where,
-      }),
-    ]);
+    const total = cars.length;
+    const skip = (page - 1) * limit;
+    const paginatedCars = cars.slice(skip, skip + limit);
 
     return {
-      cars: cars.map((car) => CarMapper.toDomain(car)),
+      cars: paginatedCars,
       total,
       page,
       limit,

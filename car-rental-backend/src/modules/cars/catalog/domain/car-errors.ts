@@ -11,3 +11,9 @@ export class InvalidCarDataError extends DomainError {
     super(message);
   }
 }
+
+export class InvalidCarSearchPriceRangeError extends DomainError {
+  constructor() {
+    super('minPrice must not be greater than maxPrice.');
+  }
+}

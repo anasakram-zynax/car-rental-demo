@@ -2,7 +2,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CAR_BOOKING_REPOSITORY } from '../../infrastructure/car-booking-repository.token.js';
 import type { CarBookingRepositoryPort } from '../ports/car-booking-repository.port.js';
 import { CAR_LOOKUP } from '../../infrastructure/car-lookup.token.js';
-import type { CarLookupPort } from '../ports/car-lookup.port.js';
+import type {
+  CarLookupPort,
+  CarLookupResult,
+} from '../ports/car-lookup.port.js';
 import {
   calculateRentalDays,
   validateDateRange,
@@ -10,22 +13,31 @@ import {
 import {
   CarNotAvailableError,
   InvalidBookingDateError,
+  RentalDriverBirthDateRequiredError,
+  RentalDriverLicenseRequiredError,
+  RentalLocationsRequiredError,
+  RentalReturnAtRequiredError,
+  TransferPackageNotFoundForCarError,
+  TransferPackageRequiredError,
+  TransferReturnAtNotAllowedError,
 } from '../../domain/booking-errors.js';
 import { calculateRentalPrice } from '../../domain/rental-price.js';
+import { DEFAULT_TRANSFER_DURATION_HOURS } from '../../domain/transfer-booking.js';
 
 export interface CreateBookingInput {
   carId: string;
+  transferPackageId?: string;
 
-  pickupLocation: string;
-  dropoffLocation: string;
+  pickupLocation?: string;
+  dropoffLocation?: string;
 
   pickupAt: Date;
-  returnAt: Date;
+  returnAt?: Date;
 
   driverFirstName: string;
   driverLastName: string;
-  driverBirthDate: Date;
-  driverLicenseNumber: string;
+  driverBirthDate?: Date;
+  driverLicenseNumber?: string;
 
   contactEmail: string;
   contactPhone: string;
@@ -44,31 +56,31 @@ export class CreateBookingUseCase {
   ) {}
 
   async execute(input: CreateBookingInput) {
-    validateDateRange(input.pickupAt, input.returnAt);
-
-    if (input.pickupAt <= new Date()) {
-      throw new InvalidBookingDateError('Pickup date must be in the future.');
-    }
-
     const car = await this.carLookup.findById(input.carId);
 
     if (!car || !car.active) {
       throw new CarNotAvailableError();
     }
 
-    const overlappingBookings = await this.bookingRepository.findOverlapping(
-      input.carId,
-      input.pickupAt,
-      input.returnAt,
-    );
+    const booking =
+      car.serviceType === 'transfer'
+        ? this.prepareTransferBooking(input, car)
+        : this.prepareRentalBooking(input, car);
 
-    if (overlappingBookings.length > 0) {
-      throw new CarNotAvailableError();
+    if (booking.pickupAt <= new Date()) {
+      throw new InvalidBookingDateError('Pickup date must be in the future.');
     }
 
-    const rentalDays = calculateRentalDays(input.pickupAt, input.returnAt);
+    const overlappingConfirmedCount =
+      await this.bookingRepository.countOverlappingConfirmed(
+        input.carId,
+        booking.pickupAt,
+        booking.returnAt,
+      );
 
-    const price = calculateRentalPrice(rentalDays, car.dailyPrice);
+    if (overlappingConfirmedCount >= car.availableQuantity) {
+      throw new CarNotAvailableError();
+    }
 
     const reference = this.generateReference();
 
@@ -76,19 +88,20 @@ export class CreateBookingUseCase {
       reference,
 
       carId: input.carId,
+      transferPackageId: booking.transferPackageId,
 
-      pickupLocation: input.pickupLocation,
-      dropoffLocation: input.dropoffLocation,
+      pickupLocation: booking.pickupLocation,
+      dropoffLocation: booking.dropoffLocation,
 
-      pickupAt: input.pickupAt,
-      returnAt: input.returnAt,
+      pickupAt: booking.pickupAt,
+      returnAt: booking.returnAt,
 
-      rentalDays,
+      rentalDays: booking.rentalDays,
 
-      dailyPrice: car.dailyPrice,
-      taxAmount: price.taxAmount,
-      totalPrice: price.totalPrice,
-      currency: car.currency,
+      dailyPrice: booking.unitPrice,
+      taxAmount: booking.taxAmount,
+      totalPrice: booking.totalPrice,
+      currency: booking.currency,
 
       driverFirstName: input.driverFirstName,
       driverLastName: input.driverLastName,
@@ -100,6 +113,83 @@ export class CreateBookingUseCase {
 
       specialRequests: input.specialRequests,
     });
+  }
+
+  private prepareRentalBooking(
+    input: CreateBookingInput,
+    car: CarLookupResult,
+  ) {
+    if (!input.returnAt) {
+      throw new RentalReturnAtRequiredError();
+    }
+
+    if (!input.pickupLocation || !input.dropoffLocation) {
+      throw new RentalLocationsRequiredError();
+    }
+
+    if (!input.driverBirthDate) {
+      throw new RentalDriverBirthDateRequiredError();
+    }
+
+    if (!input.driverLicenseNumber) {
+      throw new RentalDriverLicenseRequiredError();
+    }
+
+    validateDateRange(input.pickupAt, input.returnAt);
+    const rentalDays = calculateRentalDays(input.pickupAt, input.returnAt);
+    const price = calculateRentalPrice(rentalDays, car.dailyPrice);
+
+    return {
+      transferPackageId: undefined,
+      pickupLocation: input.pickupLocation,
+      dropoffLocation: input.dropoffLocation,
+      pickupAt: input.pickupAt,
+      returnAt: input.returnAt,
+      rentalDays,
+      unitPrice: car.dailyPrice,
+      taxAmount: price.taxAmount,
+      totalPrice: price.totalPrice,
+      currency: car.currency,
+    };
+  }
+
+  private prepareTransferBooking(
+    input: CreateBookingInput,
+    car: CarLookupResult,
+  ) {
+    if (input.returnAt) {
+      throw new TransferReturnAtNotAllowedError();
+    }
+
+    if (!input.transferPackageId) {
+      throw new TransferPackageRequiredError();
+    }
+
+    const transferPackage = car.transferPackages.find(
+      (item) => item.id === input.transferPackageId,
+    );
+
+    if (!transferPackage) {
+      throw new TransferPackageNotFoundForCarError();
+    }
+
+    const returnAt = new Date(
+      input.pickupAt.getTime() +
+        DEFAULT_TRANSFER_DURATION_HOURS * 60 * 60 * 1000,
+    );
+
+    return {
+      transferPackageId: transferPackage.id,
+      pickupLocation: transferPackage.fromLocation,
+      dropoffLocation: transferPackage.toLocation,
+      pickupAt: input.pickupAt,
+      returnAt,
+      rentalDays: 0,
+      unitPrice: transferPackage.price,
+      taxAmount: 0,
+      totalPrice: transferPackage.price,
+      currency: transferPackage.currency,
+    };
   }
 
   private generateReference(): string {

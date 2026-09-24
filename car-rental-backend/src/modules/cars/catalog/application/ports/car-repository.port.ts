@@ -64,10 +64,17 @@ export interface CarRepositoryPort {
 // PUBLIC - SIDE
 
 export interface SearchCarsFilters {
+  serviceType?: ServiceType;
   city?: string;
-  carTypeId?: string;
+  pickupLocation?: string;
+  dropoffLocation?: string;
+  transmission?: string;
+  fuelType?: string;
+  minBaggage?: number;
   minPrice?: number;
   maxPrice?: number;
+  search?: string;
+  sort?: 'price_asc' | 'price_desc' | 'newest' | 'name_asc';
   page: number;
   limit: number;
 }
