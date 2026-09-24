@@ -5,19 +5,26 @@ export class CreateCarBookingDto {
   @IsUUID()
   carId!: string;
 
-  @IsString()
-  pickupLocation!: string;
+  @IsOptional()
+  @IsUUID()
+  transferPackageId?: string;
 
+  @IsOptional()
   @IsString()
-  dropoffLocation!: string;
+  pickupLocation?: string;
+
+  @IsOptional()
+  @IsString()
+  dropoffLocation?: string;
 
   @Type(() => Date)
   @IsDate()
   pickupAt!: Date;
 
   @Type(() => Date)
+  @IsOptional()
   @IsDate()
-  returnAt!: Date;
+  returnAt?: Date;
 
   @IsString()
   driverFirstName!: string;
@@ -26,11 +33,13 @@ export class CreateCarBookingDto {
   driverLastName!: string;
 
   @Type(() => Date)
+  @IsOptional()
   @IsDate()
-  driverBirthDate!: Date;
+  driverBirthDate?: Date;
 
+  @IsOptional()
   @IsString()
-  driverLicenseNumber!: string;
+  driverLicenseNumber?: string;
 
   @IsEmail()
   contactEmail!: string;

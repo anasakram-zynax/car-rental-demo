@@ -113,6 +113,8 @@ model CarTransferPackage {
   price        Decimal @db.Decimal(10, 2)
   currency     String
 
+  bookings CarBooking[]
+
   @@index([carId])
   @@map("car_transfer_package")
 }
@@ -123,6 +125,9 @@ model CarBooking {
 
   carId String @map("car_id") @db.Uuid
   car   Car    @relation(fields: [carId], references: [id])
+
+  transferPackageId String?             @map("transfer_package_id") @db.Uuid
+  transferPackage   CarTransferPackage? @relation(fields: [transferPackageId], references: [id], onDelete: SetNull)
 
   pickupLocation  String @map("pickup_location")
   dropoffLocation String @map("dropoff_location")
@@ -143,10 +148,10 @@ model CarBooking {
 
   cancelReason String? @map("cancel_reason")
 
-  driverFirstName     String   @map("driver_first_name")
-  driverLastName      String   @map("driver_last_name")
-  driverBirthDate     DateTime @map("driver_birth_date") @db.Date
-  driverLicenseNumber String   @map("driver_license_number")
+  driverFirstName     String    @map("driver_first_name")
+  driverLastName      String    @map("driver_last_name")
+  driverBirthDate     DateTime? @map("driver_birth_date") @db.Date
+  driverLicenseNumber String?   @map("driver_license_number")
 
   contactEmail String @map("contact_email")
   contactPhone String @map("contact_phone")
@@ -157,6 +162,7 @@ model CarBooking {
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz()
 
   @@index([carId])
+  @@index([transferPackageId])
   @@index([bookingStatus])
   @@index([paymentStatus])
   @@index([pickupAt, returnAt])

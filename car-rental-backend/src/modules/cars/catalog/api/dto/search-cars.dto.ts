@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
 import {
+  IsEnum,
   IsInt,
   IsNumber,
   IsOptional,
@@ -7,27 +8,65 @@ import {
   Max,
   Min,
 } from 'class-validator';
+import { ServiceType } from '../../domain/service-type.js';
+
+export enum CarSearchSort {
+  PRICE_ASC = 'price_asc',
+  PRICE_DESC = 'price_desc',
+  NEWEST = 'newest',
+  NAME_ASC = 'name_asc',
+}
 
 export class SearchCarsDto {
+  @IsOptional()
+  @IsEnum(ServiceType)
+  serviceType?: ServiceType;
+
   @IsOptional()
   @IsString()
   city?: string;
 
   @IsOptional()
   @IsString()
-  carTypeId?: string;
+  pickupLocation?: string;
+
+  @IsOptional()
+  @IsString()
+  dropoffLocation?: string;
+
+  @IsOptional()
+  @IsString()
+  transmission?: string;
+
+  @IsOptional()
+  @IsString()
+  fuelType?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  minBaggage?: number;
 
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
-  @Min(0)
+  @Min(0.01)
   minPrice?: number;
 
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
-  @Min(0)
+  @Min(0.01)
   maxPrice?: number;
+
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @IsEnum(CarSearchSort)
+  sort?: CarSearchSort;
 
   @IsOptional()
   @Type(() => Number)

@@ -18,6 +18,7 @@ export class PrismaCarBookingRepository implements CarBookingRepositoryPort {
         reference: data.reference,
 
         carId: data.carId,
+        transferPackageId: data.transferPackageId ?? null,
 
         pickupLocation: data.pickupLocation,
         dropoffLocation: data.dropoffLocation,
@@ -34,13 +35,16 @@ export class PrismaCarBookingRepository implements CarBookingRepositoryPort {
 
         driverFirstName: data.driverFirstName,
         driverLastName: data.driverLastName,
-        driverBirthDate: data.driverBirthDate,
-        driverLicenseNumber: data.driverLicenseNumber,
+        driverBirthDate: data.driverBirthDate ?? null,
+        driverLicenseNumber: data.driverLicenseNumber ?? null,
 
         contactEmail: data.contactEmail,
         contactPhone: data.contactPhone,
 
         specialRequests: data.specialRequests,
+      },
+      include: {
+        transferPackage: true,
       },
     });
 
@@ -52,6 +56,9 @@ export class PrismaCarBookingRepository implements CarBookingRepositoryPort {
       where: {
         reference,
       },
+      include: {
+        transferPackage: true,
+      },
     });
 
     if (!booking) {
@@ -61,12 +68,12 @@ export class PrismaCarBookingRepository implements CarBookingRepositoryPort {
     return CarBookingMapper.toDomain(booking);
   }
 
-  async findOverlapping(
+  countOverlappingConfirmed(
     carId: string,
     pickupAt: Date,
     returnAt: Date,
-  ): Promise<CarBooking[]> {
-    const bookings = await this.prisma.carBooking.findMany({
+  ): Promise<number> {
+    return this.prisma.carBooking.count({
       where: {
         carId,
 
@@ -81,14 +88,15 @@ export class PrismaCarBookingRepository implements CarBookingRepositoryPort {
         },
       },
     });
-
-    return bookings.map((booking) => CarBookingMapper.toDomain(booking));
   }
 
   async findAll(): Promise<CarBooking[]> {
     const bookings = await this.prisma.carBooking.findMany({
       orderBy: {
         createdAt: 'desc',
+      },
+      include: {
+        transferPackage: true,
       },
     });
 
@@ -104,6 +112,9 @@ export class PrismaCarBookingRepository implements CarBookingRepositoryPort {
       data: {
         bookingStatus: 'CANCELLED',
         cancelReason: reason ?? null,
+      },
+      include: {
+        transferPackage: true,
       },
     });
 
@@ -128,6 +139,9 @@ export class PrismaCarBookingRepository implements CarBookingRepositoryPort {
 
       data: {
         paymentStatus: prismaStatus,
+      },
+      include: {
+        transferPackage: true,
       },
     });
 

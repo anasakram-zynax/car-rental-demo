@@ -5,6 +5,7 @@ export interface CreateBookingData {
   reference: string;
 
   carId: string;
+  transferPackageId?: string;
 
   pickupLocation: string;
   dropoffLocation: string;
@@ -21,8 +22,8 @@ export interface CreateBookingData {
 
   driverFirstName: string;
   driverLastName: string;
-  driverBirthDate: Date;
-  driverLicenseNumber: string;
+  driverBirthDate?: Date;
+  driverLicenseNumber?: string;
 
   contactEmail: string;
   contactPhone: string;
@@ -35,11 +36,11 @@ export interface CarBookingRepositoryPort {
 
   findByReference(reference: string): Promise<CarBooking | null>;
 
-  findOverlapping(
+  countOverlappingConfirmed(
     carId: string,
     pickupAt: Date,
     returnAt: Date,
-  ): Promise<CarBooking[]>;
+  ): Promise<number>;
 
   findAll(): Promise<CarBooking[]>;
 
