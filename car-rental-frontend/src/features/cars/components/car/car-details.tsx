@@ -78,27 +78,47 @@ const specifications = (car: Car) => [
 ];
 
 function BookingCard({ car }: { car: Car }) {
+  const isTransfer = car.serviceType === "transfer";
+
   return (
     <Card variant="elevated" padding="lg" className="lg:sticky lg:top-6">
       <p className="text-sm font-semibold tracking-[0.16em] text-muted uppercase">
-        Rental price
+        {isTransfer ? "Transfer packages" : "Rental price"}
       </p>
-      <div className="mt-4 flex items-end gap-2">
-        <span className="text-4xl font-semibold tracking-[-0.055em] text-foreground">
-          {formatCurrency(car.dailyPrice, car.currency)}
-        </span>
-        <span className="mb-1 text-sm text-muted">per day</span>
-      </div>
-      {car.isRefundable ? (
+      {isTransfer ? (
+        <ul className="mt-5 space-y-3">
+          {car.transferPackages.map((item) => (
+            <li key={item.id} className="rounded-control border border-border bg-surface px-3.5 py-3 text-sm">
+              <p className="font-semibold">{item.fromLocation} → {item.toLocation}</p>
+              <p className="mt-1 text-muted">{formatCurrency(item.price, item.currency)} {item.currency}</p>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div className="mt-4 flex items-end gap-2">
+          <span className="text-4xl font-semibold tracking-[-0.055em] text-foreground">
+            {formatCurrency(car.dailyPrice, car.currency)}
+          </span>
+          <span className="mb-1 text-sm text-muted">per day</span>
+        </div>
+      )}
+      {isTransfer && car.withDriver ? (
+        <p className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-success">
+          <ShieldCheck aria-hidden="true" size={17} />
+          With Driver
+        </p>
+      ) : !isTransfer && car.isRefundable ? (
         <p className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-success">
           <ShieldCheck aria-hidden="true" size={17} />
           Refundable booking
         </p>
-      ) : (
+      ) : !isTransfer ? (
         <p className="mt-5 text-sm font-medium text-muted">Non-refundable booking</p>
-      )}
+      ) : null}
       <p className="mt-6 border-t border-border pt-5 text-sm leading-6 text-muted">
-        Select your rental dates on the next step to check availability and calculate the final price.
+        {isTransfer
+          ? "Select a route package and pickup time on the next step."
+          : "Select your rental dates on the next step to check availability and calculate the final price."}
       </p>
       <Link href={`/cars/${car.id}/book`} className={buttonStyles({ className: "mt-6 w-full", size: "lg" })}>
         Book This Car
