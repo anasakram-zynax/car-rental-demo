@@ -2,6 +2,7 @@ import { validate } from 'class-validator';
 import { describe, expect, it } from 'vitest';
 import { UpdateCarDto } from '../../api/dto/update-car.dto.js';
 import { CarStatus } from '../../domain/car-status.js';
+import { ServiceType } from '../../domain/service-type.js';
 import { InMemoryCarRepository } from '../../infrastructure/persistance/in-memory-car.repository.js';
 import { UpdateCarUseCase } from './update-car.use-case.js';
 
@@ -26,7 +27,7 @@ const carInput = {
   images: [{ url: 'https://example.com/car.jpg', isDefault: true }],
 };
 
-describe('UpdateCarUseCase status updates', () => {
+describe('UpdateCarUseCase', () => {
   it('updates active to inactive, hides it publicly, and reactivates it', async () => {
     const repository = new InMemoryCarRepository();
     const car = await repository.create(carInput);
@@ -67,5 +68,29 @@ describe('UpdateCarUseCase status updates', () => {
     const dto = Object.assign(new UpdateCarDto(), { status: 'deleted' });
 
     await expect(validate(dto)).resolves.toHaveLength(1);
+  });
+
+  it('does not allow an existing transfer car to lose its final package', async () => {
+    const repository = new InMemoryCarRepository();
+    const car = await repository.create({
+      ...carInput,
+      serviceType: ServiceType.TRANSFER,
+      transferPackages: [
+        {
+          fromLocation: 'Airport',
+          toLocation: 'City Centre',
+          price: 50,
+          currency: 'USD',
+        },
+      ],
+    });
+    const useCase = new UpdateCarUseCase(repository);
+
+    await expect(
+      useCase.execute(car.id, { transferPackages: [] }),
+    ).rejects.toThrow('Transfer cars require at least one transfer package.');
+    await expect(repository.findById(car.id)).resolves.toMatchObject({
+      transferPackages: [{ fromLocation: 'Airport', toLocation: 'City Centre' }],
+    });
   });
 });

@@ -10,7 +10,12 @@ import { Input } from "@/components/ui/input";
 import { PageContainer } from "@/components/ui/page-container";
 import { useCreateBooking } from "@/features/cars/hooks/use-create-booking";
 import { useCar } from "@/features/cars/hooks/use-car";
-import type { Car, CarBooking, CreateRentalBookingInput } from "@/features/cars/types/car.types";
+import type {
+  Car,
+  CarBooking,
+  CreateRentalBookingInput,
+  CreateTransferBookingInput,
+} from "@/features/cars/types/car.types";
 import { calculateRentalEstimate } from "@/features/cars/utils/rental-price";
 import { saveBookingReference } from "@/features/cars/utils/booking-references";
 import { ApiError } from "@/lib/api-client";
@@ -21,16 +26,25 @@ interface BookingFormProps {
   carId: string;
 }
 
-type FormValues = Omit<CreateRentalBookingInput, "carId" | "specialRequests"> & {
+interface FormValues {
+  transferPackageId: string;
+  pickupLocation: string;
+  dropoffLocation: string;
   pickupAt: string;
   returnAt: string;
+  driverFirstName: string;
+  driverLastName: string;
   driverBirthDate: string;
+  driverLicenseNumber: string;
+  contactEmail: string;
+  contactPhone: string;
   specialRequests: string;
-};
+}
 
 type FormErrors = Partial<Record<keyof FormValues, string>>;
 
 const emptyForm: FormValues = {
+  transferPackageId: "",
   pickupLocation: "",
   dropoffLocation: "",
   pickupAt: "",
@@ -48,20 +62,27 @@ function formatStatus(status: string) {
   return `${status.slice(0, 1).toUpperCase()}${status.slice(1)}`;
 }
 
-function validateForm(values: FormValues): FormErrors {
+function validateForm(values: FormValues, car: Car): FormErrors {
   const errors: FormErrors = {};
   const requiredFields: Array<[keyof FormValues, string]> = [
-    ["pickupLocation", "Pickup location is required."],
-    ["dropoffLocation", "Dropoff location is required."],
     ["pickupAt", "Pickup date and time are required."],
-    ["returnAt", "Return date and time are required."],
     ["driverFirstName", "First name is required."],
     ["driverLastName", "Last name is required."],
-    ["driverBirthDate", "Birth date is required."],
-    ["driverLicenseNumber", "License number is required."],
     ["contactEmail", "Email is required."],
     ["contactPhone", "Phone number is required."],
   ];
+
+  if (car.serviceType === "rental") {
+    requiredFields.push(
+      ["pickupLocation", "Pickup location is required."],
+      ["dropoffLocation", "Dropoff location is required."],
+      ["returnAt", "Return date and time are required."],
+      ["driverBirthDate", "Birth date is required."],
+      ["driverLicenseNumber", "License number is required."],
+    );
+  } else if (!car.transferPackages.some((item) => item.id === values.transferPackageId)) {
+    errors.transferPackageId = "Select a valid transfer package.";
+  }
 
   requiredFields.forEach(([field, message]) => {
     if (!values[field]?.trim()) errors[field] = message;
@@ -72,18 +93,20 @@ function validateForm(values: FormValues): FormErrors {
   }
 
   const pickupTime = new Date(values.pickupAt).getTime();
-  const returnTime = new Date(values.returnAt).getTime();
   if (values.pickupAt && !Number.isFinite(pickupTime)) {
     errors.pickupAt = "Enter a valid pickup date and time.";
   }
-  if (values.returnAt && !Number.isFinite(returnTime)) {
-    errors.returnAt = "Enter a valid return date and time.";
-  }
-  if (Number.isFinite(pickupTime) && Number.isFinite(returnTime) && returnTime <= pickupTime) {
-    errors.returnAt = "Return must be after pickup.";
-  }
-  if (values.driverBirthDate && !Number.isFinite(new Date(values.driverBirthDate).getTime())) {
-    errors.driverBirthDate = "Enter a valid birth date.";
+  if (car.serviceType === "rental") {
+    const returnTime = new Date(values.returnAt).getTime();
+    if (values.returnAt && !Number.isFinite(returnTime)) {
+      errors.returnAt = "Enter a valid return date and time.";
+    }
+    if (Number.isFinite(pickupTime) && Number.isFinite(returnTime) && returnTime <= pickupTime) {
+      errors.returnAt = "Return must be after pickup.";
+    }
+    if (values.driverBirthDate && !Number.isFinite(new Date(values.driverBirthDate).getTime())) {
+      errors.driverBirthDate = "Enter a valid birth date.";
+    }
   }
 
   return errors;
@@ -125,7 +148,7 @@ function CarFetchState({ carId }: { carId: string }) {
   return <BookingScreen car={carQuery.data} />;
 }
 
-function BookingSuccessModal({ booking, carName, onClose }: { booking: CarBooking; carName: string; onClose: () => void }) {
+function BookingSuccessModal({ booking, carName, isTransfer, onClose }: { booking: CarBooking; carName: string; isTransfer: boolean; onClose: () => void }) {
   const [copied, setCopied] = useState(false);
 
   async function copyReference() {
@@ -160,9 +183,9 @@ function BookingSuccessModal({ booking, carName, onClose }: { booking: CarBookin
         </div>
         <dl className="mt-6 grid gap-4 text-sm sm:grid-cols-2">
           <div><dt className="text-muted">Car</dt><dd className="mt-1 font-semibold">{carName}</dd></div>
-          <div><dt className="text-muted">Rental days</dt><dd className="mt-1 font-semibold">{booking.rentalDays}</dd></div>
+          {isTransfer ? <div><dt className="text-muted">Route</dt><dd className="mt-1 font-semibold">{booking.transferPackage?.fromLocation ?? booking.pickupLocation} → {booking.transferPackage?.toLocation ?? booking.dropoffLocation}</dd></div> : <div><dt className="text-muted">Rental days</dt><dd className="mt-1 font-semibold">{booking.rentalDays}</dd></div>}
           <div><dt className="text-muted">Pickup</dt><dd className="mt-1 font-semibold">{booking.pickupLocation}<br />{formatDateTime(booking.pickupAt)}</dd></div>
-          <div><dt className="text-muted">Return</dt><dd className="mt-1 font-semibold">{booking.dropoffLocation}<br />{formatDateTime(booking.returnAt)}</dd></div>
+          {!isTransfer ? <div><dt className="text-muted">Return</dt><dd className="mt-1 font-semibold">{booking.dropoffLocation}<br />{formatDateTime(booking.returnAt)}</dd></div> : null}
           <div><dt className="text-muted">Booking status</dt><dd className="mt-1 font-semibold text-success">{formatStatus(booking.bookingStatus)}</dd></div>
           <div><dt className="text-muted">Payment status</dt><dd className="mt-1 font-semibold">{formatStatus(booking.paymentStatus)}</dd></div>
         </dl>
@@ -184,7 +207,11 @@ function BookingScreen({ car }: { car: Car }) {
   const [booking, setBooking] = useState<CarBooking | null>(null);
   const [imageFailed, setImageFailed] = useState(false);
   const defaultImage = car.images.find((image) => image.isDefault) ?? car.images[0];
-  const estimate = useMemo(() => calculateRentalEstimate(values.pickupAt, values.returnAt, car.dailyPrice), [car.dailyPrice, values.pickupAt, values.returnAt]);
+  const selectedPackage = car.transferPackages.find((item) => item.id === values.transferPackageId);
+  const estimate = useMemo(
+    () => car.serviceType === "rental" ? calculateRentalEstimate(values.pickupAt, values.returnAt, car.dailyPrice) : null,
+    [car.dailyPrice, car.serviceType, values.pickupAt, values.returnAt],
+  );
 
   function updateValue(field: keyof FormValues, value: string) {
     setValues((current) => ({ ...current, [field]: value }));
@@ -195,24 +222,32 @@ function BookingScreen({ car }: { car: Car }) {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (createBooking.isPending) return;
-    const nextErrors = validateForm(values);
+    const nextErrors = validateForm(values, car);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
-    const input: CreateRentalBookingInput = {
+    const commonInput = {
       carId: car.id,
-      pickupLocation: values.pickupLocation.trim(),
-      dropoffLocation: values.dropoffLocation.trim(),
       pickupAt: new Date(values.pickupAt).toISOString(),
-      returnAt: new Date(values.returnAt).toISOString(),
       driverFirstName: values.driverFirstName.trim(),
       driverLastName: values.driverLastName.trim(),
-      driverBirthDate: new Date(values.driverBirthDate).toISOString(),
-      driverLicenseNumber: values.driverLicenseNumber.trim(),
       contactEmail: values.contactEmail.trim(),
       contactPhone: values.contactPhone.trim(),
       ...(values.specialRequests.trim() ? { specialRequests: values.specialRequests.trim() } : {}),
     };
+    const input: CreateRentalBookingInput | CreateTransferBookingInput = car.serviceType === "rental"
+      ? {
+          ...commonInput,
+          pickupLocation: values.pickupLocation.trim(),
+          dropoffLocation: values.dropoffLocation.trim(),
+          returnAt: new Date(values.returnAt).toISOString(),
+          driverBirthDate: new Date(values.driverBirthDate).toISOString(),
+          driverLicenseNumber: values.driverLicenseNumber.trim(),
+        }
+      : {
+          ...commonInput,
+          transferPackageId: values.transferPackageId,
+        };
 
     try {
       const createdBooking = await createBooking.mutateAsync(input);
@@ -238,22 +273,22 @@ function BookingScreen({ car }: { car: Car }) {
             <div className="relative aspect-[16/10] bg-black/[0.05]">
               {defaultImage && !imageFailed ? <Image src={defaultImage.url} alt={`${car.name} rental car`} fill sizes="(min-width: 1024px) 42vw, 100vw" className="object-cover" onError={() => setImageFailed(true)} /> : <span className="grid h-full place-items-center text-sm text-muted"><Clipboard aria-hidden="true" size={22} /></span>}
             </div>
-            <div className="p-5"><p className="text-xs font-semibold tracking-[0.14em] text-muted uppercase">Selected car</p><h2 className="mt-2 text-2xl font-semibold tracking-[-0.035em]">{car.name}</h2><p className="mt-2 flex items-center gap-1.5 text-sm text-muted"><MapPin aria-hidden="true" size={15} />{car.brand} · {car.year} · {car.city}</p><p className="mt-5 text-lg font-semibold">{formatCurrency(car.dailyPrice, car.currency)} <span className="text-sm font-normal text-muted">per day</span></p></div>
+            <div className="p-5"><p className="text-xs font-semibold tracking-[0.14em] text-muted uppercase">Selected car</p><h2 className="mt-2 text-2xl font-semibold tracking-[-0.035em]">{car.name}</h2><p className="mt-2 flex items-center gap-1.5 text-sm text-muted"><MapPin aria-hidden="true" size={15} />{car.brand} · {car.year} · {car.city}</p>{car.serviceType === "rental" ? <p className="mt-5 text-lg font-semibold">{formatCurrency(car.dailyPrice, car.currency)} <span className="text-sm font-normal text-muted">per day</span></p> : car.withDriver ? <p className="mt-5 text-sm font-semibold text-success">With Driver</p> : null}</div>
           </Card>
-          <Card padding="lg"><div className="flex items-center justify-between"><h2 className="text-xl font-semibold tracking-[-0.03em]">Estimated pricing</h2><span className="rounded-full bg-accent-secondary/10 px-2.5 py-1 text-xs font-semibold text-accent-secondary">Estimated</span></div>{estimate ? <><dl className="mt-6 space-y-4 text-sm"><div className="flex justify-between gap-4"><dt className="text-muted">Estimated rental days</dt><dd className="font-semibold">{estimate.rentalDays}</dd></div><div className="flex justify-between gap-4"><dt className="text-muted">Estimated subtotal</dt><dd className="font-semibold">{formatCurrency(estimate.subtotal, car.currency)}</dd></div><div className="flex justify-between gap-4"><dt className="text-muted">Estimated tax (10%)</dt><dd className="font-semibold">{formatCurrency(estimate.taxAmount, car.currency)}</dd></div><div className="flex justify-between gap-4 border-t border-border pt-4 text-base"><dt className="font-semibold">Estimated total</dt><dd className="font-semibold">{formatCurrency(estimate.total, car.currency)}</dd></div></dl><p className="mt-5 text-xs leading-5 text-muted">Final pricing is confirmed by the server when the booking is created.</p></> : <p className="mt-5 text-sm leading-6 text-muted">Choose valid pickup and return dates to see an estimated rental total.</p>}</Card>
+          {car.serviceType === "rental" ? <Card padding="lg"><div className="flex items-center justify-between"><h2 className="text-xl font-semibold tracking-[-0.03em]">Estimated pricing</h2><span className="rounded-full bg-accent-secondary/10 px-2.5 py-1 text-xs font-semibold text-accent-secondary">Estimated</span></div>{estimate ? <><dl className="mt-6 space-y-4 text-sm"><div className="flex justify-between gap-4"><dt className="text-muted">Estimated rental days</dt><dd className="font-semibold">{estimate.rentalDays}</dd></div><div className="flex justify-between gap-4"><dt className="text-muted">Estimated subtotal</dt><dd className="font-semibold">{formatCurrency(estimate.subtotal, car.currency)}</dd></div><div className="flex justify-between gap-4"><dt className="text-muted">Estimated tax (10%)</dt><dd className="font-semibold">{formatCurrency(estimate.taxAmount, car.currency)}</dd></div><div className="flex justify-between gap-4 border-t border-border pt-4 text-base"><dt className="font-semibold">Estimated total</dt><dd className="font-semibold">{formatCurrency(estimate.total, car.currency)}</dd></div></dl><p className="mt-5 text-xs leading-5 text-muted">Final pricing is confirmed by the server when the booking is created.</p></> : <p className="mt-5 text-sm leading-6 text-muted">Choose valid pickup and return dates to see an estimated rental total.</p>}</Card> : <Card padding="lg"><h2 className="text-xl font-semibold tracking-[-0.03em]">Transfer price</h2>{selectedPackage ? <><p className="mt-4 text-sm font-medium text-muted">{selectedPackage.fromLocation} → {selectedPackage.toLocation}</p><p className="mt-3 text-2xl font-semibold">{formatCurrency(selectedPackage.price, selectedPackage.currency)}</p><p className="mt-4 text-xs leading-5 text-muted">Fixed package price. The server confirms the final price when the booking is created.</p></> : <p className="mt-4 text-sm leading-6 text-muted">Select a transfer package to see its fixed price.</p>}</Card>}
         </aside>
         <Card variant="elevated" padding="lg">
           <h2 className="text-2xl font-semibold tracking-[-0.035em]">Booking details</h2><p className="mt-2 text-sm leading-6 text-muted">All required fields are marked by their labels.</p>
           <form className="mt-7 space-y-7" noValidate onSubmit={handleSubmit}>
-            <fieldset disabled={createBooking.isPending} className="grid gap-5"><legend className="mb-4 text-sm font-semibold">Rental details</legend><Input label="Pickup location" required value={values.pickupLocation} error={errors.pickupLocation} onChange={(event) => updateValue("pickupLocation", event.target.value)} /><Input label="Dropoff location" required value={values.dropoffLocation} error={errors.dropoffLocation} onChange={(event) => updateValue("dropoffLocation", event.target.value)} /><div className="grid gap-5 sm:grid-cols-2"><Input label="Pickup date and time" required type="datetime-local" value={values.pickupAt} error={errors.pickupAt} onChange={(event) => updateValue("pickupAt", event.target.value)} /><Input label="Return date and time" required type="datetime-local" value={values.returnAt} error={errors.returnAt} onChange={(event) => updateValue("returnAt", event.target.value)} /></div></fieldset>
-            <fieldset disabled={createBooking.isPending} className="grid gap-5 border-t border-border pt-7"><legend className="mb-4 text-sm font-semibold">Driver information</legend><div className="grid gap-5 sm:grid-cols-2"><Input label="First name" required value={values.driverFirstName} error={errors.driverFirstName} onChange={(event) => updateValue("driverFirstName", event.target.value)} /><Input label="Last name" required value={values.driverLastName} error={errors.driverLastName} onChange={(event) => updateValue("driverLastName", event.target.value)} /></div><Input label="Birth date" required type="date" value={values.driverBirthDate} error={errors.driverBirthDate} onChange={(event) => updateValue("driverBirthDate", event.target.value)} /><Input label="Driver license number" required value={values.driverLicenseNumber} error={errors.driverLicenseNumber} onChange={(event) => updateValue("driverLicenseNumber", event.target.value)} /></fieldset>
+            {car.serviceType === "rental" ? <fieldset disabled={createBooking.isPending} className="grid gap-5"><legend className="mb-4 text-sm font-semibold">Rental details</legend><Input label="Pickup location" required value={values.pickupLocation} error={errors.pickupLocation} onChange={(event) => updateValue("pickupLocation", event.target.value)} /><Input label="Dropoff location" required value={values.dropoffLocation} error={errors.dropoffLocation} onChange={(event) => updateValue("dropoffLocation", event.target.value)} /><div className="grid gap-5 sm:grid-cols-2"><Input label="Pickup date and time" required type="datetime-local" value={values.pickupAt} error={errors.pickupAt} onChange={(event) => updateValue("pickupAt", event.target.value)} /><Input label="Return date and time" required type="datetime-local" value={values.returnAt} error={errors.returnAt} onChange={(event) => updateValue("returnAt", event.target.value)} /></div></fieldset> : <fieldset disabled={createBooking.isPending} className="grid gap-5"><legend className="mb-4 text-sm font-semibold">Transfer details</legend><label className="grid gap-2 text-sm font-medium" htmlFor="transfer-package">Transfer package</label><select id="transfer-package" required value={values.transferPackageId} aria-invalid={Boolean(errors.transferPackageId)} onChange={(event) => updateValue("transferPackageId", event.target.value)} className="h-11 w-full rounded-control border border-border bg-surface-elevated px-3.5 text-sm outline-none focus:border-accent-secondary focus:ring-4 focus:ring-[var(--ring)]"><option value="">Select a route package</option>{car.transferPackages.map((item) => <option key={item.id} value={item.id}>{item.fromLocation} → {item.toLocation} — {formatCurrency(item.price, item.currency)} {item.currency}</option>)}</select>{errors.transferPackageId ? <p className="text-xs text-danger">{errors.transferPackageId}</p> : null}<Input label="Pickup date and time" required type="datetime-local" value={values.pickupAt} error={errors.pickupAt} onChange={(event) => updateValue("pickupAt", event.target.value)} /></fieldset>}
+            <fieldset disabled={createBooking.isPending} className="grid gap-5 border-t border-border pt-7"><legend className="mb-4 text-sm font-semibold">{car.serviceType === "rental" ? "Driver information" : "Passenger information"}</legend><div className="grid gap-5 sm:grid-cols-2"><Input label={car.serviceType === "rental" ? "Driver First Name" : "Passenger First Name"} required value={values.driverFirstName} error={errors.driverFirstName} onChange={(event) => updateValue("driverFirstName", event.target.value)} /><Input label={car.serviceType === "rental" ? "Driver Last Name" : "Passenger Last Name"} required value={values.driverLastName} error={errors.driverLastName} onChange={(event) => updateValue("driverLastName", event.target.value)} /></div>{car.serviceType === "rental" ? <><Input label="Birth date" required type="date" value={values.driverBirthDate} error={errors.driverBirthDate} onChange={(event) => updateValue("driverBirthDate", event.target.value)} /><Input label="Driver license number" required value={values.driverLicenseNumber} error={errors.driverLicenseNumber} onChange={(event) => updateValue("driverLicenseNumber", event.target.value)} /></> : null}</fieldset>
             <fieldset disabled={createBooking.isPending} className="grid gap-5 border-t border-border pt-7"><legend className="mb-4 text-sm font-semibold">Contact information</legend><div className="grid gap-5 sm:grid-cols-2"><Input label="Email" required type="email" value={values.contactEmail} error={errors.contactEmail} onChange={(event) => updateValue("contactEmail", event.target.value)} /><Input label="Phone" required type="tel" value={values.contactPhone} error={errors.contactPhone} onChange={(event) => updateValue("contactPhone", event.target.value)} /></div><div className="grid gap-2"><label className="text-sm font-medium" htmlFor="special-requests">Special requests <span className="text-muted">(optional)</span></label><textarea id="special-requests" className={textareaClassName} value={values.specialRequests} onChange={(event) => updateValue("specialRequests", event.target.value)} /></div></fieldset>
             {submissionError ? <p aria-live="polite" className="rounded-control border border-danger/20 bg-red-900/[0.06] px-4 py-3 text-sm leading-6 text-danger">{submissionError}</p> : null}
             <Button className="w-full" size="lg" type="submit" disabled={createBooking.isPending}>{createBooking.isPending ? <><RotateCcw aria-hidden="true" className="animate-spin" size={17} />Creating booking...</> : "Confirm Booking"}</Button>
           </form>
         </Card>
       </div>
-      {booking ? <BookingSuccessModal booking={booking} carName={car.name} onClose={() => setBooking(null)} /> : null}
+      {booking ? <BookingSuccessModal booking={booking} carName={car.name} isTransfer={car.serviceType === "transfer"} onClose={() => setBooking(null)} /> : null}
     </PageContainer>
   );
 }
