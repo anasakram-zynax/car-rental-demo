@@ -28,6 +28,7 @@ export type CarImageMinAggregateOutputType = {
   id: string | null
   carId: string | null
   url: string | null
+  publicId: string | null
   isDefault: boolean | null
 }
 
@@ -35,6 +36,7 @@ export type CarImageMaxAggregateOutputType = {
   id: string | null
   carId: string | null
   url: string | null
+  publicId: string | null
   isDefault: boolean | null
 }
 
@@ -42,6 +44,7 @@ export type CarImageCountAggregateOutputType = {
   id: number
   carId: number
   url: number
+  publicId: number
   isDefault: number
   _all: number
 }
@@ -51,6 +54,7 @@ export type CarImageMinAggregateInputType = {
   id?: true
   carId?: true
   url?: true
+  publicId?: true
   isDefault?: true
 }
 
@@ -58,6 +62,7 @@ export type CarImageMaxAggregateInputType = {
   id?: true
   carId?: true
   url?: true
+  publicId?: true
   isDefault?: true
 }
 
@@ -65,6 +70,7 @@ export type CarImageCountAggregateInputType = {
   id?: true
   carId?: true
   url?: true
+  publicId?: true
   isDefault?: true
   _all?: true
 }
@@ -145,6 +151,7 @@ export type CarImageGroupByOutputType = {
   id: string
   carId: string
   url: string
+  publicId: string | null
   isDefault: boolean
   _count: CarImageCountAggregateOutputType | null
   _min: CarImageMinAggregateOutputType | null
@@ -173,6 +180,7 @@ export type CarImageWhereInput = {
   id?: Prisma.UuidFilter<"CarImage"> | string
   carId?: Prisma.UuidFilter<"CarImage"> | string
   url?: Prisma.StringFilter<"CarImage"> | string
+  publicId?: Prisma.StringNullableFilter<"CarImage"> | string | null
   isDefault?: Prisma.BoolFilter<"CarImage"> | boolean
   car?: Prisma.XOR<Prisma.CarScalarRelationFilter, Prisma.CarWhereInput>
 }
@@ -181,6 +189,7 @@ export type CarImageOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   carId?: Prisma.SortOrder
   url?: Prisma.SortOrder
+  publicId?: Prisma.SortOrderInput | Prisma.SortOrder
   isDefault?: Prisma.SortOrder
   car?: Prisma.CarOrderByWithRelationInput
 }
@@ -192,6 +201,7 @@ export type CarImageWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.CarImageWhereInput | Prisma.CarImageWhereInput[]
   carId?: Prisma.UuidFilter<"CarImage"> | string
   url?: Prisma.StringFilter<"CarImage"> | string
+  publicId?: Prisma.StringNullableFilter<"CarImage"> | string | null
   isDefault?: Prisma.BoolFilter<"CarImage"> | boolean
   car?: Prisma.XOR<Prisma.CarScalarRelationFilter, Prisma.CarWhereInput>
 }, "id">
@@ -200,6 +210,7 @@ export type CarImageOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   carId?: Prisma.SortOrder
   url?: Prisma.SortOrder
+  publicId?: Prisma.SortOrderInput | Prisma.SortOrder
   isDefault?: Prisma.SortOrder
   _count?: Prisma.CarImageCountOrderByAggregateInput
   _max?: Prisma.CarImageMaxOrderByAggregateInput
@@ -213,12 +224,14 @@ export type CarImageScalarWhereWithAggregatesInput = {
   id?: Prisma.UuidWithAggregatesFilter<"CarImage"> | string
   carId?: Prisma.UuidWithAggregatesFilter<"CarImage"> | string
   url?: Prisma.StringWithAggregatesFilter<"CarImage"> | string
+  publicId?: Prisma.StringNullableWithAggregatesFilter<"CarImage"> | string | null
   isDefault?: Prisma.BoolWithAggregatesFilter<"CarImage"> | boolean
 }
 
 export type CarImageCreateInput = {
   id?: string
   url: string
+  publicId?: string | null
   isDefault?: boolean
   car: Prisma.CarCreateNestedOneWithoutImagesInput
 }
@@ -227,12 +240,14 @@ export type CarImageUncheckedCreateInput = {
   id?: string
   carId: string
   url: string
+  publicId?: string | null
   isDefault?: boolean
 }
 
 export type CarImageUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   url?: Prisma.StringFieldUpdateOperationsInput | string
+  publicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
   car?: Prisma.CarUpdateOneRequiredWithoutImagesNestedInput
 }
@@ -241,6 +256,7 @@ export type CarImageUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   carId?: Prisma.StringFieldUpdateOperationsInput | string
   url?: Prisma.StringFieldUpdateOperationsInput | string
+  publicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
@@ -248,12 +264,14 @@ export type CarImageCreateManyInput = {
   id?: string
   carId: string
   url: string
+  publicId?: string | null
   isDefault?: boolean
 }
 
 export type CarImageUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   url?: Prisma.StringFieldUpdateOperationsInput | string
+  publicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
@@ -261,6 +279,7 @@ export type CarImageUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   carId?: Prisma.StringFieldUpdateOperationsInput | string
   url?: Prisma.StringFieldUpdateOperationsInput | string
+  publicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
@@ -278,6 +297,7 @@ export type CarImageCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   carId?: Prisma.SortOrder
   url?: Prisma.SortOrder
+  publicId?: Prisma.SortOrder
   isDefault?: Prisma.SortOrder
 }
 
@@ -285,6 +305,7 @@ export type CarImageMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   carId?: Prisma.SortOrder
   url?: Prisma.SortOrder
+  publicId?: Prisma.SortOrder
   isDefault?: Prisma.SortOrder
 }
 
@@ -292,6 +313,7 @@ export type CarImageMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   carId?: Prisma.SortOrder
   url?: Prisma.SortOrder
+  publicId?: Prisma.SortOrder
   isDefault?: Prisma.SortOrder
 }
 
@@ -337,15 +359,21 @@ export type CarImageUncheckedUpdateManyWithoutCarNestedInput = {
   deleteMany?: Prisma.CarImageScalarWhereInput | Prisma.CarImageScalarWhereInput[]
 }
 
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
+}
+
 export type CarImageCreateWithoutCarInput = {
   id?: string
   url: string
+  publicId?: string | null
   isDefault?: boolean
 }
 
 export type CarImageUncheckedCreateWithoutCarInput = {
   id?: string
   url: string
+  publicId?: string | null
   isDefault?: boolean
 }
 
@@ -382,30 +410,35 @@ export type CarImageScalarWhereInput = {
   id?: Prisma.UuidFilter<"CarImage"> | string
   carId?: Prisma.UuidFilter<"CarImage"> | string
   url?: Prisma.StringFilter<"CarImage"> | string
+  publicId?: Prisma.StringNullableFilter<"CarImage"> | string | null
   isDefault?: Prisma.BoolFilter<"CarImage"> | boolean
 }
 
 export type CarImageCreateManyCarInput = {
   id?: string
   url: string
+  publicId?: string | null
   isDefault?: boolean
 }
 
 export type CarImageUpdateWithoutCarInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   url?: Prisma.StringFieldUpdateOperationsInput | string
+  publicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type CarImageUncheckedUpdateWithoutCarInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   url?: Prisma.StringFieldUpdateOperationsInput | string
+  publicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type CarImageUncheckedUpdateManyWithoutCarInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   url?: Prisma.StringFieldUpdateOperationsInput | string
+  publicId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isDefault?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
@@ -415,6 +448,7 @@ export type CarImageSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   id?: boolean
   carId?: boolean
   url?: boolean
+  publicId?: boolean
   isDefault?: boolean
   car?: boolean | Prisma.CarDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["carImage"]>
@@ -423,6 +457,7 @@ export type CarImageSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   id?: boolean
   carId?: boolean
   url?: boolean
+  publicId?: boolean
   isDefault?: boolean
   car?: boolean | Prisma.CarDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["carImage"]>
@@ -431,6 +466,7 @@ export type CarImageSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   id?: boolean
   carId?: boolean
   url?: boolean
+  publicId?: boolean
   isDefault?: boolean
   car?: boolean | Prisma.CarDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["carImage"]>
@@ -439,10 +475,11 @@ export type CarImageSelectScalar = {
   id?: boolean
   carId?: boolean
   url?: boolean
+  publicId?: boolean
   isDefault?: boolean
 }
 
-export type CarImageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "carId" | "url" | "isDefault", ExtArgs["result"]["carImage"]>
+export type CarImageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "carId" | "url" | "publicId" | "isDefault", ExtArgs["result"]["carImage"]>
 export type CarImageInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   car?: boolean | Prisma.CarDefaultArgs<ExtArgs>
 }
@@ -462,6 +499,7 @@ export type $CarImagePayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     id: string
     carId: string
     url: string
+    publicId: string | null
     isDefault: boolean
   }, ExtArgs["result"]["carImage"]>
   composites: {}
@@ -890,6 +928,7 @@ export interface CarImageFieldRefs {
   readonly id: Prisma.FieldRef<"CarImage", 'String'>
   readonly carId: Prisma.FieldRef<"CarImage", 'String'>
   readonly url: Prisma.FieldRef<"CarImage", 'String'>
+  readonly publicId: Prisma.FieldRef<"CarImage", 'String'>
   readonly isDefault: Prisma.FieldRef<"CarImage", 'Boolean'>
 }
     

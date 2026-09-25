@@ -9,6 +9,16 @@ export class CarBookingMapper {
       reference: data.reference,
 
       carId: data.carId,
+      transferPackageId: data.transferPackageId ?? null,
+      transferPackage: data.transferPackage
+        ? {
+            id: data.transferPackage.id,
+            fromLocation: data.transferPackage.fromLocation,
+            toLocation: data.transferPackage.toLocation,
+            price: Number(data.transferPackage.price),
+            currency: data.transferPackage.currency,
+          }
+        : null,
 
       pickupLocation: data.pickupLocation,
       dropoffLocation: data.dropoffLocation,
@@ -39,8 +49,8 @@ export class CarBookingMapper {
 
       driverFirstName: data.driverFirstName,
       driverLastName: data.driverLastName,
-      driverBirthDate: data.driverBirthDate,
-      driverLicenseNumber: data.driverLicenseNumber,
+      driverBirthDate: data.driverBirthDate ?? null,
+      driverLicenseNumber: data.driverLicenseNumber ?? null,
 
       contactEmail: data.contactEmail,
       contactPhone: data.contactPhone,

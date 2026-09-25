@@ -3,40 +3,55 @@
 import * as Slider from "@radix-ui/react-slider";
 import { RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { formatCurrency } from "@/lib/format";
-import { cn } from "@/lib/cn";
 
 interface CarSearchFormProps {
-  cities: string[];
-  selectedCity?: string;
+  transmissionOptions: string[];
+  fuelTypeOptions: string[];
+  selectedTransmission?: string;
+  selectedFuelType?: string;
+  selectedMinBaggage?: number;
+  maxBaggage: number;
   currency: string;
   priceBounds: [number, number];
   priceValue: [number, number];
   hasActiveFilters: boolean;
   disabled?: boolean;
-  onCityChange: (city?: string) => void;
+  onTransmissionChange: (transmission?: string) => void;
+  onFuelTypeChange: (fuelType?: string) => void;
+  onMinBaggageChange: (minBaggage?: number) => void;
   onPriceChange: (value: [number, number]) => void;
   onPriceCommit: (value: [number, number]) => void;
   onReset: () => void;
 }
 
 export function CarSearchForm({
-  cities,
   currency,
   disabled = false,
+  fuelTypeOptions,
   hasActiveFilters,
-  onCityChange,
+  maxBaggage,
+  onFuelTypeChange,
+  onMinBaggageChange,
   onPriceChange,
   onPriceCommit,
   onReset,
+  onTransmissionChange,
   priceBounds,
   priceValue,
-  selectedCity,
+  selectedFuelType,
+  selectedMinBaggage,
+  selectedTransmission,
+  transmissionOptions,
 }: CarSearchFormProps) {
   return (
-    <div className="space-y-7">
+    <div>
       <div className="flex items-center justify-between gap-4">
-        <h2 className="text-lg font-semibold tracking-[-0.025em]">Filters</h2>
+        <div className="flex items-center gap-1.5">
+          <h2 className="text-lg font-semibold tracking-[-0.025em]">Filters</h2>
+          <InfoTooltip label="Refine the available cars using price, transmission, fuel type, and baggage." />
+        </div>
         {hasActiveFilters ? (
           <Button variant="ghost" size="sm" className="-mr-2" onClick={onReset}>
             <RotateCcw aria-hidden="true" size={15} />
@@ -45,74 +60,86 @@ export function CarSearchForm({
         ) : null}
       </div>
 
-      <fieldset disabled={disabled}>
-        <legend className="text-sm font-semibold text-foreground">Location</legend>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <button
-            type="button"
-            aria-pressed={!selectedCity}
-            onClick={() => onCityChange()}
-            className={cn(
-              "min-h-10 rounded-control border px-3 text-sm font-medium outline-none transition-colors focus-visible:ring-4 focus-visible:ring-[var(--ring)] disabled:cursor-not-allowed disabled:opacity-50",
-              !selectedCity
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-border bg-surface-elevated text-muted hover:text-foreground",
-            )}
+      <fieldset disabled={disabled} className="mt-5 grid gap-5 border-t border-border pt-5">
+        <legend className="sr-only">Vehicle filters</legend>
+        <label className="grid gap-2 text-sm font-medium text-foreground">
+          Transmission
+          <select
+            value={selectedTransmission ?? ""}
+            onChange={(event) => onTransmissionChange(event.target.value || undefined)}
+            className="h-10 w-full rounded-control border border-border bg-white px-3 text-sm font-normal text-foreground outline-none transition-[border-color,box-shadow] focus:border-primary focus:ring-4 focus:ring-[var(--ring)]"
           >
-            All
-          </button>
-          {cities.map((city) => (
-            <button
-              key={city}
-              type="button"
-              aria-pressed={selectedCity === city}
-              onClick={() => onCityChange(city)}
-              className={cn(
-                "min-h-10 rounded-control border px-3 text-sm font-medium outline-none transition-colors focus-visible:ring-4 focus-visible:ring-[var(--ring)] disabled:cursor-not-allowed disabled:opacity-50",
-                selectedCity === city
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-surface-elevated text-muted hover:text-foreground",
-              )}
-            >
-              {city}
-            </button>
-          ))}
-        </div>
+            <option value="">Any transmission</option>
+            {transmissionOptions.map((option) => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
+        </label>
+        <label className="grid gap-2 text-sm font-medium text-foreground">
+          Fuel type
+          <select
+            value={selectedFuelType ?? ""}
+            onChange={(event) => onFuelTypeChange(event.target.value || undefined)}
+            className="h-10 w-full rounded-control border border-border bg-white px-3 text-sm font-normal text-foreground outline-none transition-[border-color,box-shadow] focus:border-primary focus:ring-4 focus:ring-[var(--ring)]"
+          >
+            <option value="">Any fuel type</option>
+            {fuelTypeOptions.map((option) => (
+              <option key={option} value={option}>{option}</option>
+            ))}
+          </select>
+        </label>
+        <label className="grid gap-2 text-sm font-medium text-foreground">
+          Minimum baggage
+          <select
+            value={selectedMinBaggage ?? ""}
+            onChange={(event) => onMinBaggageChange(event.target.value ? Number(event.target.value) : undefined)}
+            className="h-10 w-full rounded-control border border-border bg-white px-3 text-sm font-normal text-foreground outline-none transition-[border-color,box-shadow] focus:border-primary focus:ring-4 focus:ring-[var(--ring)]"
+          >
+            <option value="">Any capacity</option>
+            {Array.from({ length: maxBaggage }, (_, index) => index + 1).map((capacity) => (
+              <option key={capacity} value={capacity}>{capacity}+ bags</option>
+            ))}
+          </select>
+        </label>
       </fieldset>
 
-      <fieldset disabled={disabled}>
-        <legend className="text-sm font-semibold text-foreground">Daily price</legend>
-        <div className="mt-3 flex items-center justify-between gap-3 text-sm font-semibold text-muted">
-          <span>{formatCurrency(priceValue[0], currency)}</span>
+      <fieldset disabled={disabled} className="mt-5 border-t border-border pt-5">
+        <legend className="flex items-center gap-1 text-sm font-medium text-foreground">
+          Price range
+          <InfoTooltip label="Drag either handle. Results update when you release it." />
+        </legend>
+        <div className="mt-3 flex items-center justify-between gap-3 text-sm font-semibold text-foreground">
+          <span className="rounded-md bg-[#edf4fd] px-2 py-1">{formatCurrency(priceValue[0], currency)}</span>
           <span aria-hidden="true" className="h-px flex-1 bg-border" />
-          <span>{formatCurrency(priceValue[1], currency)}</span>
+          <span className="rounded-md bg-[#edf4fd] px-2 py-1">{formatCurrency(priceValue[1], currency)}</span>
         </div>
-        <Slider.Root
-          className="relative mt-5 flex h-8 w-full touch-none items-center select-none"
-          min={priceBounds[0]}
-          max={priceBounds[1]}
-          step={5}
-          minStepsBetweenThumbs={1}
-          value={priceValue}
-          onValueChange={(value) => onPriceChange([value[0], value[1]])}
-          onValueCommit={(value) => onPriceCommit([value[0], value[1]])}
-          disabled={disabled}
-        >
-          <Slider.Track className="relative h-1.5 grow overflow-hidden rounded-full bg-black/[0.1]">
-            <Slider.Range className="absolute h-full rounded-full bg-accent-secondary" />
-          </Slider.Track>
-          <Slider.Thumb
-            aria-label="Minimum daily price"
-            className="block size-5 rounded-full border-2 border-white bg-accent-secondary shadow-[0_2px_10px_rgba(21,27,35,0.28)] outline-none transition-transform hover:scale-110 focus-visible:ring-4 focus-visible:ring-[var(--ring)] disabled:opacity-50"
-          />
-          <Slider.Thumb
-            aria-label="Maximum daily price"
-            className="block size-5 rounded-full border-2 border-white bg-accent-secondary shadow-[0_2px_10px_rgba(21,27,35,0.28)] outline-none transition-transform hover:scale-110 focus-visible:ring-4 focus-visible:ring-[var(--ring)] disabled:opacity-50"
-          />
-        </Slider.Root>
-        <p className="mt-2 text-xs leading-5 text-muted">
-          Drag either handle. Results update when you release it.
-        </p>
+        {priceBounds[1] > priceBounds[0] ? (
+          <Slider.Root
+            className="relative mt-5 flex h-8 w-full touch-none items-center select-none"
+            min={priceBounds[0]}
+            max={priceBounds[1]}
+            step={5}
+            minStepsBetweenThumbs={1}
+            value={priceValue}
+            onValueChange={(value) => onPriceChange([value[0], value[1]])}
+            onValueCommit={(value) => onPriceCommit([value[0], value[1]])}
+            disabled={disabled}
+          >
+            <Slider.Track className="relative h-2 grow overflow-hidden rounded-full bg-[#dce5f0]">
+              <Slider.Range className="absolute h-full rounded-full bg-primary" />
+            </Slider.Track>
+            <Slider.Thumb
+              aria-label="Minimum price"
+              className="block size-5 rounded-full border-2 border-white bg-primary shadow-[0_2px_10px_rgba(18,97,201,0.3)] outline-none transition-transform hover:scale-110 focus-visible:ring-4 focus-visible:ring-[var(--ring)] disabled:opacity-50"
+            />
+            <Slider.Thumb
+              aria-label="Maximum price"
+              className="block size-5 rounded-full border-2 border-white bg-primary shadow-[0_2px_10px_rgba(18,97,201,0.3)] outline-none transition-transform hover:scale-110 focus-visible:ring-4 focus-visible:ring-[var(--ring)] disabled:opacity-50"
+            />
+          </Slider.Root>
+        ) : (
+          <p className="mt-4 text-xs leading-5 text-muted">Price options are unavailable for this service.</p>
+        )}
       </fieldset>
     </div>
   );

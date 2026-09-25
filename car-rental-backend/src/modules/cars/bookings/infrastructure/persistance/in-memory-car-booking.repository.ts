@@ -8,6 +8,7 @@ import type { CarBooking } from '../../domain/car-booking.entity.js';
 import { BookingStatus } from '../../domain/booking-status.js';
 
 import { PaymentStatus } from '../../domain/payment-status.js';
+import { dateRangesOverlap } from '../../domain/date-range.js';
 
 export class InMemoryCarBookingRepository implements CarBookingRepositoryPort {
   public bookings: CarBooking[] = [];
@@ -19,6 +20,12 @@ export class InMemoryCarBookingRepository implements CarBookingRepositoryPort {
       id: crypto.randomUUID(),
 
       ...data,
+
+      transferPackageId: data.transferPackageId ?? null,
+      transferPackage: null,
+
+      driverBirthDate: data.driverBirthDate ?? null,
+      driverLicenseNumber: data.driverLicenseNumber ?? null,
 
       bookingStatus: BookingStatus.CONFIRMED,
       paymentStatus: PaymentStatus.UNPAID,
@@ -46,18 +53,20 @@ export class InMemoryCarBookingRepository implements CarBookingRepositoryPort {
     return [...this.bookings];
   }
 
-  async findOverlapping(
+  async countOverlappingConfirmed(
     carId: string,
     pickupAt: Date,
     returnAt: Date,
-  ): Promise<CarBooking[]> {
+  ): Promise<number> {
     return this.bookings.filter(
       (booking) =>
         booking.carId === carId &&
         booking.bookingStatus === BookingStatus.CONFIRMED &&
-        booking.pickupAt < returnAt &&
-        booking.returnAt > pickupAt,
-    );
+        dateRangesOverlap(
+          { start: booking.pickupAt, end: booking.returnAt },
+          { start: pickupAt, end: returnAt },
+        ),
+    ).length;
   }
 
   async cancel(reference: string, reason?: string): Promise<CarBooking> {

@@ -54,6 +54,7 @@ export const ModelName = {
   CarType: 'CarType',
   Car: 'Car',
   CarImage: 'CarImage',
+  CarTransferPackage: 'CarTransferPackage',
   CarBooking: 'CarBooking'
 } as const
 
@@ -100,6 +101,9 @@ export const CarScalarFieldEnum = {
   currency: 'currency',
   isRefundable: 'isRefundable',
   featured: 'featured',
+  serviceType: 'serviceType',
+  withDriver: 'withDriver',
+  availableQuantity: 'availableQuantity',
   status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -112,16 +116,30 @@ export const CarImageScalarFieldEnum = {
   id: 'id',
   carId: 'carId',
   url: 'url',
+  publicId: 'publicId',
   isDefault: 'isDefault'
 } as const
 
 export type CarImageScalarFieldEnum = (typeof CarImageScalarFieldEnum)[keyof typeof CarImageScalarFieldEnum]
 
 
+export const CarTransferPackageScalarFieldEnum = {
+  id: 'id',
+  carId: 'carId',
+  fromLocation: 'fromLocation',
+  toLocation: 'toLocation',
+  price: 'price',
+  currency: 'currency'
+} as const
+
+export type CarTransferPackageScalarFieldEnum = (typeof CarTransferPackageScalarFieldEnum)[keyof typeof CarTransferPackageScalarFieldEnum]
+
+
 export const CarBookingScalarFieldEnum = {
   id: 'id',
   reference: 'reference',
   carId: 'carId',
+  transferPackageId: 'transferPackageId',
   pickupLocation: 'pickupLocation',
   dropoffLocation: 'dropoffLocation',
   pickupAt: 'pickupAt',

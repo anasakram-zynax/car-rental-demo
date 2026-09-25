@@ -3,6 +3,7 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { searchCars } from "@/features/cars/api/car/search-cars";
 import type { SearchCarsParams } from "@/features/cars/types/car.types";
+import { normalizeCarSearchParams } from "@/features/cars/utils/car-search";
 
 export const carQueryKeys = {
   all: ["cars"] as const,
@@ -11,9 +12,11 @@ export const carQueryKeys = {
 };
 
 export function useCars(params: SearchCarsParams = {}) {
+  const normalizedParams = normalizeCarSearchParams(params);
+
   return useQuery({
-    queryKey: carQueryKeys.list(params),
-    queryFn: () => searchCars(params),
+    queryKey: carQueryKeys.list(normalizedParams),
+    queryFn: () => searchCars(normalizedParams),
     placeholderData: keepPreviousData,
   });
 }

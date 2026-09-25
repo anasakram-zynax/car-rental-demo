@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import {
   CarRepositoryPort,
+  CarFilterOptions,
+  CarFormOptions,
   CreateCarData,
   SearchCarsFilters,
   SearchCarsResult,
@@ -11,49 +13,107 @@ import { PrismaService } from '../../../../../shared/database/prisma.service.js'
 import { Car } from '../../domain/car.entity.js';
 import { CarMapper } from './car.mapper.js';
 import { CarStatus } from '../../domain/car-status.js';
+import { ServiceType } from '../../domain/service-type.js';
+import type { Prisma } from '../../../../../shared/database/generated/prisma/client.js';
+import { CarSlugAlreadyExistsError } from '../../domain/car-errors.js';
+
+function isUniqueConstraintError(error: unknown): error is { code: string } {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    error.code === 'P2002'
+  );
+}
+
+function textFilter(value: string): Prisma.StringFilter {
+  return { contains: value.trim().replace(/\s+/g, ' '), mode: 'insensitive' };
+}
+
+function resultPrice(car: Car): number {
+  if (car.serviceType === ServiceType.TRANSFER) {
+    return Math.min(
+      ...car.transferPackages.map((transferPackage) => transferPackage.price),
+    );
+  }
+
+  return car.dailyPrice;
+}
+
+function distinctNormalized(values: string[], limit?: number) {
+  const unique = new Map<string, string>();
+
+  for (const value of values) {
+    const normalized = value.trim().replace(/\s+/g, ' ');
+    const key = normalized.toLowerCase();
+    if (normalized && !unique.has(key)) unique.set(key, normalized);
+  }
+
+  return [...unique.values()]
+    .sort((left, right) => left.localeCompare(right))
+    .slice(0, limit);
+}
 
 @Injectable()
 export class PrismaCarRepository implements CarRepositoryPort {
   constructor(private readonly prisma: PrismaService) {}
   async create(data: CreateCarData): Promise<Car> {
-    const car = await this.prisma.car.create({
-      data: {
-        name: data.name,
-        slug: data.slug,
-        brand: data.brand,
-        model: data.model,
-        year: data.year,
+    try {
+      const car = await this.prisma.car.create({
+        data: {
+          name: data.name,
+          slug: data.slug,
+          brand: data.brand,
+          model: data.model,
+          year: data.year,
 
-        carTypeId: data.carTypeId,
+          carTypeId: data.carTypeId,
 
-        transmission: data.transmission,
-        fuelType: data.fuelType,
+          transmission: data.transmission,
+          fuelType: data.fuelType,
 
-        doors: data.doors,
-        passengers: data.passengers,
-        baggage: data.baggage,
+          doors: data.doors,
+          passengers: data.passengers,
+          baggage: data.baggage,
 
-        amenities: data.amenities,
+          amenities: data.amenities,
 
-        city: data.city,
+          city: data.city,
 
-        dailyPrice: data.dailyPrice,
-        currency: data.currency,
+          dailyPrice: data.dailyPrice,
+          currency: data.currency,
 
-        isRefundable: data.isRefundable,
-        featured: data.featured,
+          isRefundable: data.isRefundable,
+          featured: data.featured,
 
-        images: {
-          create: data.images,
+          serviceType:
+            data.serviceType === ServiceType.TRANSFER ? 'TRANSFER' : 'RENTAL',
+          withDriver: data.withDriver ?? false,
+          availableQuantity: data.availableQuantity ?? 1,
+
+          images: {
+            create: data.images,
+          },
+
+          transferPackages: {
+            create: data.transferPackages ?? [],
+          },
         },
-      },
 
-      include: {
-        images: true,
-      },
-    });
+        include: {
+          images: true,
+          transferPackages: true,
+        },
+      });
 
-    return CarMapper.toDomain(car);
+      return CarMapper.toDomain(car);
+    } catch (error) {
+      if (isUniqueConstraintError(error)) {
+        throw new CarSlugAlreadyExistsError();
+      }
+
+      throw error;
+    }
   }
 
   async findById(id: string): Promise<Car | null> {
@@ -62,6 +122,7 @@ export class PrismaCarRepository implements CarRepositoryPort {
 
       include: {
         images: true,
+        transferPackages: true,
       },
     });
 
@@ -73,32 +134,53 @@ export class PrismaCarRepository implements CarRepositoryPort {
   }
 
   async update(id: string, data: UpdateCarData): Promise<Car> {
-    const { images, status, ...carData } = data;
+    const { images, status, serviceType, transferPackages, ...carData } = data;
 
-    const car = await this.prisma.car.update({
-      where: { id },
+    try {
+      const car = await this.prisma.car.update({
+        where: { id },
 
-      data: {
-        ...carData,
+        data: {
+          ...carData,
 
-        ...(status && {
-          status: status === CarStatus.ACTIVE ? 'ACTIVE' : 'INACTIVE',
-        }),
+          ...(status && {
+            status: status === CarStatus.ACTIVE ? 'ACTIVE' : 'INACTIVE',
+          }),
 
-        ...(images && {
-          images: {
-            deleteMany: {},
-            create: images,
-          },
-        }),
-      },
+          ...(serviceType && {
+            serviceType:
+              serviceType === ServiceType.TRANSFER ? 'TRANSFER' : 'RENTAL',
+          }),
 
-      include: {
-        images: true,
-      },
-    });
+          ...(images && {
+            images: {
+              deleteMany: {},
+              create: images,
+            },
+          }),
 
-    return CarMapper.toDomain(car);
+          ...(transferPackages && {
+            transferPackages: {
+              deleteMany: {},
+              create: transferPackages,
+            },
+          }),
+        },
+
+        include: {
+          images: true,
+          transferPackages: true,
+        },
+      });
+
+      return CarMapper.toDomain(car);
+    } catch (error) {
+      if (isUniqueConstraintError(error)) {
+        throw new CarSlugAlreadyExistsError();
+      }
+
+      throw error;
+    }
   }
 
   async setInactive(id: string): Promise<Car> {
@@ -111,6 +193,7 @@ export class PrismaCarRepository implements CarRepositoryPort {
 
       include: {
         images: true,
+        transferPackages: true,
       },
     });
 
@@ -118,60 +201,142 @@ export class PrismaCarRepository implements CarRepositoryPort {
   }
 
   async search(filters: SearchCarsFilters): Promise<SearchCarsResult> {
-    const { city, carTypeId, minPrice, maxPrice, page, limit } = filters;
+    const {
+      serviceType,
+      city,
+      pickupLocation,
+      dropoffLocation,
+      transmission,
+      fuelType,
+      minBaggage,
+      minPrice,
+      maxPrice,
+      search,
+      sort,
+      page,
+      limit,
+    } = filters;
 
-    const skip = (page - 1) * limit;
-
-    const where = {
-      status: 'ACTIVE' as const,
-
-      ...(city && {
-        city: {
-          contains: city,
-          mode: 'insensitive' as const,
-        },
-      }),
-
-      ...(carTypeId && {
-        carTypeId,
-      }),
-
+    const priceFilter: Prisma.DecimalFilter = {
+      ...(minPrice !== undefined && { gte: minPrice }),
+      ...(maxPrice !== undefined && { lte: maxPrice }),
+    };
+    const packageWhere: Prisma.CarTransferPackageWhereInput = {
+      ...(pickupLocation && { fromLocation: textFilter(pickupLocation) }),
+      ...(dropoffLocation && { toLocation: textFilter(dropoffLocation) }),
       ...((minPrice !== undefined || maxPrice !== undefined) && {
-        dailyPrice: {
-          ...(minPrice !== undefined && {
-            gte: minPrice,
-          }),
-
-          ...(maxPrice !== undefined && {
-            lte: maxPrice,
-          }),
-        },
+        price: priceFilter,
       }),
     };
+    const hasPackageFilters = Boolean(
+      pickupLocation ||
+      dropoffLocation ||
+      minPrice !== undefined ||
+      maxPrice !== undefined,
+    );
+    const and: Prisma.CarWhereInput[] = [];
 
-    const [cars, total] = await Promise.all([
-      this.prisma.car.findMany({
-        where,
+    if (search?.trim()) {
+      and.push({
+        OR: ['name', 'model', 'brand'].map((field) => ({
+          [field]: textFilter(search),
+        })),
+      });
+    }
+    if (transmission?.trim()) {
+      and.push({ transmission: textFilter(transmission) });
+    }
+    if (fuelType?.trim()) {
+      and.push({ fuelType: textFilter(fuelType) });
+    }
+    if (minBaggage !== undefined) {
+      and.push({ baggage: { gte: minBaggage } });
+    }
 
-        include: {
-          images: true,
-        },
+    if (serviceType === ServiceType.RENTAL) {
+      and.push({ serviceType: 'RENTAL' });
+      const rentalLocation = pickupLocation || city;
+      if (rentalLocation?.trim()) {
+        and.push({ city: textFilter(rentalLocation) });
+      }
+      if (minPrice !== undefined || maxPrice !== undefined) {
+        and.push({ dailyPrice: priceFilter });
+      }
+    } else if (serviceType === ServiceType.TRANSFER) {
+      and.push({ serviceType: 'TRANSFER' });
+      if (city?.trim()) {
+        and.push({ city: textFilter(city) });
+      }
+      if (hasPackageFilters) {
+        and.push({ transferPackages: { some: packageWhere } });
+      }
+    } else {
+      if (city?.trim()) {
+        and.push({ city: textFilter(city) });
+      }
+      if (hasPackageFilters) {
+        const branches: Prisma.CarWhereInput[] = [
+          {
+            serviceType: 'TRANSFER',
+            transferPackages: { some: packageWhere },
+          },
+        ];
+        if (!dropoffLocation) {
+          branches.push({
+            serviceType: 'RENTAL',
+            ...(pickupLocation && { city: textFilter(pickupLocation) }),
+            ...((minPrice !== undefined || maxPrice !== undefined) && {
+              dailyPrice: priceFilter,
+            }),
+          });
+        }
+        and.push({ OR: branches });
+      }
+    }
 
-        skip,
-        take: limit,
+    const where: Prisma.CarWhereInput = {
+      status: 'ACTIVE',
+      ...(and.length > 0 && { AND: and }),
+    };
+    const filterReturnedPackages =
+      serviceType !== ServiceType.RENTAL && hasPackageFilters;
+    const records = await this.prisma.car.findMany({
+      where,
+      include: {
+        images: true,
+        transferPackages: filterReturnedPackages
+          ? { where: packageWhere, orderBy: { price: 'asc' } }
+          : { orderBy: { price: 'asc' } },
+      },
+    });
+    const cars = records.map((car) => CarMapper.toDomain(car));
 
-        orderBy: {
-          createdAt: 'desc',
-        },
-      }),
+    cars.sort((first, second) => {
+      if (sort === 'name_asc') {
+        return (
+          first.name.localeCompare(second.name) ||
+          first.id.localeCompare(second.id)
+        );
+      }
+      if (sort === 'price_asc' || sort === 'price_desc') {
+        const difference = resultPrice(first) - resultPrice(second);
+        return (
+          (sort === 'price_desc' ? -difference : difference) ||
+          first.id.localeCompare(second.id)
+        );
+      }
+      return (
+        second.createdAt.getTime() - first.createdAt.getTime() ||
+        first.id.localeCompare(second.id)
+      );
+    });
 
-      this.prisma.car.count({
-        where,
-      }),
-    ]);
+    const total = cars.length;
+    const skip = (page - 1) * limit;
+    const paginatedCars = cars.slice(skip, skip + limit);
 
     return {
-      cars: cars.map((car) => CarMapper.toDomain(car)),
+      cars: paginatedCars,
       total,
       page,
       limit,
@@ -183,7 +348,7 @@ export class PrismaCarRepository implements CarRepositoryPort {
     const skip = (filters.page - 1) * filters.limit;
     const [cars, total] = await Promise.all([
       this.prisma.car.findMany({
-        include: { images: true },
+        include: { images: true, transferPackages: true },
         skip,
         take: filters.limit,
         orderBy: { createdAt: 'desc' },
@@ -209,6 +374,7 @@ export class PrismaCarRepository implements CarRepositoryPort {
 
       include: {
         images: true,
+        transferPackages: true,
       },
     });
 
@@ -217,5 +383,108 @@ export class PrismaCarRepository implements CarRepositoryPort {
     }
 
     return CarMapper.toDomain(car);
+  }
+
+  async getFilterOptions(serviceType?: ServiceType): Promise<CarFilterOptions> {
+    const cars = await this.prisma.car.findMany({
+      where: {
+        status: 'ACTIVE',
+        ...(serviceType && {
+          serviceType:
+            serviceType === ServiceType.TRANSFER ? 'TRANSFER' : 'RENTAL',
+        }),
+      },
+      select: {
+        transmission: true,
+        fuelType: true,
+        baggage: true,
+        dailyPrice: true,
+        serviceType: true,
+        transferPackages: {
+          select: { price: true },
+        },
+      },
+    });
+    const prices = cars.flatMap((car) =>
+      car.serviceType === 'TRANSFER'
+        ? car.transferPackages.map((transferPackage) =>
+            Number(transferPackage.price),
+          )
+        : [Number(car.dailyPrice)],
+    );
+
+    return {
+      transmissionTypes: distinctNormalized(
+        cars.map((car) => car.transmission),
+      ),
+      fuelTypes: distinctNormalized(cars.map((car) => car.fuelType)),
+      maxBaggage: Math.max(0, ...cars.map((car) => car.baggage)),
+      maxPrice: Math.max(0, ...prices),
+    };
+  }
+
+  async getAdminFormOptions(): Promise<CarFormOptions> {
+    const [carTypes, cars] = await Promise.all([
+      this.prisma.carType.findMany({
+        select: { id: true, label: true },
+        orderBy: { label: 'asc' },
+      }),
+      this.prisma.car.findMany({
+        select: { transmission: true, fuelType: true },
+      }),
+    ]);
+
+    return {
+      carTypes,
+      transmissions: distinctNormalized(cars.map((car) => car.transmission)),
+      fuelTypes: distinctNormalized(cars.map((car) => car.fuelType)),
+    };
+  }
+
+  async findTransferPickupLocations(
+    search: string | undefined,
+    limit: number,
+  ): Promise<string[]> {
+    const packages = await this.prisma.carTransferPackage.findMany({
+      where: {
+        car: {
+          is: { status: 'ACTIVE', serviceType: 'TRANSFER' },
+        },
+        ...(search && { fromLocation: textFilter(search) }),
+      },
+      select: { fromLocation: true },
+      orderBy: { fromLocation: 'asc' },
+    });
+
+    return distinctNormalized(
+      packages.map((transferPackage) => transferPackage.fromLocation),
+      limit,
+    );
+  }
+
+  async findTransferDropoffLocations(
+    pickupLocation: string,
+    search: string | undefined,
+    limit: number,
+  ): Promise<string[]> {
+    const packages = await this.prisma.carTransferPackage.findMany({
+      where: {
+        car: {
+          is: { status: 'ACTIVE', serviceType: 'TRANSFER' },
+        },
+        fromLocation: {
+          equals: pickupLocation,
+          mode: 'insensitive',
+        },
+        ...(search && { toLocation: textFilter(search) }),
+      },
+      select: { toLocation: true },
+      orderBy: { toLocation: 'asc' },
+    });
+
+    return distinctNormalized(
+      packages.map((transferPackage) => transferPackage.toLocation),
+      limit,
+    );
   }
 }

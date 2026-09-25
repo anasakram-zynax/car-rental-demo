@@ -1,5 +1,13 @@
 import { Car } from '../../domain/car.entity.js';
 import { CarStatus } from '../../domain/car-status.js';
+import { ServiceType } from '../../domain/service-type.js';
+
+export interface CreateCarTransferPackageData {
+  fromLocation: string;
+  toLocation: string;
+  price: number;
+  currency: string;
+}
 
 // ADMIN - SIDE
 export interface CreateCarData {
@@ -21,10 +29,16 @@ export interface CreateCarData {
   isRefundable: boolean;
   featured: boolean;
 
+  serviceType?: ServiceType;
+  withDriver?: boolean;
+  availableQuantity?: number;
+
   images: {
     url: string;
     isDefault: boolean;
   }[];
+
+  transferPackages?: CreateCarTransferPackageData[];
 }
 
 export type UpdateCarData = Partial<CreateCarData> & {
@@ -45,15 +59,37 @@ export interface CarRepositoryPort {
   listAll(filters: PaginationFilters): Promise<SearchCarsResult>;
 
   findActiveById(id: string): Promise<Car | null>;
+
+  getFilterOptions(serviceType?: ServiceType): Promise<CarFilterOptions>;
+
+  getAdminFormOptions(): Promise<CarFormOptions>;
+
+  findTransferPickupLocations(
+    search: string | undefined,
+    limit: number,
+  ): Promise<string[]>;
+
+  findTransferDropoffLocations(
+    pickupLocation: string,
+    search: string | undefined,
+    limit: number,
+  ): Promise<string[]>;
 }
 
 // PUBLIC - SIDE
 
 export interface SearchCarsFilters {
+  serviceType?: ServiceType;
   city?: string;
-  carTypeId?: string;
+  pickupLocation?: string;
+  dropoffLocation?: string;
+  transmission?: string;
+  fuelType?: string;
+  minBaggage?: number;
   minPrice?: number;
   maxPrice?: number;
+  search?: string;
+  sort?: 'price_asc' | 'price_desc' | 'newest' | 'name_asc';
   page: number;
   limit: number;
 }
@@ -69,4 +105,17 @@ export interface SearchCarsResult {
   page: number;
   limit: number;
   totalPages: number;
+}
+
+export interface CarFilterOptions {
+  transmissionTypes: string[];
+  fuelTypes: string[];
+  maxBaggage: number;
+  maxPrice: number;
+}
+
+export interface CarFormOptions {
+  carTypes: Array<{ id: string; label: string }>;
+  transmissions: string[];
+  fuelTypes: string[];
 }

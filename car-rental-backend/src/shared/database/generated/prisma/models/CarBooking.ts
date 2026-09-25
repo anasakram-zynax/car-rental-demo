@@ -44,6 +44,7 @@ export type CarBookingMinAggregateOutputType = {
   id: string | null
   reference: string | null
   carId: string | null
+  transferPackageId: string | null
   pickupLocation: string | null
   dropoffLocation: string | null
   pickupAt: Date | null
@@ -71,6 +72,7 @@ export type CarBookingMaxAggregateOutputType = {
   id: string | null
   reference: string | null
   carId: string | null
+  transferPackageId: string | null
   pickupLocation: string | null
   dropoffLocation: string | null
   pickupAt: Date | null
@@ -98,6 +100,7 @@ export type CarBookingCountAggregateOutputType = {
   id: number
   reference: number
   carId: number
+  transferPackageId: number
   pickupLocation: number
   dropoffLocation: number
   pickupAt: number
@@ -141,6 +144,7 @@ export type CarBookingMinAggregateInputType = {
   id?: true
   reference?: true
   carId?: true
+  transferPackageId?: true
   pickupLocation?: true
   dropoffLocation?: true
   pickupAt?: true
@@ -168,6 +172,7 @@ export type CarBookingMaxAggregateInputType = {
   id?: true
   reference?: true
   carId?: true
+  transferPackageId?: true
   pickupLocation?: true
   dropoffLocation?: true
   pickupAt?: true
@@ -195,6 +200,7 @@ export type CarBookingCountAggregateInputType = {
   id?: true
   reference?: true
   carId?: true
+  transferPackageId?: true
   pickupLocation?: true
   dropoffLocation?: true
   pickupAt?: true
@@ -309,6 +315,7 @@ export type CarBookingGroupByOutputType = {
   id: string
   reference: string
   carId: string
+  transferPackageId: string | null
   pickupLocation: string
   dropoffLocation: string
   pickupAt: Date
@@ -323,8 +330,8 @@ export type CarBookingGroupByOutputType = {
   cancelReason: string | null
   driverFirstName: string
   driverLastName: string
-  driverBirthDate: Date
-  driverLicenseNumber: string
+  driverBirthDate: Date | null
+  driverLicenseNumber: string | null
   contactEmail: string
   contactPhone: string
   specialRequests: string | null
@@ -359,6 +366,7 @@ export type CarBookingWhereInput = {
   id?: Prisma.UuidFilter<"CarBooking"> | string
   reference?: Prisma.StringFilter<"CarBooking"> | string
   carId?: Prisma.UuidFilter<"CarBooking"> | string
+  transferPackageId?: Prisma.UuidNullableFilter<"CarBooking"> | string | null
   pickupLocation?: Prisma.StringFilter<"CarBooking"> | string
   dropoffLocation?: Prisma.StringFilter<"CarBooking"> | string
   pickupAt?: Prisma.DateTimeFilter<"CarBooking"> | Date | string
@@ -373,20 +381,22 @@ export type CarBookingWhereInput = {
   cancelReason?: Prisma.StringNullableFilter<"CarBooking"> | string | null
   driverFirstName?: Prisma.StringFilter<"CarBooking"> | string
   driverLastName?: Prisma.StringFilter<"CarBooking"> | string
-  driverBirthDate?: Prisma.DateTimeFilter<"CarBooking"> | Date | string
-  driverLicenseNumber?: Prisma.StringFilter<"CarBooking"> | string
+  driverBirthDate?: Prisma.DateTimeNullableFilter<"CarBooking"> | Date | string | null
+  driverLicenseNumber?: Prisma.StringNullableFilter<"CarBooking"> | string | null
   contactEmail?: Prisma.StringFilter<"CarBooking"> | string
   contactPhone?: Prisma.StringFilter<"CarBooking"> | string
   specialRequests?: Prisma.StringNullableFilter<"CarBooking"> | string | null
   createdAt?: Prisma.DateTimeFilter<"CarBooking"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CarBooking"> | Date | string
   car?: Prisma.XOR<Prisma.CarScalarRelationFilter, Prisma.CarWhereInput>
+  transferPackage?: Prisma.XOR<Prisma.CarTransferPackageNullableScalarRelationFilter, Prisma.CarTransferPackageWhereInput> | null
 }
 
 export type CarBookingOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   reference?: Prisma.SortOrder
   carId?: Prisma.SortOrder
+  transferPackageId?: Prisma.SortOrderInput | Prisma.SortOrder
   pickupLocation?: Prisma.SortOrder
   dropoffLocation?: Prisma.SortOrder
   pickupAt?: Prisma.SortOrder
@@ -401,14 +411,15 @@ export type CarBookingOrderByWithRelationInput = {
   cancelReason?: Prisma.SortOrderInput | Prisma.SortOrder
   driverFirstName?: Prisma.SortOrder
   driverLastName?: Prisma.SortOrder
-  driverBirthDate?: Prisma.SortOrder
-  driverLicenseNumber?: Prisma.SortOrder
+  driverBirthDate?: Prisma.SortOrderInput | Prisma.SortOrder
+  driverLicenseNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   contactEmail?: Prisma.SortOrder
   contactPhone?: Prisma.SortOrder
   specialRequests?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   car?: Prisma.CarOrderByWithRelationInput
+  transferPackage?: Prisma.CarTransferPackageOrderByWithRelationInput
 }
 
 export type CarBookingWhereUniqueInput = Prisma.AtLeast<{
@@ -418,6 +429,7 @@ export type CarBookingWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.CarBookingWhereInput[]
   NOT?: Prisma.CarBookingWhereInput | Prisma.CarBookingWhereInput[]
   carId?: Prisma.UuidFilter<"CarBooking"> | string
+  transferPackageId?: Prisma.UuidNullableFilter<"CarBooking"> | string | null
   pickupLocation?: Prisma.StringFilter<"CarBooking"> | string
   dropoffLocation?: Prisma.StringFilter<"CarBooking"> | string
   pickupAt?: Prisma.DateTimeFilter<"CarBooking"> | Date | string
@@ -432,20 +444,22 @@ export type CarBookingWhereUniqueInput = Prisma.AtLeast<{
   cancelReason?: Prisma.StringNullableFilter<"CarBooking"> | string | null
   driverFirstName?: Prisma.StringFilter<"CarBooking"> | string
   driverLastName?: Prisma.StringFilter<"CarBooking"> | string
-  driverBirthDate?: Prisma.DateTimeFilter<"CarBooking"> | Date | string
-  driverLicenseNumber?: Prisma.StringFilter<"CarBooking"> | string
+  driverBirthDate?: Prisma.DateTimeNullableFilter<"CarBooking"> | Date | string | null
+  driverLicenseNumber?: Prisma.StringNullableFilter<"CarBooking"> | string | null
   contactEmail?: Prisma.StringFilter<"CarBooking"> | string
   contactPhone?: Prisma.StringFilter<"CarBooking"> | string
   specialRequests?: Prisma.StringNullableFilter<"CarBooking"> | string | null
   createdAt?: Prisma.DateTimeFilter<"CarBooking"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"CarBooking"> | Date | string
   car?: Prisma.XOR<Prisma.CarScalarRelationFilter, Prisma.CarWhereInput>
+  transferPackage?: Prisma.XOR<Prisma.CarTransferPackageNullableScalarRelationFilter, Prisma.CarTransferPackageWhereInput> | null
 }, "id" | "reference">
 
 export type CarBookingOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   reference?: Prisma.SortOrder
   carId?: Prisma.SortOrder
+  transferPackageId?: Prisma.SortOrderInput | Prisma.SortOrder
   pickupLocation?: Prisma.SortOrder
   dropoffLocation?: Prisma.SortOrder
   pickupAt?: Prisma.SortOrder
@@ -460,8 +474,8 @@ export type CarBookingOrderByWithAggregationInput = {
   cancelReason?: Prisma.SortOrderInput | Prisma.SortOrder
   driverFirstName?: Prisma.SortOrder
   driverLastName?: Prisma.SortOrder
-  driverBirthDate?: Prisma.SortOrder
-  driverLicenseNumber?: Prisma.SortOrder
+  driverBirthDate?: Prisma.SortOrderInput | Prisma.SortOrder
+  driverLicenseNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   contactEmail?: Prisma.SortOrder
   contactPhone?: Prisma.SortOrder
   specialRequests?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -481,6 +495,7 @@ export type CarBookingScalarWhereWithAggregatesInput = {
   id?: Prisma.UuidWithAggregatesFilter<"CarBooking"> | string
   reference?: Prisma.StringWithAggregatesFilter<"CarBooking"> | string
   carId?: Prisma.UuidWithAggregatesFilter<"CarBooking"> | string
+  transferPackageId?: Prisma.UuidNullableWithAggregatesFilter<"CarBooking"> | string | null
   pickupLocation?: Prisma.StringWithAggregatesFilter<"CarBooking"> | string
   dropoffLocation?: Prisma.StringWithAggregatesFilter<"CarBooking"> | string
   pickupAt?: Prisma.DateTimeWithAggregatesFilter<"CarBooking"> | Date | string
@@ -495,8 +510,8 @@ export type CarBookingScalarWhereWithAggregatesInput = {
   cancelReason?: Prisma.StringNullableWithAggregatesFilter<"CarBooking"> | string | null
   driverFirstName?: Prisma.StringWithAggregatesFilter<"CarBooking"> | string
   driverLastName?: Prisma.StringWithAggregatesFilter<"CarBooking"> | string
-  driverBirthDate?: Prisma.DateTimeWithAggregatesFilter<"CarBooking"> | Date | string
-  driverLicenseNumber?: Prisma.StringWithAggregatesFilter<"CarBooking"> | string
+  driverBirthDate?: Prisma.DateTimeNullableWithAggregatesFilter<"CarBooking"> | Date | string | null
+  driverLicenseNumber?: Prisma.StringNullableWithAggregatesFilter<"CarBooking"> | string | null
   contactEmail?: Prisma.StringWithAggregatesFilter<"CarBooking"> | string
   contactPhone?: Prisma.StringWithAggregatesFilter<"CarBooking"> | string
   specialRequests?: Prisma.StringNullableWithAggregatesFilter<"CarBooking"> | string | null
@@ -521,20 +536,22 @@ export type CarBookingCreateInput = {
   cancelReason?: string | null
   driverFirstName: string
   driverLastName: string
-  driverBirthDate: Date | string
-  driverLicenseNumber: string
+  driverBirthDate?: Date | string | null
+  driverLicenseNumber?: string | null
   contactEmail: string
   contactPhone: string
   specialRequests?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   car: Prisma.CarCreateNestedOneWithoutBookingsInput
+  transferPackage?: Prisma.CarTransferPackageCreateNestedOneWithoutBookingsInput
 }
 
 export type CarBookingUncheckedCreateInput = {
   id?: string
   reference: string
   carId: string
+  transferPackageId?: string | null
   pickupLocation: string
   dropoffLocation: string
   pickupAt: Date | string
@@ -549,8 +566,8 @@ export type CarBookingUncheckedCreateInput = {
   cancelReason?: string | null
   driverFirstName: string
   driverLastName: string
-  driverBirthDate: Date | string
-  driverLicenseNumber: string
+  driverBirthDate?: Date | string | null
+  driverLicenseNumber?: string | null
   contactEmail: string
   contactPhone: string
   specialRequests?: string | null
@@ -575,20 +592,22 @@ export type CarBookingUpdateInput = {
   cancelReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   driverFirstName?: Prisma.StringFieldUpdateOperationsInput | string
   driverLastName?: Prisma.StringFieldUpdateOperationsInput | string
-  driverBirthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  driverLicenseNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  driverBirthDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  driverLicenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactEmail?: Prisma.StringFieldUpdateOperationsInput | string
   contactPhone?: Prisma.StringFieldUpdateOperationsInput | string
   specialRequests?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   car?: Prisma.CarUpdateOneRequiredWithoutBookingsNestedInput
+  transferPackage?: Prisma.CarTransferPackageUpdateOneWithoutBookingsNestedInput
 }
 
 export type CarBookingUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   reference?: Prisma.StringFieldUpdateOperationsInput | string
   carId?: Prisma.StringFieldUpdateOperationsInput | string
+  transferPackageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pickupLocation?: Prisma.StringFieldUpdateOperationsInput | string
   dropoffLocation?: Prisma.StringFieldUpdateOperationsInput | string
   pickupAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -603,8 +622,8 @@ export type CarBookingUncheckedUpdateInput = {
   cancelReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   driverFirstName?: Prisma.StringFieldUpdateOperationsInput | string
   driverLastName?: Prisma.StringFieldUpdateOperationsInput | string
-  driverBirthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  driverLicenseNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  driverBirthDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  driverLicenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactEmail?: Prisma.StringFieldUpdateOperationsInput | string
   contactPhone?: Prisma.StringFieldUpdateOperationsInput | string
   specialRequests?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -616,6 +635,7 @@ export type CarBookingCreateManyInput = {
   id?: string
   reference: string
   carId: string
+  transferPackageId?: string | null
   pickupLocation: string
   dropoffLocation: string
   pickupAt: Date | string
@@ -630,8 +650,8 @@ export type CarBookingCreateManyInput = {
   cancelReason?: string | null
   driverFirstName: string
   driverLastName: string
-  driverBirthDate: Date | string
-  driverLicenseNumber: string
+  driverBirthDate?: Date | string | null
+  driverLicenseNumber?: string | null
   contactEmail: string
   contactPhone: string
   specialRequests?: string | null
@@ -656,8 +676,8 @@ export type CarBookingUpdateManyMutationInput = {
   cancelReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   driverFirstName?: Prisma.StringFieldUpdateOperationsInput | string
   driverLastName?: Prisma.StringFieldUpdateOperationsInput | string
-  driverBirthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  driverLicenseNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  driverBirthDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  driverLicenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactEmail?: Prisma.StringFieldUpdateOperationsInput | string
   contactPhone?: Prisma.StringFieldUpdateOperationsInput | string
   specialRequests?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -669,6 +689,7 @@ export type CarBookingUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   reference?: Prisma.StringFieldUpdateOperationsInput | string
   carId?: Prisma.StringFieldUpdateOperationsInput | string
+  transferPackageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pickupLocation?: Prisma.StringFieldUpdateOperationsInput | string
   dropoffLocation?: Prisma.StringFieldUpdateOperationsInput | string
   pickupAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -683,8 +704,8 @@ export type CarBookingUncheckedUpdateManyInput = {
   cancelReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   driverFirstName?: Prisma.StringFieldUpdateOperationsInput | string
   driverLastName?: Prisma.StringFieldUpdateOperationsInput | string
-  driverBirthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  driverLicenseNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  driverBirthDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  driverLicenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactEmail?: Prisma.StringFieldUpdateOperationsInput | string
   contactPhone?: Prisma.StringFieldUpdateOperationsInput | string
   specialRequests?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -706,6 +727,7 @@ export type CarBookingCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   reference?: Prisma.SortOrder
   carId?: Prisma.SortOrder
+  transferPackageId?: Prisma.SortOrder
   pickupLocation?: Prisma.SortOrder
   dropoffLocation?: Prisma.SortOrder
   pickupAt?: Prisma.SortOrder
@@ -740,6 +762,7 @@ export type CarBookingMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   reference?: Prisma.SortOrder
   carId?: Prisma.SortOrder
+  transferPackageId?: Prisma.SortOrder
   pickupLocation?: Prisma.SortOrder
   dropoffLocation?: Prisma.SortOrder
   pickupAt?: Prisma.SortOrder
@@ -767,6 +790,7 @@ export type CarBookingMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   reference?: Prisma.SortOrder
   carId?: Prisma.SortOrder
+  transferPackageId?: Prisma.SortOrder
   pickupLocation?: Prisma.SortOrder
   dropoffLocation?: Prisma.SortOrder
   pickupAt?: Prisma.SortOrder
@@ -839,6 +863,48 @@ export type CarBookingUncheckedUpdateManyWithoutCarNestedInput = {
   deleteMany?: Prisma.CarBookingScalarWhereInput | Prisma.CarBookingScalarWhereInput[]
 }
 
+export type CarBookingCreateNestedManyWithoutTransferPackageInput = {
+  create?: Prisma.XOR<Prisma.CarBookingCreateWithoutTransferPackageInput, Prisma.CarBookingUncheckedCreateWithoutTransferPackageInput> | Prisma.CarBookingCreateWithoutTransferPackageInput[] | Prisma.CarBookingUncheckedCreateWithoutTransferPackageInput[]
+  connectOrCreate?: Prisma.CarBookingCreateOrConnectWithoutTransferPackageInput | Prisma.CarBookingCreateOrConnectWithoutTransferPackageInput[]
+  createMany?: Prisma.CarBookingCreateManyTransferPackageInputEnvelope
+  connect?: Prisma.CarBookingWhereUniqueInput | Prisma.CarBookingWhereUniqueInput[]
+}
+
+export type CarBookingUncheckedCreateNestedManyWithoutTransferPackageInput = {
+  create?: Prisma.XOR<Prisma.CarBookingCreateWithoutTransferPackageInput, Prisma.CarBookingUncheckedCreateWithoutTransferPackageInput> | Prisma.CarBookingCreateWithoutTransferPackageInput[] | Prisma.CarBookingUncheckedCreateWithoutTransferPackageInput[]
+  connectOrCreate?: Prisma.CarBookingCreateOrConnectWithoutTransferPackageInput | Prisma.CarBookingCreateOrConnectWithoutTransferPackageInput[]
+  createMany?: Prisma.CarBookingCreateManyTransferPackageInputEnvelope
+  connect?: Prisma.CarBookingWhereUniqueInput | Prisma.CarBookingWhereUniqueInput[]
+}
+
+export type CarBookingUpdateManyWithoutTransferPackageNestedInput = {
+  create?: Prisma.XOR<Prisma.CarBookingCreateWithoutTransferPackageInput, Prisma.CarBookingUncheckedCreateWithoutTransferPackageInput> | Prisma.CarBookingCreateWithoutTransferPackageInput[] | Prisma.CarBookingUncheckedCreateWithoutTransferPackageInput[]
+  connectOrCreate?: Prisma.CarBookingCreateOrConnectWithoutTransferPackageInput | Prisma.CarBookingCreateOrConnectWithoutTransferPackageInput[]
+  upsert?: Prisma.CarBookingUpsertWithWhereUniqueWithoutTransferPackageInput | Prisma.CarBookingUpsertWithWhereUniqueWithoutTransferPackageInput[]
+  createMany?: Prisma.CarBookingCreateManyTransferPackageInputEnvelope
+  set?: Prisma.CarBookingWhereUniqueInput | Prisma.CarBookingWhereUniqueInput[]
+  disconnect?: Prisma.CarBookingWhereUniqueInput | Prisma.CarBookingWhereUniqueInput[]
+  delete?: Prisma.CarBookingWhereUniqueInput | Prisma.CarBookingWhereUniqueInput[]
+  connect?: Prisma.CarBookingWhereUniqueInput | Prisma.CarBookingWhereUniqueInput[]
+  update?: Prisma.CarBookingUpdateWithWhereUniqueWithoutTransferPackageInput | Prisma.CarBookingUpdateWithWhereUniqueWithoutTransferPackageInput[]
+  updateMany?: Prisma.CarBookingUpdateManyWithWhereWithoutTransferPackageInput | Prisma.CarBookingUpdateManyWithWhereWithoutTransferPackageInput[]
+  deleteMany?: Prisma.CarBookingScalarWhereInput | Prisma.CarBookingScalarWhereInput[]
+}
+
+export type CarBookingUncheckedUpdateManyWithoutTransferPackageNestedInput = {
+  create?: Prisma.XOR<Prisma.CarBookingCreateWithoutTransferPackageInput, Prisma.CarBookingUncheckedCreateWithoutTransferPackageInput> | Prisma.CarBookingCreateWithoutTransferPackageInput[] | Prisma.CarBookingUncheckedCreateWithoutTransferPackageInput[]
+  connectOrCreate?: Prisma.CarBookingCreateOrConnectWithoutTransferPackageInput | Prisma.CarBookingCreateOrConnectWithoutTransferPackageInput[]
+  upsert?: Prisma.CarBookingUpsertWithWhereUniqueWithoutTransferPackageInput | Prisma.CarBookingUpsertWithWhereUniqueWithoutTransferPackageInput[]
+  createMany?: Prisma.CarBookingCreateManyTransferPackageInputEnvelope
+  set?: Prisma.CarBookingWhereUniqueInput | Prisma.CarBookingWhereUniqueInput[]
+  disconnect?: Prisma.CarBookingWhereUniqueInput | Prisma.CarBookingWhereUniqueInput[]
+  delete?: Prisma.CarBookingWhereUniqueInput | Prisma.CarBookingWhereUniqueInput[]
+  connect?: Prisma.CarBookingWhereUniqueInput | Prisma.CarBookingWhereUniqueInput[]
+  update?: Prisma.CarBookingUpdateWithWhereUniqueWithoutTransferPackageInput | Prisma.CarBookingUpdateWithWhereUniqueWithoutTransferPackageInput[]
+  updateMany?: Prisma.CarBookingUpdateManyWithWhereWithoutTransferPackageInput | Prisma.CarBookingUpdateManyWithWhereWithoutTransferPackageInput[]
+  deleteMany?: Prisma.CarBookingScalarWhereInput | Prisma.CarBookingScalarWhereInput[]
+}
+
 export type EnumBookingStatusFieldUpdateOperationsInput = {
   set?: $Enums.BookingStatus
 }
@@ -847,8 +913,8 @@ export type EnumPaymentStatusFieldUpdateOperationsInput = {
   set?: $Enums.PaymentStatus
 }
 
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
 }
 
 export type CarBookingCreateWithoutCarInput = {
@@ -868,18 +934,20 @@ export type CarBookingCreateWithoutCarInput = {
   cancelReason?: string | null
   driverFirstName: string
   driverLastName: string
-  driverBirthDate: Date | string
-  driverLicenseNumber: string
+  driverBirthDate?: Date | string | null
+  driverLicenseNumber?: string | null
   contactEmail: string
   contactPhone: string
   specialRequests?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  transferPackage?: Prisma.CarTransferPackageCreateNestedOneWithoutBookingsInput
 }
 
 export type CarBookingUncheckedCreateWithoutCarInput = {
   id?: string
   reference: string
+  transferPackageId?: string | null
   pickupLocation: string
   dropoffLocation: string
   pickupAt: Date | string
@@ -894,8 +962,8 @@ export type CarBookingUncheckedCreateWithoutCarInput = {
   cancelReason?: string | null
   driverFirstName: string
   driverLastName: string
-  driverBirthDate: Date | string
-  driverLicenseNumber: string
+  driverBirthDate?: Date | string | null
+  driverLicenseNumber?: string | null
   contactEmail: string
   contactPhone: string
   specialRequests?: string | null
@@ -936,6 +1004,7 @@ export type CarBookingScalarWhereInput = {
   id?: Prisma.UuidFilter<"CarBooking"> | string
   reference?: Prisma.StringFilter<"CarBooking"> | string
   carId?: Prisma.UuidFilter<"CarBooking"> | string
+  transferPackageId?: Prisma.UuidNullableFilter<"CarBooking"> | string | null
   pickupLocation?: Prisma.StringFilter<"CarBooking"> | string
   dropoffLocation?: Prisma.StringFilter<"CarBooking"> | string
   pickupAt?: Prisma.DateTimeFilter<"CarBooking"> | Date | string
@@ -950,8 +1019,8 @@ export type CarBookingScalarWhereInput = {
   cancelReason?: Prisma.StringNullableFilter<"CarBooking"> | string | null
   driverFirstName?: Prisma.StringFilter<"CarBooking"> | string
   driverLastName?: Prisma.StringFilter<"CarBooking"> | string
-  driverBirthDate?: Prisma.DateTimeFilter<"CarBooking"> | Date | string
-  driverLicenseNumber?: Prisma.StringFilter<"CarBooking"> | string
+  driverBirthDate?: Prisma.DateTimeNullableFilter<"CarBooking"> | Date | string | null
+  driverLicenseNumber?: Prisma.StringNullableFilter<"CarBooking"> | string | null
   contactEmail?: Prisma.StringFilter<"CarBooking"> | string
   contactPhone?: Prisma.StringFilter<"CarBooking"> | string
   specialRequests?: Prisma.StringNullableFilter<"CarBooking"> | string | null
@@ -959,7 +1028,7 @@ export type CarBookingScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"CarBooking"> | Date | string
 }
 
-export type CarBookingCreateManyCarInput = {
+export type CarBookingCreateWithoutTransferPackageInput = {
   id?: string
   reference: string
   pickupLocation: string
@@ -976,8 +1045,89 @@ export type CarBookingCreateManyCarInput = {
   cancelReason?: string | null
   driverFirstName: string
   driverLastName: string
-  driverBirthDate: Date | string
-  driverLicenseNumber: string
+  driverBirthDate?: Date | string | null
+  driverLicenseNumber?: string | null
+  contactEmail: string
+  contactPhone: string
+  specialRequests?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  car: Prisma.CarCreateNestedOneWithoutBookingsInput
+}
+
+export type CarBookingUncheckedCreateWithoutTransferPackageInput = {
+  id?: string
+  reference: string
+  carId: string
+  pickupLocation: string
+  dropoffLocation: string
+  pickupAt: Date | string
+  returnAt: Date | string
+  rentalDays: number
+  dailyPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
+  taxAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
+  currency: string
+  bookingStatus?: $Enums.BookingStatus
+  paymentStatus?: $Enums.PaymentStatus
+  cancelReason?: string | null
+  driverFirstName: string
+  driverLastName: string
+  driverBirthDate?: Date | string | null
+  driverLicenseNumber?: string | null
+  contactEmail: string
+  contactPhone: string
+  specialRequests?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type CarBookingCreateOrConnectWithoutTransferPackageInput = {
+  where: Prisma.CarBookingWhereUniqueInput
+  create: Prisma.XOR<Prisma.CarBookingCreateWithoutTransferPackageInput, Prisma.CarBookingUncheckedCreateWithoutTransferPackageInput>
+}
+
+export type CarBookingCreateManyTransferPackageInputEnvelope = {
+  data: Prisma.CarBookingCreateManyTransferPackageInput | Prisma.CarBookingCreateManyTransferPackageInput[]
+  skipDuplicates?: boolean
+}
+
+export type CarBookingUpsertWithWhereUniqueWithoutTransferPackageInput = {
+  where: Prisma.CarBookingWhereUniqueInput
+  update: Prisma.XOR<Prisma.CarBookingUpdateWithoutTransferPackageInput, Prisma.CarBookingUncheckedUpdateWithoutTransferPackageInput>
+  create: Prisma.XOR<Prisma.CarBookingCreateWithoutTransferPackageInput, Prisma.CarBookingUncheckedCreateWithoutTransferPackageInput>
+}
+
+export type CarBookingUpdateWithWhereUniqueWithoutTransferPackageInput = {
+  where: Prisma.CarBookingWhereUniqueInput
+  data: Prisma.XOR<Prisma.CarBookingUpdateWithoutTransferPackageInput, Prisma.CarBookingUncheckedUpdateWithoutTransferPackageInput>
+}
+
+export type CarBookingUpdateManyWithWhereWithoutTransferPackageInput = {
+  where: Prisma.CarBookingScalarWhereInput
+  data: Prisma.XOR<Prisma.CarBookingUpdateManyMutationInput, Prisma.CarBookingUncheckedUpdateManyWithoutTransferPackageInput>
+}
+
+export type CarBookingCreateManyCarInput = {
+  id?: string
+  reference: string
+  transferPackageId?: string | null
+  pickupLocation: string
+  dropoffLocation: string
+  pickupAt: Date | string
+  returnAt: Date | string
+  rentalDays: number
+  dailyPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
+  taxAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
+  currency: string
+  bookingStatus?: $Enums.BookingStatus
+  paymentStatus?: $Enums.PaymentStatus
+  cancelReason?: string | null
+  driverFirstName: string
+  driverLastName: string
+  driverBirthDate?: Date | string | null
+  driverLicenseNumber?: string | null
   contactEmail: string
   contactPhone: string
   specialRequests?: string | null
@@ -1002,18 +1152,20 @@ export type CarBookingUpdateWithoutCarInput = {
   cancelReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   driverFirstName?: Prisma.StringFieldUpdateOperationsInput | string
   driverLastName?: Prisma.StringFieldUpdateOperationsInput | string
-  driverBirthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  driverLicenseNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  driverBirthDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  driverLicenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactEmail?: Prisma.StringFieldUpdateOperationsInput | string
   contactPhone?: Prisma.StringFieldUpdateOperationsInput | string
   specialRequests?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  transferPackage?: Prisma.CarTransferPackageUpdateOneWithoutBookingsNestedInput
 }
 
 export type CarBookingUncheckedUpdateWithoutCarInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   reference?: Prisma.StringFieldUpdateOperationsInput | string
+  transferPackageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pickupLocation?: Prisma.StringFieldUpdateOperationsInput | string
   dropoffLocation?: Prisma.StringFieldUpdateOperationsInput | string
   pickupAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1028,8 +1180,8 @@ export type CarBookingUncheckedUpdateWithoutCarInput = {
   cancelReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   driverFirstName?: Prisma.StringFieldUpdateOperationsInput | string
   driverLastName?: Prisma.StringFieldUpdateOperationsInput | string
-  driverBirthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  driverLicenseNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  driverBirthDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  driverLicenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactEmail?: Prisma.StringFieldUpdateOperationsInput | string
   contactPhone?: Prisma.StringFieldUpdateOperationsInput | string
   specialRequests?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1040,6 +1192,7 @@ export type CarBookingUncheckedUpdateWithoutCarInput = {
 export type CarBookingUncheckedUpdateManyWithoutCarInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   reference?: Prisma.StringFieldUpdateOperationsInput | string
+  transferPackageId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   pickupLocation?: Prisma.StringFieldUpdateOperationsInput | string
   dropoffLocation?: Prisma.StringFieldUpdateOperationsInput | string
   pickupAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1054,8 +1207,116 @@ export type CarBookingUncheckedUpdateManyWithoutCarInput = {
   cancelReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   driverFirstName?: Prisma.StringFieldUpdateOperationsInput | string
   driverLastName?: Prisma.StringFieldUpdateOperationsInput | string
-  driverBirthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  driverLicenseNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  driverBirthDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  driverLicenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  contactPhone?: Prisma.StringFieldUpdateOperationsInput | string
+  specialRequests?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type CarBookingCreateManyTransferPackageInput = {
+  id?: string
+  reference: string
+  carId: string
+  pickupLocation: string
+  dropoffLocation: string
+  pickupAt: Date | string
+  returnAt: Date | string
+  rentalDays: number
+  dailyPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
+  taxAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalPrice: runtime.Decimal | runtime.DecimalJsLike | number | string
+  currency: string
+  bookingStatus?: $Enums.BookingStatus
+  paymentStatus?: $Enums.PaymentStatus
+  cancelReason?: string | null
+  driverFirstName: string
+  driverLastName: string
+  driverBirthDate?: Date | string | null
+  driverLicenseNumber?: string | null
+  contactEmail: string
+  contactPhone: string
+  specialRequests?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type CarBookingUpdateWithoutTransferPackageInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
+  pickupLocation?: Prisma.StringFieldUpdateOperationsInput | string
+  dropoffLocation?: Prisma.StringFieldUpdateOperationsInput | string
+  pickupAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  returnAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  rentalDays?: Prisma.IntFieldUpdateOperationsInput | number
+  dailyPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  taxAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  bookingStatus?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+  paymentStatus?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+  cancelReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  driverFirstName?: Prisma.StringFieldUpdateOperationsInput | string
+  driverLastName?: Prisma.StringFieldUpdateOperationsInput | string
+  driverBirthDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  driverLicenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  contactPhone?: Prisma.StringFieldUpdateOperationsInput | string
+  specialRequests?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  car?: Prisma.CarUpdateOneRequiredWithoutBookingsNestedInput
+}
+
+export type CarBookingUncheckedUpdateWithoutTransferPackageInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
+  carId?: Prisma.StringFieldUpdateOperationsInput | string
+  pickupLocation?: Prisma.StringFieldUpdateOperationsInput | string
+  dropoffLocation?: Prisma.StringFieldUpdateOperationsInput | string
+  pickupAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  returnAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  rentalDays?: Prisma.IntFieldUpdateOperationsInput | number
+  dailyPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  taxAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  bookingStatus?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+  paymentStatus?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+  cancelReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  driverFirstName?: Prisma.StringFieldUpdateOperationsInput | string
+  driverLastName?: Prisma.StringFieldUpdateOperationsInput | string
+  driverBirthDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  driverLicenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  contactPhone?: Prisma.StringFieldUpdateOperationsInput | string
+  specialRequests?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type CarBookingUncheckedUpdateManyWithoutTransferPackageInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
+  carId?: Prisma.StringFieldUpdateOperationsInput | string
+  pickupLocation?: Prisma.StringFieldUpdateOperationsInput | string
+  dropoffLocation?: Prisma.StringFieldUpdateOperationsInput | string
+  pickupAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  returnAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  rentalDays?: Prisma.IntFieldUpdateOperationsInput | number
+  dailyPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  taxAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  totalPrice?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  currency?: Prisma.StringFieldUpdateOperationsInput | string
+  bookingStatus?: Prisma.EnumBookingStatusFieldUpdateOperationsInput | $Enums.BookingStatus
+  paymentStatus?: Prisma.EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+  cancelReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  driverFirstName?: Prisma.StringFieldUpdateOperationsInput | string
+  driverLastName?: Prisma.StringFieldUpdateOperationsInput | string
+  driverBirthDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  driverLicenseNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contactEmail?: Prisma.StringFieldUpdateOperationsInput | string
   contactPhone?: Prisma.StringFieldUpdateOperationsInput | string
   specialRequests?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1069,6 +1330,7 @@ export type CarBookingSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   id?: boolean
   reference?: boolean
   carId?: boolean
+  transferPackageId?: boolean
   pickupLocation?: boolean
   dropoffLocation?: boolean
   pickupAt?: boolean
@@ -1091,12 +1353,14 @@ export type CarBookingSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   createdAt?: boolean
   updatedAt?: boolean
   car?: boolean | Prisma.CarDefaultArgs<ExtArgs>
+  transferPackage?: boolean | Prisma.CarBooking$transferPackageArgs<ExtArgs>
 }, ExtArgs["result"]["carBooking"]>
 
 export type CarBookingSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   reference?: boolean
   carId?: boolean
+  transferPackageId?: boolean
   pickupLocation?: boolean
   dropoffLocation?: boolean
   pickupAt?: boolean
@@ -1119,12 +1383,14 @@ export type CarBookingSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   createdAt?: boolean
   updatedAt?: boolean
   car?: boolean | Prisma.CarDefaultArgs<ExtArgs>
+  transferPackage?: boolean | Prisma.CarBooking$transferPackageArgs<ExtArgs>
 }, ExtArgs["result"]["carBooking"]>
 
 export type CarBookingSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   reference?: boolean
   carId?: boolean
+  transferPackageId?: boolean
   pickupLocation?: boolean
   dropoffLocation?: boolean
   pickupAt?: boolean
@@ -1147,12 +1413,14 @@ export type CarBookingSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   createdAt?: boolean
   updatedAt?: boolean
   car?: boolean | Prisma.CarDefaultArgs<ExtArgs>
+  transferPackage?: boolean | Prisma.CarBooking$transferPackageArgs<ExtArgs>
 }, ExtArgs["result"]["carBooking"]>
 
 export type CarBookingSelectScalar = {
   id?: boolean
   reference?: boolean
   carId?: boolean
+  transferPackageId?: boolean
   pickupLocation?: boolean
   dropoffLocation?: boolean
   pickupAt?: boolean
@@ -1176,26 +1444,31 @@ export type CarBookingSelectScalar = {
   updatedAt?: boolean
 }
 
-export type CarBookingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "reference" | "carId" | "pickupLocation" | "dropoffLocation" | "pickupAt" | "returnAt" | "rentalDays" | "dailyPrice" | "taxAmount" | "totalPrice" | "currency" | "bookingStatus" | "paymentStatus" | "cancelReason" | "driverFirstName" | "driverLastName" | "driverBirthDate" | "driverLicenseNumber" | "contactEmail" | "contactPhone" | "specialRequests" | "createdAt" | "updatedAt", ExtArgs["result"]["carBooking"]>
+export type CarBookingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "reference" | "carId" | "transferPackageId" | "pickupLocation" | "dropoffLocation" | "pickupAt" | "returnAt" | "rentalDays" | "dailyPrice" | "taxAmount" | "totalPrice" | "currency" | "bookingStatus" | "paymentStatus" | "cancelReason" | "driverFirstName" | "driverLastName" | "driverBirthDate" | "driverLicenseNumber" | "contactEmail" | "contactPhone" | "specialRequests" | "createdAt" | "updatedAt", ExtArgs["result"]["carBooking"]>
 export type CarBookingInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   car?: boolean | Prisma.CarDefaultArgs<ExtArgs>
+  transferPackage?: boolean | Prisma.CarBooking$transferPackageArgs<ExtArgs>
 }
 export type CarBookingIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   car?: boolean | Prisma.CarDefaultArgs<ExtArgs>
+  transferPackage?: boolean | Prisma.CarBooking$transferPackageArgs<ExtArgs>
 }
 export type CarBookingIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   car?: boolean | Prisma.CarDefaultArgs<ExtArgs>
+  transferPackage?: boolean | Prisma.CarBooking$transferPackageArgs<ExtArgs>
 }
 
 export type $CarBookingPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "CarBooking"
   objects: {
     car: Prisma.$CarPayload<ExtArgs>
+    transferPackage: Prisma.$CarTransferPackagePayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     reference: string
     carId: string
+    transferPackageId: string | null
     pickupLocation: string
     dropoffLocation: string
     pickupAt: Date
@@ -1210,8 +1483,8 @@ export type $CarBookingPayload<ExtArgs extends runtime.Types.Extensions.Internal
     cancelReason: string | null
     driverFirstName: string
     driverLastName: string
-    driverBirthDate: Date
-    driverLicenseNumber: string
+    driverBirthDate: Date | null
+    driverLicenseNumber: string | null
     contactEmail: string
     contactPhone: string
     specialRequests: string | null
@@ -1612,6 +1885,7 @@ readonly fields: CarBookingFieldRefs;
 export interface Prisma__CarBookingClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   car<T extends Prisma.CarDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CarDefaultArgs<ExtArgs>>): Prisma.Prisma__CarClient<runtime.Types.Result.GetResult<Prisma.$CarPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  transferPackage<T extends Prisma.CarBooking$transferPackageArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CarBooking$transferPackageArgs<ExtArgs>>): Prisma.Prisma__CarTransferPackageClient<runtime.Types.Result.GetResult<Prisma.$CarTransferPackagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1644,6 +1918,7 @@ export interface CarBookingFieldRefs {
   readonly id: Prisma.FieldRef<"CarBooking", 'String'>
   readonly reference: Prisma.FieldRef<"CarBooking", 'String'>
   readonly carId: Prisma.FieldRef<"CarBooking", 'String'>
+  readonly transferPackageId: Prisma.FieldRef<"CarBooking", 'String'>
   readonly pickupLocation: Prisma.FieldRef<"CarBooking", 'String'>
   readonly dropoffLocation: Prisma.FieldRef<"CarBooking", 'String'>
   readonly pickupAt: Prisma.FieldRef<"CarBooking", 'DateTime'>
@@ -2063,6 +2338,25 @@ export type CarBookingDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.In
    * Limit how many CarBookings to delete.
    */
   limit?: number
+}
+
+/**
+ * CarBooking.transferPackage
+ */
+export type CarBooking$transferPackageArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CarTransferPackage
+   */
+  select?: Prisma.CarTransferPackageSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CarTransferPackage
+   */
+  omit?: Prisma.CarTransferPackageOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CarTransferPackageInclude<ExtArgs> | null
+  where?: Prisma.CarTransferPackageWhereInput
 }
 
 /**

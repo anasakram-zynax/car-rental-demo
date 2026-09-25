@@ -17,6 +17,11 @@ enum CarStatus {
   INACTIVE @map("inactive")
 }
 
+enum ServiceType {
+  RENTAL   @map("rental")
+  TRANSFER @map("transfer")
+}
+
 enum BookingStatus {
   CONFIRMED @map("confirmed")
   CANCELLED @map("cancelled")
@@ -65,13 +70,18 @@ model Car {
   isRefundable Boolean @default(true) @map("is_refundable")
   featured     Boolean @default(false)
 
+  serviceType       ServiceType @default(RENTAL) @map("service_type")
+  withDriver        Boolean     @default(false) @map("with_driver")
+  availableQuantity Int         @default(1) @map("available_quantity")
+
   status CarStatus @default(ACTIVE)
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz()
 
-  images   CarImage[]
-  bookings CarBooking[]
+  images           CarImage[]
+  transferPackages CarTransferPackage[]
+  bookings         CarBooking[]
 
   @@index([city])
   @@index([carTypeId])
@@ -86,10 +96,28 @@ model CarImage {
   car   Car    @relation(fields: [carId], references: [id], onDelete: Cascade)
 
   url       String
+  publicId  String? @map("public_id")
   isDefault Boolean @default(false) @map("is_default")
 
   @@index([carId])
   @@map("car_image")
+}
+
+model CarTransferPackage {
+  id String @id @default(uuid()) @db.Uuid
+
+  carId String @map("car_id") @db.Uuid
+  car   Car    @relation(fields: [carId], references: [id], onDelete: Cascade)
+
+  fromLocation String  @map("from_location")
+  toLocation   String  @map("to_location")
+  price        Decimal @db.Decimal(10, 2)
+  currency     String
+
+  bookings CarBooking[]
+
+  @@index([carId])
+  @@map("car_transfer_package")
 }
 
 model CarBooking {
@@ -98,6 +126,9 @@ model CarBooking {
 
   carId String @map("car_id") @db.Uuid
   car   Car    @relation(fields: [carId], references: [id])
+
+  transferPackageId String?             @map("transfer_package_id") @db.Uuid
+  transferPackage   CarTransferPackage? @relation(fields: [transferPackageId], references: [id], onDelete: SetNull)
 
   pickupLocation  String @map("pickup_location")
   dropoffLocation String @map("dropoff_location")
@@ -118,10 +149,10 @@ model CarBooking {
 
   cancelReason String? @map("cancel_reason")
 
-  driverFirstName     String   @map("driver_first_name")
-  driverLastName      String   @map("driver_last_name")
-  driverBirthDate     DateTime @map("driver_birth_date") @db.Date
-  driverLicenseNumber String   @map("driver_license_number")
+  driverFirstName     String    @map("driver_first_name")
+  driverLastName      String    @map("driver_last_name")
+  driverBirthDate     DateTime? @map("driver_birth_date") @db.Date
+  driverLicenseNumber String?   @map("driver_license_number")
 
   contactEmail String @map("contact_email")
   contactPhone String @map("contact_phone")
@@ -132,6 +163,7 @@ model CarBooking {
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz()
 
   @@index([carId])
+  @@index([transferPackageId])
   @@index([bookingStatus])
   @@index([paymentStatus])
   @@index([pickupAt, returnAt])

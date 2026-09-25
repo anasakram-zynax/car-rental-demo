@@ -5,29 +5,28 @@ import { PageContainer } from "@/components/ui/page-container";
 import { CarsCatalog, CarsCatalogFallback } from "@/features/cars";
 
 export const metadata: Metadata = {
-  title: "Browse Cars",
-  description: "Explore the Northstar rental fleet and find your next car.",
+  title: "Find a Car",
+  description: "Search rental cars and private transfers for your next journey.",
 };
 
 export default function CarsPage() {
   return (
-    <PageContainer className="py-12 sm:py-16 lg:py-20">
-      <FadeUp className="max-w-3xl">
-        <p className="text-sm font-semibold tracking-[0.18em] text-accent uppercase">
-          The fleet
-        </p>
-        <h1 className="mt-3 text-balance text-4xl font-semibold tracking-[-0.05em] sm:text-5xl lg:text-6xl">
-          Find your drive.
-        </h1>
-        <p className="mt-5 max-w-2xl text-base leading-7 text-muted sm:text-lg sm:leading-8">
-          Explore our active collection, refine the daily rate and location,
-          then choose the car that fits the journey ahead.
-        </p>
-      </FadeUp>
+    <div className="home-theme min-h-full bg-[#f7faff] text-foreground">
+      <PageContainer className="py-8 sm:py-10 lg:py-12">
+        <FadeUp className="max-w-3xl">
+          <p className="text-sm font-semibold text-primary">Search the fleet</p>
+          <h1 className="mt-2 text-balance text-3xl font-semibold tracking-[-0.045em] sm:text-4xl lg:text-[2.75rem]">
+            Find the right car for your journey.
+          </h1>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-muted sm:text-base sm:leading-7">
+            Compare daily rentals and fixed-route transfers, then refine the results around your trip.
+          </p>
+        </FadeUp>
 
-      <Suspense fallback={<CarsCatalogFallback />}>
-        <CarsCatalog />
-      </Suspense>
-    </PageContainer>
+        <Suspense fallback={<CarsCatalogFallback />}>
+          <CarsCatalog />
+        </Suspense>
+      </PageContainer>
+    </div>
   );
 }

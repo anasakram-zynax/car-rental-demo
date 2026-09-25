@@ -13,6 +13,10 @@ import { PrismaClient } from '../src/shared/database/generated/prisma/client.js'
 const SUPPORTED_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp']);
 const CLOUDINARY_ROOT = 'car-rental/cars';
 const CLOUDINARY_DIAGNOSTIC_FOLDER = 'car-rental/diagnostics';
+const EXPECTED_CAR_COUNT = 30;
+const EXPECTED_TOTAL_IMAGE_COUNT = 98;
+const EXPECTED_ORIGINAL_CAR_IMAGE_COUNT = 4;
+const EXPECTED_NEW_CAR_IMAGE_COUNT = 3;
 const CLOUDINARY_ENV_VARIABLES = [
   'CLOUDINARY_CLOUD_NAME',
   'CLOUDINARY_API_KEY',
@@ -30,6 +34,7 @@ const SEED_PLACEHOLDERS: Readonly<Record<string, string>> = {
   'range-rover-sport-2024':
     'https://placehold.co/800x500?text=Range+Rover+Sport',
 };
+const ORIGINAL_CAR_SLUGS = new Set(Object.keys(SEED_PLACEHOLDERS));
 
 interface LocalImage {
   filename: string;
@@ -73,6 +78,16 @@ interface RunSummary {
   imagesUploaded: number;
   unmatchedFolders: number;
   missingFolders: number;
+}
+
+interface ImportVerification {
+  cars: number;
+  carsWithImages: number;
+  images: number;
+  defaultImagesValid: boolean;
+  cloudinaryUrlsValid: boolean;
+  imageCountsValid: boolean;
+  duplicateUrls: number;
 }
 
 class ImportConflictError extends Error {
@@ -241,6 +256,60 @@ function printPreflightReport(cars: CarRecord[], folders: ImageFolder[]) {
   const carsWithDatabaseImages = cars.filter((car) => car.images.length > 0);
   const candidates: ImportCandidate[] = [];
   const ambiguousCars: string[] = [];
+  const structuralErrors: string[] = [];
+  const normalizedFolderCounts = new Map<string, number>();
+
+  for (const folder of folders) {
+    const normalizedSlug = folder.slug.toLowerCase();
+    normalizedFolderCounts.set(
+      normalizedSlug,
+      (normalizedFolderCounts.get(normalizedSlug) ?? 0) + 1,
+    );
+  }
+
+  const duplicateFolderNames = [...normalizedFolderCounts.entries()]
+    .filter(([, count]) => count > 1)
+    .map(([slug]) => slug);
+  const totalImages = folders.reduce(
+    (total, folder) => total + folder.images.length,
+    0,
+  );
+
+  if (cars.length !== EXPECTED_CAR_COUNT) {
+    structuralErrors.push(
+      `Expected ${EXPECTED_CAR_COUNT} database cars, found ${cars.length}.`,
+    );
+  }
+
+  if (folders.length !== EXPECTED_CAR_COUNT) {
+    structuralErrors.push(
+      `Expected ${EXPECTED_CAR_COUNT} image folders, found ${folders.length}.`,
+    );
+  }
+
+  if (totalImages !== EXPECTED_TOTAL_IMAGE_COUNT) {
+    structuralErrors.push(
+      `Expected ${EXPECTED_TOTAL_IMAGE_COUNT} supported images, found ${totalImages}.`,
+    );
+  }
+
+  if (duplicateFolderNames.length > 0) {
+    structuralErrors.push(
+      `Duplicate folder slugs: ${duplicateFolderNames.join(', ')}.`,
+    );
+  }
+
+  for (const folder of folders) {
+    const expectedCount = ORIGINAL_CAR_SLUGS.has(folder.slug)
+      ? EXPECTED_ORIGINAL_CAR_IMAGE_COUNT
+      : EXPECTED_NEW_CAR_IMAGE_COUNT;
+
+    if (folder.images.length !== expectedCount) {
+      structuralErrors.push(
+        `${folder.slug} should contain ${expectedCount} supported images, found ${folder.images.length}.`,
+      );
+    }
+  }
 
   console.log(
     isDryRun ? '=== CAR IMAGE IMPORT DRY RUN ===' : '=== CAR IMAGE IMPORT ===',
@@ -311,6 +380,7 @@ function printPreflightReport(cars: CarRecord[], folders: ImageFolder[]) {
     missingCars.map((car) => car.slug),
   );
   printList('Ambiguous placeholder records', ambiguousCars);
+  printList('Structural dataset errors', structuralErrors);
 
   console.log('\n--- Preflight summary ---');
   console.log(`Cars in DB: ${cars.length}`);
@@ -318,9 +388,7 @@ function printPreflightReport(cars: CarRecord[], folders: ImageFolder[]) {
   console.log(`Matched folders: ${matchedFolders.length}`);
   console.log(`Unmatched folders: ${unmatchedFolders.length}`);
   console.log(`Missing car folders: ${missingCars.length}`);
-  console.log(
-    `Valid images: ${folders.reduce((total, folder) => total + folder.images.length, 0)}`,
-  );
+  console.log(`Valid images: ${totalImages}`);
   console.log(`Cars already have images: ${carsWithDatabaseImages.length}`);
   console.log(
     `Cars with exact seed placeholders: ${cars.filter((car) => classifyExistingImages(car) === 'seed-placeholder').length}`,
@@ -334,7 +402,95 @@ function printPreflightReport(cars: CarRecord[], folders: ImageFolder[]) {
     missingCars,
     invalidFolders,
     ambiguousCars,
+    structuralErrors,
   };
+}
+
+function isCloudinaryUrl(url: string) {
+  try {
+    const parsedUrl = new URL(url);
+    return (
+      parsedUrl.protocol === 'https:' &&
+      (parsedUrl.hostname === 'res.cloudinary.com' ||
+        parsedUrl.hostname.endsWith('.cloudinary.com'))
+    );
+  } catch {
+    return false;
+  }
+}
+
+async function verifyImportedDataset(): Promise<ImportVerification> {
+  const database = getPrismaClient();
+  const cars = await database.car.findMany({
+    orderBy: { slug: 'asc' },
+    select: {
+      slug: true,
+      images: {
+        select: { id: true, url: true, isDefault: true },
+      },
+    },
+  });
+  const images = cars.flatMap((car) => car.images);
+  const urls = images.map((image) => image.url);
+  const carsWithImages = cars.filter((car) => car.images.length > 0).length;
+  const defaultImagesValid = cars.every(
+    (car) => car.images.filter((image) => image.isDefault).length === 1,
+  );
+  const imageCountsValid = cars.every((car) => {
+    const expectedCount = ORIGINAL_CAR_SLUGS.has(car.slug)
+      ? EXPECTED_ORIGINAL_CAR_IMAGE_COUNT
+      : EXPECTED_NEW_CAR_IMAGE_COUNT;
+    return car.images.length === expectedCount;
+  });
+  const cloudinaryUrlsValid = cars.every((car) =>
+    car.images.every(
+      (image) =>
+        isCloudinaryUrl(image.url) &&
+        new URL(image.url).pathname.includes(
+          `/${CLOUDINARY_ROOT}/${car.slug}/`,
+        ),
+    ),
+  );
+  const duplicateUrls = urls.length - new Set(urls).size;
+  const verification: ImportVerification = {
+    cars: cars.length,
+    carsWithImages,
+    images: images.length,
+    defaultImagesValid,
+    cloudinaryUrlsValid,
+    imageCountsValid,
+    duplicateUrls,
+  };
+
+  console.log('\n--- Post-import verification ---');
+  console.log(`Cars in DB: ${verification.cars}`);
+  console.log(`Cars with images: ${verification.carsWithImages}`);
+  console.log(`CarImage rows: ${verification.images}`);
+  console.log(
+    `Expected per-car image counts: ${verification.imageCountsValid ? 'valid' : 'invalid'}`,
+  );
+  console.log(
+    `Exactly one default per car: ${verification.defaultImagesValid ? 'valid' : 'invalid'}`,
+  );
+  console.log(
+    `Cloudinary URL/folder ownership: ${verification.cloudinaryUrlsValid ? 'valid' : 'invalid'}`,
+  );
+  console.log(`Duplicate image URLs: ${verification.duplicateUrls}`);
+
+  const valid =
+    verification.cars === EXPECTED_CAR_COUNT &&
+    verification.carsWithImages === EXPECTED_CAR_COUNT &&
+    verification.images === EXPECTED_TOTAL_IMAGE_COUNT &&
+    verification.imageCountsValid &&
+    verification.defaultImagesValid &&
+    verification.cloudinaryUrlsValid &&
+    verification.duplicateUrls === 0;
+
+  if (!valid) {
+    throw new Error('Post-import database verification failed.');
+  }
+
+  return verification;
 }
 
 function printCloudinaryEnvironmentPresence() {
@@ -710,7 +866,8 @@ async function main() {
     report.unmatchedFolders.length > 0 ||
     report.missingCars.length > 0 ||
     report.invalidFolders.length > 0 ||
-    report.ambiguousCars.length > 0;
+    report.ambiguousCars.length > 0 ||
+    report.structuralErrors.length > 0;
 
   if (isDryRun) {
     printRunSummary({
@@ -763,7 +920,10 @@ async function main() {
 
   if (summary.carsFailed > 0) {
     process.exitCode = 1;
+    return;
   }
+
+  await verifyImportedDataset();
 }
 
 main()

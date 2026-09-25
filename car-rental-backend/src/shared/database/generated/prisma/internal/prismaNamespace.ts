@@ -400,6 +400,7 @@ export const ModelName = {
   CarType: 'CarType',
   Car: 'Car',
   CarImage: 'CarImage',
+  CarTransferPackage: 'CarTransferPackage',
   CarBooking: 'CarBooking'
 } as const
 
@@ -416,7 +417,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "carType" | "car" | "carImage" | "carBooking"
+    modelProps: "carType" | "car" | "carImage" | "carTransferPackage" | "carBooking"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -642,6 +643,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    CarTransferPackage: {
+      payload: Prisma.$CarTransferPackagePayload<ExtArgs>
+      fields: Prisma.CarTransferPackageFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CarTransferPackageFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarTransferPackagePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CarTransferPackageFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarTransferPackagePayload>
+        }
+        findFirst: {
+          args: Prisma.CarTransferPackageFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarTransferPackagePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CarTransferPackageFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarTransferPackagePayload>
+        }
+        findMany: {
+          args: Prisma.CarTransferPackageFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarTransferPackagePayload>[]
+        }
+        create: {
+          args: Prisma.CarTransferPackageCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarTransferPackagePayload>
+        }
+        createMany: {
+          args: Prisma.CarTransferPackageCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CarTransferPackageCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarTransferPackagePayload>[]
+        }
+        delete: {
+          args: Prisma.CarTransferPackageDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarTransferPackagePayload>
+        }
+        update: {
+          args: Prisma.CarTransferPackageUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarTransferPackagePayload>
+        }
+        deleteMany: {
+          args: Prisma.CarTransferPackageDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CarTransferPackageUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CarTransferPackageUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarTransferPackagePayload>[]
+        }
+        upsert: {
+          args: Prisma.CarTransferPackageUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CarTransferPackagePayload>
+        }
+        aggregate: {
+          args: Prisma.CarTransferPackageAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCarTransferPackage>
+        }
+        groupBy: {
+          args: Prisma.CarTransferPackageGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CarTransferPackageGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CarTransferPackageCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CarTransferPackageCountAggregateOutputType> | number
+        }
+      }
+    }
     CarBooking: {
       payload: Prisma.$CarBookingPayload<ExtArgs>
       fields: Prisma.CarBookingFieldRefs
@@ -782,6 +857,9 @@ export const CarScalarFieldEnum = {
   currency: 'currency',
   isRefundable: 'isRefundable',
   featured: 'featured',
+  serviceType: 'serviceType',
+  withDriver: 'withDriver',
+  availableQuantity: 'availableQuantity',
   status: 'status',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -794,16 +872,30 @@ export const CarImageScalarFieldEnum = {
   id: 'id',
   carId: 'carId',
   url: 'url',
+  publicId: 'publicId',
   isDefault: 'isDefault'
 } as const
 
 export type CarImageScalarFieldEnum = (typeof CarImageScalarFieldEnum)[keyof typeof CarImageScalarFieldEnum]
 
 
+export const CarTransferPackageScalarFieldEnum = {
+  id: 'id',
+  carId: 'carId',
+  fromLocation: 'fromLocation',
+  toLocation: 'toLocation',
+  price: 'price',
+  currency: 'currency'
+} as const
+
+export type CarTransferPackageScalarFieldEnum = (typeof CarTransferPackageScalarFieldEnum)[keyof typeof CarTransferPackageScalarFieldEnum]
+
+
 export const CarBookingScalarFieldEnum = {
   id: 'id',
   reference: 'reference',
   carId: 'carId',
+  transferPackageId: 'transferPackageId',
   pickupLocation: 'pickupLocation',
   dropoffLocation: 'dropoffLocation',
   pickupAt: 'pickupAt',
@@ -906,6 +998,20 @@ export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaMo
  * Reference to a field of type 'Boolean'
  */
 export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
+ * Reference to a field of type 'ServiceType'
+ */
+export type EnumServiceTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ServiceType'>
+    
+
+
+/**
+ * Reference to a field of type 'ServiceType[]'
+ */
+export type ListEnumServiceTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ServiceType[]'>
     
 
 
@@ -1132,6 +1238,7 @@ export type GlobalOmitConfig = {
   carType?: Prisma.CarTypeOmit
   car?: Prisma.CarOmit
   carImage?: Prisma.CarImageOmit
+  carTransferPackage?: Prisma.CarTransferPackageOmit
   carBooking?: Prisma.CarBookingOmit
 }
 

@@ -6,7 +6,7 @@ import { Header } from "@/components/layout/header";
 export default function MyBookingsLayout({ children }: { children: ReactNode }) {
   return (
     <GhostFibersBackground>
-      <div className="flex min-h-svh flex-col">
+      <div className="home-theme flex min-h-svh flex-col bg-[#f7faff] text-foreground">
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />

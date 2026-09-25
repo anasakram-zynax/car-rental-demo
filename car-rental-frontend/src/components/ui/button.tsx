@@ -3,9 +3,9 @@ import { cn } from "@/lib/cn";
 
 const buttonVariants = {
   primary:
-    "border border-primary bg-primary text-primary-foreground shadow-[0_8px_24px_rgba(21,27,35,0.16)] hover:-translate-y-0.5 hover:bg-[#252d37]",
+    "border border-primary bg-primary text-primary-foreground shadow-[0_7px_18px_rgba(18,91,196,0.18)] hover:-translate-y-px hover:brightness-95",
   secondary:
-    "border border-border bg-surface-elevated text-foreground shadow-sm hover:-translate-y-0.5 hover:border-[#c6cdd4] hover:bg-surface",
+    "border border-border bg-surface-elevated text-foreground shadow-sm hover:-translate-y-px hover:border-[#c6cdd4] hover:bg-surface",
   ghost:
     "border border-transparent bg-transparent text-foreground hover:bg-black/[0.045]",
 } as const;
@@ -27,7 +27,7 @@ export function buttonStyles({
   variant = "primary",
 }: Pick<ButtonProps, "className" | "size" | "variant"> = {}) {
   return cn(
-    "inline-flex shrink-0 items-center justify-center gap-2 rounded-control font-semibold transition-[transform,background-color,border-color,box-shadow] duration-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--ring)] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-45",
+    "inline-flex shrink-0 items-center justify-center gap-2 rounded-control font-semibold transition-[transform,filter,background-color,border-color,box-shadow] duration-200 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--ring)] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-45",
     buttonVariants[variant],
     buttonSizes[size],
     className,
