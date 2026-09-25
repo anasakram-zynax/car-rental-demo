@@ -23,11 +23,14 @@ export function Footer() {
             Northstar Rentals
           </Link>
           <p className="mt-4 leading-6">
-            Find rental cars and fixed-route transfers through one clear booking experience.
+            Find rental cars and fixed-route transfers through one clear booking
+            experience.
           </p>
         </div>
         <nav aria-label="Explore">
-          <h2 className="text-xs font-semibold tracking-[0.12em] text-foreground uppercase">Explore</h2>
+          <h2 className="text-xs font-semibold tracking-[0.12em] text-foreground uppercase">
+            Explore
+          </h2>
           <ul className="mt-4 grid gap-3">
             {exploreNavigation.map((item) => (
               <li key={item.href}>
@@ -42,7 +45,9 @@ export function Footer() {
           </ul>
         </nav>
         <nav aria-label="Management">
-          <h2 className="text-xs font-semibold tracking-[0.12em] text-foreground uppercase">Management</h2>
+          <h2 className="text-xs font-semibold tracking-[0.12em] text-foreground uppercase">
+            Management
+          </h2>
           <Link
             href="/admin"
             className="mt-4 inline-flex items-center gap-1.5 rounded text-muted outline-none transition-colors hover:text-primary focus-visible:ring-4 focus-visible:ring-[var(--ring)]"

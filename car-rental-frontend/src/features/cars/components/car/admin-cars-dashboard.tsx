@@ -76,7 +76,11 @@ export function AdminCarsDashboard() {
         </Link>
       </div>
       {actionError ? <ErrorNotice error={actionError} /> : null}
-      <Surface variant="elevated" className="mt-8 overflow-hidden border-white bg-white" padding="none">
+      <Surface
+        variant="elevated"
+        className="mt-8 overflow-hidden border-white bg-white"
+        padding="none"
+      >
         <div className="flex items-center justify-between gap-3 border-b border-border bg-[#f8fafd] px-5 py-4 sm:px-6">
           <div>
             <h2 className="font-semibold">Fleet inventory</h2>
@@ -175,14 +179,48 @@ function CarTableRow({
         <CarIdentity car={car} />
       </td>
       <td className="px-4 py-4">
-        <div className="flex flex-wrap gap-1.5"><Badge className={car.serviceType === "transfer" ? "border-blue-200 bg-blue-50 text-accent" : undefined} variant={car.serviceType === "rental" ? "accent" : "neutral"}>{car.serviceType === "rental" ? "Rental" : "Transfer"}</Badge>{car.withDriver ? <Badge variant="success">With Driver</Badge> : null}</div>
+        <div className="flex flex-wrap gap-1.5">
+          <Badge
+            className={
+              car.serviceType === "transfer"
+                ? "border-blue-200 bg-blue-50 text-accent"
+                : undefined
+            }
+            variant={car.serviceType === "rental" ? "accent" : "neutral"}
+          >
+            {car.serviceType === "rental" ? "Rental" : "Transfer"}
+          </Badge>
+          {car.withDriver ? <Badge variant="success">With Driver</Badge> : null}
+        </div>
       </td>
       <td className="px-4 py-4 text-muted">
-        <p>{car.year} · {car.transmission}</p><p className="mt-1 text-xs">{car.passengers} seats · {car.city}</p>
+        <p>
+          {car.year} · {car.transmission}
+        </p>
+        <p className="mt-1 text-xs">
+          {car.passengers} seats · {car.city}
+        </p>
       </td>
-      <td className="px-4 py-4"><span className="font-semibold">{car.availableQuantity}</span><span className="ml-1 text-xs text-muted">available</span></td>
+      <td className="px-4 py-4">
+        <span className="font-semibold">{car.availableQuantity}</span>
+        <span className="ml-1 text-xs text-muted">available</span>
+      </td>
       <td className="px-4 py-4 font-medium">
-        {car.serviceType === "rental" ? <>{formatCurrency(car.dailyPrice, car.currency)}<span className="block text-xs font-normal text-muted">per day</span></> : <>{car.transferPackages.length}<span className="ml-1 text-xs font-normal text-muted">fixed {car.transferPackages.length === 1 ? "route" : "routes"}</span></>}
+        {car.serviceType === "rental" ? (
+          <>
+            {formatCurrency(car.dailyPrice, car.currency)}
+            <span className="block text-xs font-normal text-muted">
+              per day
+            </span>
+          </>
+        ) : (
+          <>
+            {car.transferPackages.length}
+            <span className="ml-1 text-xs font-normal text-muted">
+              fixed {car.transferPackages.length === 1 ? "route" : "routes"}
+            </span>
+          </>
+        )}
       </td>
       <td className="px-4 py-4">
         <StatusBadge status={car.status} />
@@ -207,7 +245,20 @@ function CarMobileCard({
   return (
     <article className="p-5">
       <CarIdentity car={car} />
-      <div className="mt-4 flex flex-wrap gap-2"><Badge className={car.serviceType === "transfer" ? "border-blue-200 bg-blue-50 text-accent" : undefined} variant={car.serviceType === "rental" ? "accent" : "neutral"}>{car.serviceType === "rental" ? "Rental" : "Transfer"}</Badge>{car.withDriver ? <Badge variant="success">With Driver</Badge> : null}<StatusBadge status={car.status} /></div>
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Badge
+          className={
+            car.serviceType === "transfer"
+              ? "border-blue-200 bg-blue-50 text-accent"
+              : undefined
+          }
+          variant={car.serviceType === "rental" ? "accent" : "neutral"}
+        >
+          {car.serviceType === "rental" ? "Rental" : "Transfer"}
+        </Badge>
+        {car.withDriver ? <Badge variant="success">With Driver</Badge> : null}
+        <StatusBadge status={car.status} />
+      </div>
       <div className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
         <div>
           <p className="text-muted">Specs</p>
@@ -218,10 +269,15 @@ function CarMobileCard({
         <div>
           <p className="text-muted">Pricing</p>
           <p className="mt-1 font-medium">
-            {car.serviceType === "rental" ? `${formatCurrency(car.dailyPrice, car.currency)} / day` : `${car.transferPackages.length} fixed ${car.transferPackages.length === 1 ? "route" : "routes"}`}
+            {car.serviceType === "rental"
+              ? `${formatCurrency(car.dailyPrice, car.currency)} / day`
+              : `${car.transferPackages.length} fixed ${car.transferPackages.length === 1 ? "route" : "routes"}`}
           </p>
         </div>
-        <div><p className="text-muted">Availability</p><p className="mt-1 font-medium">{car.availableQuantity} vehicles</p></div>
+        <div>
+          <p className="text-muted">Availability</p>
+          <p className="mt-1 font-medium">{car.availableQuantity} vehicles</p>
+        </div>
       </div>
       <div className="mt-4 flex items-center justify-between gap-3">
         <span className="text-xs text-muted">{car.city}</span>

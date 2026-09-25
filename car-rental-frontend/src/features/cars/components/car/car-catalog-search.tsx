@@ -112,11 +112,21 @@ export function CarCatalogSearch({
           </span>
           <div>
             <h2 className="text-base font-semibold">Search your trip</h2>
-            <p className="text-xs text-muted">Choose a service and location to update results.</p>
+            <p className="text-xs text-muted">
+              Choose a service and location to update results.
+            </p>
           </div>
         </div>
-        {canClearSearch || hasPickupInput || hasDropoffInput || differentDropoff ? (
-          <Button type="button" variant="ghost" size="sm" onClick={handleClearSearch}>
+        {canClearSearch ||
+        hasPickupInput ||
+        hasDropoffInput ||
+        differentDropoff ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleClearSearch}
+          >
             <RotateCcw aria-hidden="true" size={15} /> Clear trip
           </Button>
         ) : null}
@@ -209,7 +219,9 @@ export function CarCatalogSearch({
       </div>
 
       {locationError ? (
-        <p role="alert" className="mt-3 text-sm font-medium text-danger">{locationError}</p>
+        <p role="alert" className="mt-3 text-sm font-medium text-danger">
+          {locationError}
+        </p>
       ) : null}
 
       <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
@@ -238,9 +250,11 @@ export function CarCatalogSearch({
             Different drop-off location
           </label>
           <InfoTooltip
-            label={serviceType === "rental"
-              ? "Rental searches use the pickup city."
-              : "Add a destination when you want results for one exact transfer route."}
+            label={
+              serviceType === "rental"
+                ? "Rental searches use the pickup city."
+                : "Add a destination when you want results for one exact transfer route."
+            }
           />
         </div>
       </div>

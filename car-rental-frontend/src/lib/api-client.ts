@@ -24,10 +24,7 @@ function getApiBaseUrl() {
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL;
 
   if (!apiBaseUrl) {
-    throw new ApiError(
-      "NEXT_PUBLIC_API_URL is not configured.",
-      0,
-    );
+    throw new ApiError("NEXT_PUBLIC_API_URL is not configured.", 0);
   }
 
   return apiBaseUrl.replace(/\/$/, "");
@@ -44,7 +41,10 @@ function getErrorMessage(payload: unknown, fallback: string) {
     return message;
   }
 
-  if (Array.isArray(message) && message.every((item) => typeof item === "string")) {
+  if (
+    Array.isArray(message) &&
+    message.every((item) => typeof item === "string")
+  ) {
     return message.join(" ");
   }
 
@@ -75,9 +75,14 @@ async function request<T>(
   const requestHeaders = new Headers(headers);
 
   requestHeaders.set("Accept", "application/json");
-  const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
+  const isFormData =
+    typeof FormData !== "undefined" && body instanceof FormData;
 
-  if (body !== undefined && !isFormData && !requestHeaders.has("Content-Type")) {
+  if (
+    body !== undefined &&
+    !isFormData &&
+    !requestHeaders.has("Content-Type")
+  ) {
     requestHeaders.set("Content-Type", "application/json");
   }
 
@@ -85,7 +90,11 @@ async function request<T>(
     ...requestOptions,
     method,
     headers: requestHeaders,
-    body: isFormData ? body : body === undefined ? undefined : JSON.stringify(body),
+    body: isFormData
+      ? body
+      : body === undefined
+        ? undefined
+        : JSON.stringify(body),
   });
   const payload = await parseJson(response);
   const fallbackMessage = response.ok

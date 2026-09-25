@@ -112,7 +112,9 @@ export function TransmissionCombobox({
               >
                 <Cog aria-hidden="true" size={15} className="shrink-0" />
                 <span className="flex-1">{option}</span>
-                {option === value ? <Check aria-hidden="true" size={15} /> : null}
+                {option === value ? (
+                  <Check aria-hidden="true" size={15} />
+                ) : null}
               </button>
             ))
           ) : (

@@ -6,7 +6,8 @@ import { CarsCatalog, CarsCatalogFallback } from "@/features/cars";
 
 export const metadata: Metadata = {
   title: "Find a Car",
-  description: "Search rental cars and private transfers for your next journey.",
+  description:
+    "Search rental cars and private transfers for your next journey.",
 };
 
 export default function CarsPage() {
@@ -19,7 +20,8 @@ export default function CarsPage() {
             Find the right car for your journey.
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-muted sm:text-base sm:leading-7">
-            Compare daily rentals and fixed-route transfers, then refine the results around your trip.
+            Compare daily rentals and fixed-route transfers, then refine the
+            results around your trip.
           </p>
         </FadeUp>
 

@@ -1,4 +1,8 @@
-import type { Car, CreateCarInput, UpdateCarInput } from "@/features/cars/types/car.types";
+import type {
+  Car,
+  CreateCarInput,
+  UpdateCarInput,
+} from "@/features/cars/types/car.types";
 import { apiClient } from "@/lib/api-client";
 
 export function createCar(input: CreateCarInput) {

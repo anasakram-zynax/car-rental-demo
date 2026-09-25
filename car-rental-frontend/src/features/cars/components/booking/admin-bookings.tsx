@@ -100,7 +100,11 @@ export function AdminBookings() {
           size={16}
         />
       </div>
-      <Surface variant="elevated" className="mt-6 overflow-hidden border-white bg-white" padding="none">
+      <Surface
+        variant="elevated"
+        className="mt-6 overflow-hidden border-white bg-white"
+        padding="none"
+      >
         <div className="flex items-center justify-between border-b border-border bg-[#f8fafd] px-5 py-4 sm:px-6">
           <div>
             <h2 className="font-semibold">All bookings</h2>
@@ -232,7 +236,14 @@ function BookingMobileCard({ booking }: { booking: CarBooking }) {
           <p className="mt-1 text-sm text-muted">
             {booking.driverFirstName} {booking.driverLastName}
           </p>
-          <Badge className={isTransfer ? "mt-2 border-blue-200 bg-blue-50 text-accent" : "mt-2"} variant={isTransfer ? "neutral" : "accent"}>
+          <Badge
+            className={
+              isTransfer
+                ? "mt-2 border-blue-200 bg-blue-50 text-accent"
+                : "mt-2"
+            }
+            variant={isTransfer ? "neutral" : "accent"}
+          >
             {isTransfer ? "Transfer" : "Rental"}
           </Badge>
         </div>
@@ -520,7 +531,12 @@ export function AdminBookingDetail({ reference }: { reference: string }) {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Badge className={isTransfer ? "border-blue-200 bg-blue-50 text-accent" : undefined} variant={isTransfer ? "neutral" : "accent"}>
+          <Badge
+            className={
+              isTransfer ? "border-blue-200 bg-blue-50 text-accent" : undefined
+            }
+            variant={isTransfer ? "neutral" : "accent"}
+          >
             {isTransfer ? "Transfer" : "Rental"}
           </Badge>
           <BookingStatusBadge status={booking.bookingStatus} />
@@ -557,7 +573,10 @@ export function AdminBookingDetail({ reference }: { reference: string }) {
           padding="lg"
           className="h-fit border-white bg-white lg:sticky lg:top-6"
         >
-          <div className="flex items-center gap-1.5"><p className="text-sm font-semibold">Payment status</p><InfoTooltip label="Payment transitions follow existing server rules and do not change the booking status." /></div>
+          <div className="flex items-center gap-1.5">
+            <p className="text-sm font-semibold">Payment status</p>
+            <InfoTooltip label="Payment transitions follow existing server rules and do not change the booking status." />
+          </div>
           <div className="mt-4">
             <PaymentControl booking={booking} />
           </div>

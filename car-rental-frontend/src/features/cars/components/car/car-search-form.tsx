@@ -60,18 +60,25 @@ export function CarSearchForm({
         ) : null}
       </div>
 
-      <fieldset disabled={disabled} className="mt-5 grid gap-5 border-t border-border pt-5">
+      <fieldset
+        disabled={disabled}
+        className="mt-5 grid gap-5 border-t border-border pt-5"
+      >
         <legend className="sr-only">Vehicle filters</legend>
         <label className="grid gap-2 text-sm font-medium text-foreground">
           Transmission
           <select
             value={selectedTransmission ?? ""}
-            onChange={(event) => onTransmissionChange(event.target.value || undefined)}
+            onChange={(event) =>
+              onTransmissionChange(event.target.value || undefined)
+            }
             className="h-10 w-full rounded-control border border-border bg-white px-3 text-sm font-normal text-foreground outline-none transition-[border-color,box-shadow] focus:border-primary focus:ring-4 focus:ring-[var(--ring)]"
           >
             <option value="">Any transmission</option>
             {transmissionOptions.map((option) => (
-              <option key={option} value={option}>{option}</option>
+              <option key={option} value={option}>
+                {option}
+              </option>
             ))}
           </select>
         </label>
@@ -79,12 +86,16 @@ export function CarSearchForm({
           Fuel type
           <select
             value={selectedFuelType ?? ""}
-            onChange={(event) => onFuelTypeChange(event.target.value || undefined)}
+            onChange={(event) =>
+              onFuelTypeChange(event.target.value || undefined)
+            }
             className="h-10 w-full rounded-control border border-border bg-white px-3 text-sm font-normal text-foreground outline-none transition-[border-color,box-shadow] focus:border-primary focus:ring-4 focus:ring-[var(--ring)]"
           >
             <option value="">Any fuel type</option>
             {fuelTypeOptions.map((option) => (
-              <option key={option} value={option}>{option}</option>
+              <option key={option} value={option}>
+                {option}
+              </option>
             ))}
           </select>
         </label>
@@ -92,26 +103,41 @@ export function CarSearchForm({
           Minimum baggage
           <select
             value={selectedMinBaggage ?? ""}
-            onChange={(event) => onMinBaggageChange(event.target.value ? Number(event.target.value) : undefined)}
+            onChange={(event) =>
+              onMinBaggageChange(
+                event.target.value ? Number(event.target.value) : undefined,
+              )
+            }
             className="h-10 w-full rounded-control border border-border bg-white px-3 text-sm font-normal text-foreground outline-none transition-[border-color,box-shadow] focus:border-primary focus:ring-4 focus:ring-[var(--ring)]"
           >
             <option value="">Any capacity</option>
-            {Array.from({ length: maxBaggage }, (_, index) => index + 1).map((capacity) => (
-              <option key={capacity} value={capacity}>{capacity}+ bags</option>
-            ))}
+            {Array.from({ length: maxBaggage }, (_, index) => index + 1).map(
+              (capacity) => (
+                <option key={capacity} value={capacity}>
+                  {capacity}+ bags
+                </option>
+              ),
+            )}
           </select>
         </label>
       </fieldset>
 
-      <fieldset disabled={disabled} className="mt-5 border-t border-border pt-5">
+      <fieldset
+        disabled={disabled}
+        className="mt-5 border-t border-border pt-5"
+      >
         <legend className="flex items-center gap-1 text-sm font-medium text-foreground">
           Price range
           <InfoTooltip label="Drag either handle. Results update when you release it." />
         </legend>
         <div className="mt-3 flex items-center justify-between gap-3 text-sm font-semibold text-foreground">
-          <span className="rounded-md bg-[#edf4fd] px-2 py-1">{formatCurrency(priceValue[0], currency)}</span>
+          <span className="rounded-md bg-[#edf4fd] px-2 py-1">
+            {formatCurrency(priceValue[0], currency)}
+          </span>
           <span aria-hidden="true" className="h-px flex-1 bg-border" />
-          <span className="rounded-md bg-[#edf4fd] px-2 py-1">{formatCurrency(priceValue[1], currency)}</span>
+          <span className="rounded-md bg-[#edf4fd] px-2 py-1">
+            {formatCurrency(priceValue[1], currency)}
+          </span>
         </div>
         {priceBounds[1] > priceBounds[0] ? (
           <Slider.Root
@@ -138,7 +164,9 @@ export function CarSearchForm({
             />
           </Slider.Root>
         ) : (
-          <p className="mt-4 text-xs leading-5 text-muted">Price options are unavailable for this service.</p>
+          <p className="mt-4 text-xs leading-5 text-muted">
+            Price options are unavailable for this service.
+          </p>
         )}
       </fieldset>
     </div>

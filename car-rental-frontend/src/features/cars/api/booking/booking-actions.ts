@@ -7,7 +7,9 @@ export interface CancelBookingInput {
 }
 
 export function getBooking(reference: string) {
-  return apiClient.get<CarBooking>(`/car-bookings/${encodeURIComponent(reference)}`);
+  return apiClient.get<CarBooking>(
+    `/car-bookings/${encodeURIComponent(reference)}`,
+  );
 }
 
 export function cancelBooking({ reference, reason }: CancelBookingInput) {
