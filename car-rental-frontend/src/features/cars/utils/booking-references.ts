@@ -13,7 +13,14 @@ export function readBookingReferences() {
 
     if (!Array.isArray(parsed)) return [];
 
-    return [...new Set(parsed.filter((item): item is string => typeof item === "string").map(normalizeReference).filter(Boolean))];
+    return [
+      ...new Set(
+        parsed
+          .filter((item): item is string => typeof item === "string")
+          .map(normalizeReference)
+          .filter(Boolean),
+      ),
+    ];
   } catch {
     return [];
   }
@@ -28,7 +35,10 @@ export function saveBookingReference(reference: string) {
   try {
     const references = readBookingReferences();
     if (!references.includes(normalized)) {
-      window.localStorage.setItem(BOOKING_REFERENCES_KEY, JSON.stringify([...references, normalized]));
+      window.localStorage.setItem(
+        BOOKING_REFERENCES_KEY,
+        JSON.stringify([...references, normalized]),
+      );
     }
   } catch {
     // Remembering references is optional; server-side booking data remains valid.
@@ -42,7 +52,9 @@ export function removeBookingReference(reference: string) {
   try {
     window.localStorage.setItem(
       BOOKING_REFERENCES_KEY,
-      JSON.stringify(readBookingReferences().filter((item) => item !== normalized)),
+      JSON.stringify(
+        readBookingReferences().filter((item) => item !== normalized),
+      ),
     );
   } catch {
     // A stale local value must never block the rest of the page.

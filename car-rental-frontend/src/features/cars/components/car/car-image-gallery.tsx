@@ -13,13 +13,17 @@ interface CarImageGalleryProps {
 
 export function CarImageGallery({ carName, images }: CarImageGalleryProps) {
   const orderedImages = useMemo(
-    () => [...images].sort((first, second) => Number(second.isDefault) - Number(first.isDefault)),
+    () =>
+      [...images].sort(
+        (first, second) => Number(second.isDefault) - Number(first.isDefault),
+      ),
     [images],
   );
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [failedImageIds, setFailedImageIds] = useState<string[]>([]);
   const selectedImage = orderedImages[selectedIndex];
-  const selectedImageFailed = selectedImage && failedImageIds.includes(selectedImage.id);
+  const selectedImageFailed =
+    selectedImage && failedImageIds.includes(selectedImage.id);
 
   if (!selectedImage || selectedImageFailed) {
     return (
@@ -29,7 +33,12 @@ export function CarImageGallery({ carName, images }: CarImageGalleryProps) {
         className="grid aspect-[16/10] place-items-center rounded-card border border-border bg-[#eef2f7] text-muted shadow-card"
       >
         <div className="grid gap-3 text-center">
-          <CarFront aria-hidden="true" className="mx-auto" size={42} strokeWidth={1.35} />
+          <CarFront
+            aria-hidden="true"
+            className="mx-auto"
+            size={42}
+            strokeWidth={1.35}
+          />
           <span className="text-sm font-medium">Image unavailable</span>
         </div>
       </div>
@@ -49,14 +58,19 @@ export function CarImageGallery({ carName, images }: CarImageGalleryProps) {
           className="object-cover object-center p-2 sm:p-1"
           onError={() =>
             setFailedImageIds((current) =>
-              current.includes(selectedImage.id) ? current : [...current, selectedImage.id],
+              current.includes(selectedImage.id)
+                ? current
+                : [...current, selectedImage.id],
             )
           }
         />
       </div>
 
       {orderedImages.length > 1 ? (
-        <div className="mt-4 flex gap-3 overflow-x-auto pb-1" aria-label="Choose car image">
+        <div
+          className="mt-4 flex gap-3 overflow-x-auto pb-1"
+          aria-label="Choose car image"
+        >
           {orderedImages.map((image, index) => {
             const isSelected = index === selectedIndex;
             const isFailed = failedImageIds.includes(image.id);
@@ -88,7 +102,9 @@ export function CarImageGallery({ carName, images }: CarImageGalleryProps) {
                     className="object-cover object-center p-1"
                     onError={() =>
                       setFailedImageIds((current) =>
-                        current.includes(image.id) ? current : [...current, image.id],
+                        current.includes(image.id)
+                          ? current
+                          : [...current, image.id],
                       )
                     }
                   />

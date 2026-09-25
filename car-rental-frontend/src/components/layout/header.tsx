@@ -37,13 +37,19 @@ export function Header() {
         </Link>
         <button
           type="button"
-          aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+          aria-label={
+            menuOpen ? "Close navigation menu" : "Open navigation menu"
+          }
           aria-expanded={menuOpen}
           aria-controls="customer-navigation"
           onClick={() => setMenuOpen((open) => !open)}
           className="grid size-10 place-items-center rounded-control border border-border bg-white text-foreground outline-none transition-colors hover:bg-background focus-visible:ring-4 focus-visible:ring-[var(--ring)] md:hidden"
         >
-          {menuOpen ? <X aria-hidden="true" size={20} /> : <Menu aria-hidden="true" size={20} />}
+          {menuOpen ? (
+            <X aria-hidden="true" size={20} />
+          ) : (
+            <Menu aria-hidden="true" size={20} />
+          )}
         </button>
         <nav
           id="customer-navigation"

@@ -18,7 +18,5 @@ export function getTransferDropoffLocations(
 ) {
   const query = locationQuery(search);
   query.set("pickupLocation", pickupLocation);
-  return apiClient.get<string[]>(
-    `/cars/transfer-locations/dropoffs?${query}`,
-  );
+  return apiClient.get<string[]>(`/cars/transfer-locations/dropoffs?${query}`);
 }

@@ -255,8 +255,9 @@ export function GradientWaves({
       const width = Math.max(1, Math.floor(rect.width));
       const canvasHeight = Math.max(1, Math.floor(rect.height));
       renderer.setSize(width, canvasHeight);
-      const resolution = (program.uniforms.iResolution as { value: Float32Array })
-        .value;
+      const resolution = (
+        program.uniforms.iResolution as { value: Float32Array }
+      ).value;
       resolution[0] = gl.drawingBufferWidth;
       resolution[1] = gl.drawingBufferHeight;
       renderer.render({ scene: mesh });

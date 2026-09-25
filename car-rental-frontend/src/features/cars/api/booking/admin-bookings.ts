@@ -1,4 +1,7 @@
-import type { CarBooking, PaymentStatus } from "@/features/cars/types/car.types";
+import type {
+  CarBooking,
+  PaymentStatus,
+} from "@/features/cars/types/car.types";
 import { apiClient } from "@/lib/api-client";
 
 export function getAdminBookings() {
@@ -6,9 +9,17 @@ export function getAdminBookings() {
 }
 
 export function getAdminBooking(reference: string) {
-  return apiClient.get<CarBooking>(`/admin/car-bookings/${encodeURIComponent(reference)}`);
+  return apiClient.get<CarBooking>(
+    `/admin/car-bookings/${encodeURIComponent(reference)}`,
+  );
 }
 
-export function updateAdminBookingPaymentStatus(reference: string, paymentStatus: Extract<PaymentStatus, "paid" | "refunded">) {
-  return apiClient.patch<CarBooking>(`/admin/car-bookings/${encodeURIComponent(reference)}/payment-status`, { paymentStatus });
+export function updateAdminBookingPaymentStatus(
+  reference: string,
+  paymentStatus: Extract<PaymentStatus, "paid" | "refunded">,
+) {
+  return apiClient.patch<CarBooking>(
+    `/admin/car-bookings/${encodeURIComponent(reference)}/payment-status`,
+    { paymentStatus },
+  );
 }

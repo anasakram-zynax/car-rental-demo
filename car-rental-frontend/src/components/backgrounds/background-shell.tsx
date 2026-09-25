@@ -15,10 +15,15 @@ export function BackgroundShell({
   visualClassName,
 }: BackgroundShellProps) {
   return (
-    <div className={cn("relative isolate min-h-svh overflow-x-clip", className)}>
+    <div
+      className={cn("relative isolate min-h-svh overflow-x-clip", className)}
+    >
       <div
         aria-hidden="true"
-        className={cn("pointer-events-none absolute inset-0 -z-10", visualClassName)}
+        className={cn(
+          "pointer-events-none absolute inset-0 -z-10",
+          visualClassName,
+        )}
       >
         {visual}
       </div>

@@ -60,7 +60,10 @@ export function TransferLocationCombobox({
   );
   const query = kind === "pickup" ? pickups : dropoffs;
   const options = query.data ?? [];
-  const highlightedIndex = Math.min(activeIndex, Math.max(options.length - 1, 0));
+  const highlightedIndex = Math.min(
+    activeIndex,
+    Math.max(options.length - 1, 0),
+  );
 
   useLayoutEffect(() => {
     if (!open || disabled || !dropdownRef.current) {
@@ -69,7 +72,9 @@ export function TransferLocationCombobox({
     }
 
     const frame = window.requestAnimationFrame(() => {
-      onDropdownLayout?.(dropdownRef.current?.getBoundingClientRect().bottom ?? null);
+      onDropdownLayout?.(
+        dropdownRef.current?.getBoundingClientRect().bottom ?? null,
+      );
     });
 
     return () => window.cancelAnimationFrame(frame);
@@ -124,7 +129,11 @@ export function TransferLocationCombobox({
           setOpen(true);
           if (event.target.value !== value) onSelect("");
         }}
-        placeholder={kind === "pickup" ? "Search transfer origins" : "Search valid destinations"}
+        placeholder={
+          kind === "pickup"
+            ? "Search transfer origins"
+            : "Search valid destinations"
+        }
         autoComplete="off"
         className="h-11 shadow-none focus:border-primary"
         role="combobox"
@@ -142,7 +151,11 @@ export function TransferLocationCombobox({
         >
           {query.isFetching ? (
             <p className="flex items-center gap-2 px-3 py-2.5 text-sm text-muted">
-              <LoaderCircle className="animate-spin" aria-hidden="true" size={16} />
+              <LoaderCircle
+                className="animate-spin"
+                aria-hidden="true"
+                size={16}
+              />
               Loading locations…
             </p>
           ) : options.length > 0 ? (
@@ -165,7 +178,9 @@ export function TransferLocationCombobox({
               </button>
             ))
           ) : (
-            <p className="px-3 py-2.5 text-sm text-muted">No matching locations.</p>
+            <p className="px-3 py-2.5 text-sm text-muted">
+              No matching locations.
+            </p>
           )}
         </div>
       ) : null}

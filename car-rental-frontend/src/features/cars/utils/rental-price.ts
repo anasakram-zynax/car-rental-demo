@@ -16,11 +16,17 @@ export function calculateRentalEstimate(
   const pickupTime = new Date(pickupAt).getTime();
   const returnTime = new Date(returnAt).getTime();
 
-  if (!Number.isFinite(pickupTime) || !Number.isFinite(returnTime) || returnTime <= pickupTime) {
+  if (
+    !Number.isFinite(pickupTime) ||
+    !Number.isFinite(returnTime) ||
+    returnTime <= pickupTime
+  ) {
     return null;
   }
 
-  const rentalDays = Math.ceil((returnTime - pickupTime) / MILLISECONDS_PER_DAY);
+  const rentalDays = Math.ceil(
+    (returnTime - pickupTime) / MILLISECONDS_PER_DAY,
+  );
   const subtotal = rentalDays * dailyPrice;
   const taxAmount = subtotal * TAX_RATE;
 
