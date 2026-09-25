@@ -11,23 +11,22 @@ export const metadata: Metadata = {
 
 export default function CarsPage() {
   return (
-    <PageContainer className="py-12 sm:py-16 lg:py-20">
-      <FadeUp className="max-w-3xl">
-        <p className="text-sm font-semibold tracking-[0.18em] text-accent uppercase">
-          Search the fleet
-        </p>
-        <h1 className="mt-3 text-balance text-4xl font-semibold tracking-[-0.05em] sm:text-5xl lg:text-6xl">
-          Find the right car for the journey.
-        </h1>
-        <p className="mt-5 max-w-2xl text-base leading-7 text-muted sm:text-lg sm:leading-8">
-          Compare self-drive rentals and private transfers, then refine the
-          results around the route and vehicle details that matter to you.
-        </p>
-      </FadeUp>
+    <div className="home-theme min-h-full bg-[#f7faff] text-foreground">
+      <PageContainer className="py-8 sm:py-10 lg:py-12">
+        <FadeUp className="max-w-3xl">
+          <p className="text-sm font-semibold text-primary">Search the fleet</p>
+          <h1 className="mt-2 text-balance text-3xl font-semibold tracking-[-0.045em] sm:text-4xl lg:text-[2.75rem]">
+            Find the right car for your journey.
+          </h1>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-muted sm:text-base sm:leading-7">
+            Compare daily rentals and fixed-route transfers, then refine the results around your trip.
+          </p>
+        </FadeUp>
 
-      <Suspense fallback={<CarsCatalogFallback />}>
-        <CarsCatalog />
-      </Suspense>
-    </PageContainer>
+        <Suspense fallback={<CarsCatalogFallback />}>
+          <CarsCatalog />
+        </Suspense>
+      </PageContainer>
+    </div>
   );
 }

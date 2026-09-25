@@ -6,10 +6,20 @@ function label(value: string) {
 }
 
 export function BookingStatusBadge({ status }: { status: BookingStatus }) {
-  return <Badge variant={status === "confirmed" ? "success" : "neutral"}>{label(status)}</Badge>;
+  return (
+    <Badge className="gap-1.5" variant={status === "confirmed" ? "success" : "neutral"}>
+      <span aria-hidden="true" className="size-1.5 rounded-full bg-current opacity-75" />
+      {label(status)}
+    </Badge>
+  );
 }
 
 export function PaymentStatusBadge({ status }: { status: PaymentStatus }) {
   const variant = status === "paid" ? "success" : status === "refunded" ? "accent" : "warning";
-  return <Badge variant={variant}>{label(status)}</Badge>;
+  return (
+    <Badge className="gap-1.5" variant={variant}>
+      <span aria-hidden="true" className="size-1.5 rounded-full bg-current opacity-75" />
+      {label(status)}
+    </Badge>
+  );
 }

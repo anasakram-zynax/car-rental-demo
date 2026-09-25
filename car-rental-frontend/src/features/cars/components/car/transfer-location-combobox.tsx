@@ -126,6 +126,7 @@ export function TransferLocationCombobox({
         }}
         placeholder={kind === "pickup" ? "Search transfer origins" : "Search valid destinations"}
         autoComplete="off"
+        className="h-11 shadow-none focus:border-primary"
         role="combobox"
         aria-autocomplete="list"
         aria-expanded={open}
@@ -137,7 +138,7 @@ export function TransferLocationCombobox({
           ref={dropdownRef}
           id={listId}
           role="listbox"
-          className="absolute top-full right-0 left-0 z-50 mt-2 max-h-56 overflow-y-auto rounded-control border border-border bg-surface-elevated p-1.5 shadow-elevated"
+          className="absolute top-full right-0 left-0 z-50 mt-2 max-h-56 overflow-y-auto rounded-control border border-border bg-white p-1.5 shadow-elevated"
         >
           {query.isFetching ? (
             <p className="flex items-center gap-2 px-3 py-2.5 text-sm text-muted">
@@ -155,8 +156,8 @@ export function TransferLocationCombobox({
                 onClick={() => select(option)}
                 className={`flex w-full items-center gap-2 rounded-[calc(var(--radius-control)-0.2rem)] px-3 py-2.5 text-left text-sm outline-none transition-colors ${
                   index === highlightedIndex
-                    ? "bg-black/[0.055] text-foreground"
-                    : "text-muted hover:bg-black/[0.04] hover:text-foreground"
+                    ? "bg-[#edf4fd] text-primary"
+                    : "text-muted hover:bg-[#f4f7fb] hover:text-foreground"
                 }`}
               >
                 <MapPin aria-hidden="true" size={15} className="shrink-0" />

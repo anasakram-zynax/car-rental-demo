@@ -63,6 +63,24 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+.home-theme {
+  --background: #f5f7fb;
+  --foreground: #10203d;
+  --muted: #637087;
+  --surface: #f8faff;
+  --surface-elevated: #ffffff;
+  --border: #dce3ee;
+  --primary: #1261c9;
+  --primary-foreground: #ffffff;
+  --accent: #1261c9;
+  --accent-secondary: #16335f;
+  --ring: rgba(18, 97, 201, 0.28);
+  --app-radius-control: 0.65rem;
+  --app-radius-card: 0.9rem;
+  --app-shadow-card: 0 8px 28px rgba(25, 50, 88, 0.07);
+  --app-shadow-elevated: 0 18px 48px rgba(25, 50, 88, 0.12);
+}
+
 button,
 input,
 textarea,

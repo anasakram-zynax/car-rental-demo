@@ -26,7 +26,7 @@ export function CarImageGallery({ carName, images }: CarImageGalleryProps) {
       <div
         role="img"
         aria-label={`${carName} image unavailable`}
-        className="grid aspect-[16/10] place-items-center rounded-card border border-border bg-surface-elevated text-muted shadow-card"
+        className="grid aspect-[16/10] place-items-center rounded-card border border-border bg-[#eef2f7] text-muted shadow-card"
       >
         <div className="grid gap-3 text-center">
           <CarFront aria-hidden="true" className="mx-auto" size={42} strokeWidth={1.35} />
@@ -38,7 +38,7 @@ export function CarImageGallery({ carName, images }: CarImageGalleryProps) {
 
   return (
     <section aria-label={`${carName} image gallery`}>
-      <div className="relative aspect-[16/10] overflow-hidden rounded-card border border-white/80 bg-surface-elevated shadow-card">
+      <div className="relative aspect-[16/10] overflow-hidden rounded-card border border-border/80 bg-[#eef2f7] shadow-[0_18px_50px_rgba(25,50,88,0.10)]">
         <Image
           key={selectedImage.id}
           src={selectedImage.url}
@@ -46,7 +46,7 @@ export function CarImageGallery({ carName, images }: CarImageGalleryProps) {
           fill
           loading="eager"
           sizes="(min-width: 1024px) 58vw, 100vw"
-          className="object-cover"
+          className="object-cover object-center p-2 sm:p-1"
           onError={() =>
             setFailedImageIds((current) =>
               current.includes(selectedImage.id) ? current : [...current, selectedImage.id],
@@ -69,7 +69,7 @@ export function CarImageGallery({ carName, images }: CarImageGalleryProps) {
                 aria-pressed={isSelected}
                 onClick={() => setSelectedIndex(index)}
                 className={cn(
-                  "relative h-16 w-24 shrink-0 overflow-hidden rounded-control border bg-surface outline-none transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 focus-visible:ring-4 focus-visible:ring-[var(--ring)] sm:h-20 sm:w-32",
+                  "relative h-16 w-24 shrink-0 overflow-hidden rounded-control border bg-[#eef2f7] outline-none transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 focus-visible:ring-4 focus-visible:ring-[var(--ring)] sm:h-20 sm:w-32",
                   isSelected
                     ? "border-accent-secondary shadow-[0_0_0_2px_rgba(48,93,104,0.18)]"
                     : "border-border hover:border-accent-secondary/50",
@@ -85,7 +85,7 @@ export function CarImageGallery({ carName, images }: CarImageGalleryProps) {
                     alt=""
                     fill
                     sizes="128px"
-                    className="object-cover"
+                    className="object-cover object-center p-1"
                     onError={() =>
                       setFailedImageIds((current) =>
                         current.includes(image.id) ? current : [...current, image.id],

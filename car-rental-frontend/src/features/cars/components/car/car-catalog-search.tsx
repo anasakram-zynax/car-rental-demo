@@ -1,8 +1,9 @@
 "use client";
 
-import { ArrowRight, MapPin, RotateCcw, Search } from "lucide-react";
+import { MapPin, RotateCcw, Search } from "lucide-react";
 import { useRef, useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 import { Input } from "@/components/ui/input";
 import type { ServiceType } from "@/features/cars/types/car.types";
 import { cn } from "@/lib/cn";
@@ -102,14 +103,38 @@ export function CarCatalogSearch({
       ref={formRef}
       onSubmit={handleSubmit}
       style={{ marginBottom: dropdownClearance }}
-      className="relative z-20 mt-9 overflow-visible rounded-card border border-white/80 bg-surface-glass p-5 shadow-elevated backdrop-blur-md transition-[margin] duration-200 sm:p-6 lg:p-7"
+      className="relative z-20 mt-6 overflow-visible rounded-[1rem] border border-[#d5deea] bg-white p-4 shadow-[0_12px_32px_rgba(25,50,88,0.09)] transition-[margin] duration-200 sm:p-5"
     >
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-end">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <span className="grid size-8 place-items-center rounded-lg bg-[#e9f2ff] text-primary">
+            <MapPin aria-hidden="true" size={17} />
+          </span>
+          <div>
+            <h2 className="text-base font-semibold">Search your trip</h2>
+            <p className="text-xs text-muted">Choose a service and location to update results.</p>
+          </div>
+        </div>
+        {canClearSearch || hasPickupInput || hasDropoffInput || differentDropoff ? (
+          <Button type="button" variant="ghost" size="sm" onClick={handleClearSearch}>
+            <RotateCcw aria-hidden="true" size={15} /> Clear trip
+          </Button>
+        ) : null}
+      </div>
+
+      <div
+        className={cn(
+          "grid gap-4 lg:items-end",
+          serviceType === "transfer" && differentDropoff
+            ? "lg:grid-cols-[auto_minmax(12rem,1fr)_minmax(12rem,1fr)_auto]"
+            : "lg:grid-cols-[auto_minmax(15rem,1fr)_auto]",
+        )}
+      >
         <fieldset className="shrink-0">
-          <legend className="mb-2 text-sm font-medium text-foreground">
+          <legend className="mb-2 text-xs font-semibold tracking-wide text-muted uppercase">
             Service type
           </legend>
-          <div className="grid grid-cols-2 rounded-control border border-border bg-black/[0.035] p-1">
+          <div className="grid grid-cols-2 rounded-control border border-border bg-[#f2f5f9] p-1">
             {(["rental", "transfer"] as const).map((option) => (
               <button
                 key={option}
@@ -119,7 +144,7 @@ export function CarCatalogSearch({
                 className={cn(
                   "min-h-10 rounded-[calc(var(--radius-control)-0.25rem)] px-4 text-sm font-semibold capitalize outline-none transition-[background-color,color,box-shadow] focus-visible:ring-4 focus-visible:ring-[var(--ring)]",
                   serviceType === option
-                    ? "bg-surface-elevated text-foreground shadow-sm"
+                    ? "bg-primary text-white shadow-sm"
                     : "text-muted hover:text-foreground",
                 )}
               >
@@ -140,6 +165,7 @@ export function CarCatalogSearch({
               }}
               placeholder="City, for example Lahore"
               autoComplete="off"
+              className="h-11 shadow-none focus:border-primary"
             />
           ) : (
             <TransferLocationCombobox
@@ -159,7 +185,7 @@ export function CarCatalogSearch({
         </div>
 
         {serviceType === "transfer" && differentDropoff ? (
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0">
             <TransferLocationCombobox
               key={`${pickupLocation}-${inputResetVersion}`}
               kind="dropoff"
@@ -176,7 +202,7 @@ export function CarCatalogSearch({
           </div>
         ) : null}
 
-        <Button type="submit" size="lg" className="lg:min-w-32">
+        <Button type="submit" className="h-11 lg:min-w-32">
           <Search aria-hidden="true" size={18} />
           Search
         </Button>
@@ -186,8 +212,8 @@ export function CarCatalogSearch({
         <p role="alert" className="mt-3 text-sm font-medium text-danger">{locationError}</p>
       ) : null}
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-x-5 gap-y-2 text-sm">
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+      <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+        <div className="flex flex-wrap items-center gap-2">
           <label
             className={cn(
               "inline-flex items-center gap-2 font-medium",
@@ -211,19 +237,12 @@ export function CarCatalogSearch({
             />
             Different drop-off location
           </label>
-          <span className="inline-flex items-center gap-1.5 text-xs text-muted">
-            {serviceType === "rental" ? (
-              <><MapPin aria-hidden="true" size={14} /> Rental searches use the pickup city.</>
-            ) : (
-              <><ArrowRight aria-hidden="true" size={14} /> Add a destination for an exact route.</>
-            )}
-          </span>
+          <InfoTooltip
+            label={serviceType === "rental"
+              ? "Rental searches use the pickup city."
+              : "Add a destination when you want results for one exact transfer route."}
+          />
         </div>
-        {canClearSearch || hasPickupInput || hasDropoffInput || differentDropoff ? (
-          <Button type="button" variant="ghost" size="sm" onClick={handleClearSearch}>
-            <RotateCcw aria-hidden="true" size={15} /> Clear search
-          </Button>
-        ) : null}
       </div>
     </form>
   );
