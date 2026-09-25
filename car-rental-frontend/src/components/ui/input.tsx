@@ -21,7 +21,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   return (
     <div className={cn("grid gap-2", rootClassName)}>
       {label ? (
-        <label className="text-sm font-medium text-foreground" htmlFor={inputId}>
+        <label
+          className="text-sm font-medium text-foreground"
+          htmlFor={inputId}
+        >
           {label}
         </label>
       ) : null}

@@ -14,7 +14,7 @@ import { ApiError } from "@/lib/api-client";
 import { AdminCarForm } from "./admin-car-form";
 
 function EditorShell({ eyebrow, title, children }: { eyebrow: string; title: string; children: React.ReactNode }) {
-  return <PageContainer className="py-8 sm:py-12"><Link href="/admin/cars" className={buttonStyles({ className: "-ml-3", size: "sm", variant: "ghost" })}><ArrowLeft aria-hidden="true" size={16} /> Back to Cars</Link><div className="mt-6"><p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted">{eyebrow}</p><h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h1></div><div className="mt-8">{children}</div></PageContainer>;
+  return <PageContainer className="py-8 sm:py-10 lg:py-12"><Link href="/admin/cars" className={buttonStyles({ className: "-ml-3", size: "sm", variant: "ghost" })}><ArrowLeft aria-hidden="true" size={16} /> Back to Cars</Link><div className="mt-6"><p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">{eyebrow}</p><h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">{title}</h1></div><div className="mt-8">{children}</div></PageContainer>;
 }
 
 function messageFor(error: unknown) {
