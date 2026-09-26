@@ -1,6 +1,6 @@
 # TravelsOTA Reference Build — Start Here
 
-**Audience:** you (junior developer) · **Purpose:** give you a real, working copy of our production architecture so you can build the Car Rental module *inside it* instead of next to it.
+**Audience:** Anas · **Purpose:** give you a real, working copy of our production architecture so you can build the Car Rental module *inside it* instead of next to it.
 
 You can hand this whole file to your own AI assistant (Claude, ChatGPT, Copilot, whatever you use) and ask it to explain any part in more depth — it has everything it needs to understand the project from this file alone.
 
