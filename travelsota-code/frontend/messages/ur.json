@@ -1,0 +1,16 @@
+{
+  "Common": {},
+  "Nav": {},
+  "Home": {},
+  "Auth": {},
+  "Flights": {},
+  "Booking": {},
+  "Hotels": {},
+  "Account": {},
+  "Footer": {
+    "contact": "رابطہ",
+    "phone": "فون",
+    "email": "ای میل",
+    "location": "مقام"
+  }
+}

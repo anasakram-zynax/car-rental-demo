@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="hg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="20" fill="url(#hg)"/>
+  <rect x="24" y="30" width="80" height="56" rx="10" fill="#fff" opacity="0.95"/>
+  <rect x="40" y="44" width="18" height="12" rx="4" fill="url(#hg)" opacity="0.8"/>
+  <rect x="70" y="44" width="18" height="12" rx="4" fill="url(#hg)" opacity="0.8"/>
+  <rect x="34" y="62" width="60" height="4" rx="2" fill="url(#hg)" opacity="0.4"/>
+  <rect x="34" y="70" width="60" height="4" rx="2" fill="url(#hg)" opacity="0.4"/>
+  <circle cx="76" cy="68" r="3" fill="url(#hg)" opacity="0.5"/>
+  <circle cx="84" cy="68" r="3" fill="url(#hg)" opacity="0.3"/>
+  <text x="64" y="114" text-anchor="middle" fill="#fff" font-family="system-ui,-apple-system,sans-serif" font-weight="800" font-size="11" letter-spacing="0.5">HOTELBEDS</text>
+</svg>

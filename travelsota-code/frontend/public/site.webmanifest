@@ -1,0 +1,17 @@
+{
+  "name": "TravelsOTA",
+  "short_name": "TravelsOTA",
+  "description": "Online Travel Booking Platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#033d4a",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

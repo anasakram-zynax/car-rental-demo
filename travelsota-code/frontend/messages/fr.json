@@ -1,0 +1,16 @@
+{
+  "Common": {},
+  "Nav": {},
+  "Home": {},
+  "Auth": {},
+  "Flights": {},
+  "Booking": {},
+  "Hotels": {},
+  "Account": {},
+  "Footer": {
+    "contact": "Contact",
+    "phone": "Téléphone",
+    "email": "E-mail",
+    "location": "Emplacement"
+  }
+}

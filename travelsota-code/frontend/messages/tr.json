@@ -1,0 +1,16 @@
+{
+  "Common": {},
+  "Nav": {},
+  "Home": {},
+  "Auth": {},
+  "Flights": {},
+  "Booking": {},
+  "Hotels": {},
+  "Account": {},
+  "Footer": {
+    "contact": "İletişim",
+    "phone": "Telefon",
+    "email": "E-posta",
+    "location": "Konum"
+  }
+}

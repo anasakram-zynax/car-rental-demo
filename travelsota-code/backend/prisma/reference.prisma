@@ -1,0 +1,207 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/reference-client"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ═══════════════════════════════════════════════════════════════
+// reference.db — the small, hot catalog
+// Autocomplete, hotel grouping, and supplier-code mapping read here.
+// Physical table names kept via @@map so existing data migrates as-is.
+// ═══════════════════════════════════════════════════════════════
+
+/// One real hotel (identity across all suppliers). The "hotel names" table.
+model Hotels {
+  id               String             @id @default(uuid())
+  name             String
+  normalizedName   String
+  slug             String?            @unique
+  addressLine      String?
+  city             String?
+  state            String?
+  countryCode      String?
+  countryName      String?
+  postalCode       String?
+  latitude         Float?
+  longitude        Float?
+  geohash          String?
+  starRating       Float?
+  propertyType     String?
+  chainName        String?
+  brandName        String?
+  primaryImageUrl  String?
+  descriptions     Json?
+  amenities        Json?
+  policies         Json?
+  mergeStatus      String             @default("active")
+  confidenceScore  Float?
+  manuallyReviewed Boolean            @default(false)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  providerMappings HotelSupplierLinks[]
+
+  @@map("CanonicalHotel")
+  @@index([normalizedName])
+  @@index([city, countryCode])
+  @@index([latitude, longitude])
+  @@index([mergeStatus])
+}
+
+/// Which supplier sells this hotel, and under what code.
+/// "This hotel = hotelbeds code 130418, ratehawk code X."
+model HotelSupplierLinks {
+  id               String         @id @default(uuid())
+  canonicalHotelId String
+  provider         String
+  providerHotelId  String
+  name             String?
+  normalizedName   String?
+  addressHash      String?
+  latitude         Float?
+  longitude        Float?
+  confidence       Float          @default(0)
+  status           String         @default("active")
+  payload          Json?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  matchMethod      String         @default("imported")
+  notes            String?
+  providerAddress  String?
+  providerCity     String?
+  providerCountryCode String?
+  providerLatitude Float?
+  providerLongitude Float?
+  providerName     String?
+  canonicalHotel   Hotels         @relation(fields: [canonicalHotelId], references: [id], onDelete: Cascade)
+
+  @@map("HotelProviderMapping")
+  @@unique([provider, providerHotelId])
+  @@index([canonicalHotelId])
+  @@index([provider, status])
+  @@index([confidence])
+}
+
+/// Searchable destinations (the destination autocomplete source).
+model Destinations {
+  id                String                      @id @default(uuid())
+  code              String                      @unique
+  name              String
+  normalizedName    String
+  countryCode       String?
+  countryName       String?
+  cityName          String?
+  latitude          Float?
+  longitude         Float?
+  enabled           Boolean                     @default(false)
+  displayOrder      Int                         @default(0)
+  searchAliases     Json?
+  contentStatus     String                      @default("missing")
+  lastContentSyncAt DateTime?
+  contentCoverage   Json?
+  createdAt         DateTime                    @default(now())
+  updatedAt         DateTime                    @updatedAt
+  providerMappings  DestinationSupplierCodes[]
+
+  @@map("SupportedHotelDestination")
+  @@index([enabled, displayOrder])
+  @@index([normalizedName])
+  @@index([countryCode])
+  @@index([contentStatus])
+}
+
+/// Destination code per supplier ("DXB is hotelbeds dest code 12, ...").
+model DestinationSupplierCodes {
+  id               String                    @id @default(uuid())
+  destinationId    String
+  provider         String
+  providerCode     String
+  providerCodeType String                    @default("destination_code")
+  enabled          Boolean                   @default(true)
+  metadata         Json?
+  lastSyncedAt     DateTime?
+  syncStatus       String                    @default("missing")
+  syncErrorText    String?
+  matchMethod      String                    @default("auto")
+  confidence       Float                     @default(0.5)
+  lastVerifiedAt   DateTime?
+  createdAt        DateTime                  @default(now())
+  updatedAt        DateTime                  @updatedAt
+  destination      Destinations              @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+
+  @@map("SupportedHotelDestinationProvider")
+  @@unique([destinationId, provider])
+  @@index([provider, providerCode])
+  @@index([enabled, syncStatus])
+}
+
+/// Flight autocomplete: airports, cities, and metro areas.
+model FlightLocation {
+  id              String   @id @default(uuid())
+  code            String
+  type            String // AIRPORT | CITY | METRO_AREA
+  name            String
+  cityName        String?
+  countryCode     String?
+  countryName     String?
+  iataCityCode    String?
+  latitude        Float?
+  longitude       Float?
+  timezone        String?
+  aliases         Json?
+  enabled         Boolean  @default(true)
+  popularityScore Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([code, type])
+  @@index([type])
+  @@index([cityName])
+  @@index([countryCode])
+  @@index([enabled, popularityScore])
+}
+
+/// Full airport reference catalog (Duffel source).
+model AirportReference {
+  id            String   @id @default(uuid())
+  iataCode      String   @unique
+  icaoCode      String?
+  name          String
+  cityName      String?
+  countryCode   String?
+  countryName   String?
+  latitude      Float?
+  longitude     Float?
+  timezone      String?
+  duffelCityId  String?
+  duffelPlaceId String?
+  source        String   @default("duffel")
+  enabled       Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([countryCode])
+  @@index([enabled])
+  @@index([cityName])
+}
+
+/// Full airline reference catalog (Duffel source).
+model AirlineReference {
+  id                      String   @id @default(uuid())
+  iataCode                String   @unique
+  icaoCode                String?
+  name                    String
+  countryCode             String?
+  logoSymbolUrl           String?
+  logoLockupUrl           String?
+  conditionsOfCarriageUrl String?
+  source                  String   @default("duffel")
+  enabled                 Boolean  @default(true)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  @@index([countryCode])
+  @@index([enabled])
+}

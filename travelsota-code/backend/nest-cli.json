@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "src",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "assets": [
+      {
+        "include": "generated/**/*",
+        "watchAssets": true
+      },
+      {
+        "include": "content/**/*",
+        "watchAssets": true
+      },
+      {
+        "include": "messages/**/*",
+        "watchAssets": true
+      }
+    ]
+  }
+}

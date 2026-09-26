@@ -1,0 +1,762 @@
+.admin-shell .admin-table-viewport {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  /* Keep this wrapper horizontal-only. `overflow-x: auto` plus
+     `overflow-y: visible` computes to an automatic vertical scroll area in
+     browsers, which clips long tables inside their cards. */
+  overflow-y: clip;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Kill accidental native pull-to-refresh inside the admin shell: admins
+   scrolling a long bookings table on a phone would trigger the browser's
+   refresh and lose their filters/page state. `contain` keeps the rubber-band
+   feel at the very top of the page but never reloads. */
+.admin-shell {
+  overscroll-behavior-y: contain;
+}
+
+/* Remove the 300ms tap delay + double-tap-zoom surprises on admin controls. */
+.admin-shell button,
+.admin-shell a,
+.admin-shell input,
+.admin-shell select,
+.admin-shell [role="button"] {
+  touch-action: manipulation;
+}
+
+/* Touch-friendly hit areas (Apple HIG 44pt / Material 48dp; we use 40px as a
+   balance against dense tables). Scoped to coarse pointers so desktop mouse
+   layouts stay pixel-tight, and to table cells + pagination/toolbar controls
+   where tiny icon buttons live. */
+@media (pointer: coarse) {
+  .admin-shell .admin-table-viewport tbody td :is(button, a),
+  .admin-shell .admin-table-viewport thead th button,
+  .admin-shell .admin-table-card :is(button, a[role="button"]),
+  .admin-shell .admin-table-toolbar :is(button, a) {
+    min-height: 40px;
+    min-width: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Text links inside cells: height bump only, no forced width. */
+  .admin-shell .admin-table-viewport tbody td a {
+    min-width: 0;
+    padding-block: 6px;
+  }
+}
+
+.admin-shell .admin-table-viewport > table {
+  min-width: 760px;
+}
+
+.admin-shell .admin-table-viewport table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.admin-shell .admin-table-viewport thead th {
+  height: 3rem;
+  padding: 0.875rem 1.25rem;
+  white-space: nowrap;
+  vertical-align: middle;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-shell .admin-table-viewport tbody td {
+  min-height: 3.5rem;
+  padding: 0.875rem 1.25rem;
+  vertical-align: middle;
+}
+
+.admin-shell .admin-table-viewport tbody tr {
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+  transition: background-color 180ms ease, box-shadow 180ms ease;
+}
+
+.admin-shell .admin-table-viewport tbody tr:hover {
+  background-color: color-mix(in srgb, var(--muted) 40%, transparent);
+  box-shadow: inset 4px 0 0 color-mix(in srgb, var(--primary) 12%, transparent);
+}
+
+.admin-shell .admin-table-viewport tbody tr:last-child {
+  border-bottom: 0;
+}
+
+/* Zebra striping for dense tables */
+.admin-shell .admin-table-viewport--striped tbody tr:nth-child(even) {
+  background-color: color-mix(in srgb, var(--muted) 22%, transparent);
+}
+.admin-shell .admin-table-viewport--striped tbody tr:nth-child(even):hover {
+  background-color: color-mix(in srgb, var(--muted) 50%, transparent);
+}
+
+/* Make row-clickable tables feel interactive */
+.admin-shell .admin-table-viewport tbody tr[class*="cursor-pointer"] {
+  cursor: pointer;
+}
+.admin-shell .admin-table-viewport tbody tr[class*="cursor-pointer"]:hover {
+  background-color: color-mix(in srgb, var(--primary) 6%, transparent);
+  box-shadow: inset 4px 0 0 color-mix(in srgb, var(--primary) 25%, transparent);
+}
+
+/* Animated skeleton loading rows — scoped class for tables */
+.admin-shell .admin-table-skeleton {
+  background: linear-gradient(110deg, var(--muted) 30%, color-mix(in srgb, var(--muted) 50%, transparent) 50%, var(--muted) 70%);
+  background-size: 200% 100%;
+  animation: admin-shimmer 1.5s ease-in-out infinite;
+}
+
+/* Backward-compatible: existing .animate-pulse inside table cells gets the shimmer */
+.admin-shell .admin-table-viewport tbody td > .animate-pulse {
+  background: linear-gradient(110deg, var(--muted) 30%, color-mix(in srgb, var(--muted) 50%, transparent) 50%, var(--muted) 70%);
+  background-size: 200% 100%;
+  animation: admin-shimmer 1.5s ease-in-out infinite;
+}
+@keyframes admin-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Table cards must grow with their rows; never create a second vertical scroll area. */
+.admin-shell .admin-table-card:has(.admin-table-viewport) > div:last-child {
+  height: auto !important;
+  min-height: 0 !important;
+  overflow: visible;
+}
+
+@media (max-width: 767px) {
+  .admin-shell .admin-table-viewport > table {
+    min-width: 680px;
+  }
+
+  .admin-shell .admin-table-viewport thead th,
+  .admin-shell .admin-table-viewport tbody td {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+}
+
+/*
+ * Admin Reference-2 palette bridge.
+ *
+ * A few older admin screens still carry explicit legacy utility classes. Keep
+ * the source pages and their business logic intact, but make those utilities
+ * resolve through the same semantic tokens as the dashboard. This is scoped
+ * to .admin-shell so the customer-facing teal palette is untouched.
+ */
+.admin-shell {
+  /* Safe defaults keep status colors valid for themes that do not define
+     custom chart tokens. Individual Reference-2 presets may override these. */
+  --chart-1: 221 83% 53%;
+  --chart-2: 142 71% 45%;
+  --chart-3: 38 92% 50%;
+  --chart-4: 262 83% 58%;
+  --chart-5: 346 77% 50%;
+  --success: var(--chart-2);
+  --warning: var(--chart-3);
+  --info: var(--chart-1);
+}
+
+/* Native tables that have not yet moved to DataTable still receive the same
+   spacing and neutral treatment. Existing .admin-table-viewport rules below
+   remain the stronger responsive wrapper for migrated tables. */
+.admin-shell table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.admin-shell table thead th {
+  height: 3rem;
+  padding: 0.875rem 1.25rem;
+  white-space: nowrap;
+  vertical-align: middle;
+  background: transparent;
+  color: var(--muted-foreground);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-align: left;
+  text-transform: uppercase;
+}
+.admin-shell table tbody td {
+  min-height: 3.5rem;
+  padding: 0.875rem 1.25rem;
+  vertical-align: middle;
+}
+.admin-shell table tbody tr {
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+  transition: background-color 180ms ease;
+}
+.admin-shell table tbody tr:hover {
+  background-color: color-mix(in srgb, var(--muted) 40%, transparent);
+}
+.admin-shell table tbody tr:last-child {
+  border-bottom: 0;
+}
+
+/* Neutral surfaces and copy */
+.admin-shell [class*="bg-white"] {
+  background-color: var(--card) !important;
+}
+
+.admin-shell [class*="bg-gray-50"],
+.admin-shell [class*="bg-gray-100"],
+.admin-shell [class*="bg-gray-200"] {
+  background-color: var(--muted) !important;
+}
+
+.admin-shell [class*="bg-gray-800"],
+.admin-shell [class*="bg-gray-900"],
+.admin-shell [class*="bg-gray-dark"] {
+  background-color: var(--card) !important;
+}
+
+.admin-shell [class*="text-gray-900"],
+.admin-shell [class*="text-gray-800"],
+.admin-shell [class*="text-gray-700"] {
+  color: var(--foreground) !important;
+}
+
+.admin-shell [class*="text-gray-600"],
+.admin-shell [class*="text-gray-500"],
+.admin-shell [class*="text-gray-400"],
+.admin-shell [class*="text-gray-300"] {
+  color: var(--muted-foreground) !important;
+}
+
+.admin-shell [class*="border-gray-"] {
+  border-color: var(--border) !important;
+}
+
+/* Brand utilities pass through untouched so the admin dashboard shares the
+   exact same brand-teal / brand-gold palette as the agent and public
+   dashboards (cross-dashboard palette unity). The previous overrides mapped
+   every bg-brand-* AND text-brand-* to --primary, which produced
+   black-on-black badges (bg = primary + text = primary). */
+
+/* Semantic status mapping: success, warning, info, and danger stay distinct,
+   but all derive from the dashboard chart/semantic palette. */
+.admin-shell [class*="bg-success-"] {
+  background-color: color-mix(in srgb, hsl(var(--chart-2)) 12%, transparent) !important;
+}
+.admin-shell [class*="bg-success-500"] {
+  background-color: hsl(var(--chart-2)) !important;
+}
+.admin-shell [class*="text-success-"] {
+  color: hsl(var(--chart-2)) !important;
+}
+.admin-shell [class*="border-success-"] {
+  border-color: color-mix(in srgb, hsl(var(--chart-2)) 35%, transparent) !important;
+}
+
+.admin-shell [class*="bg-warning-"] {
+  background-color: color-mix(in srgb, hsl(var(--chart-3)) 12%, transparent) !important;
+}
+.admin-shell [class*="bg-warning-500"] {
+  background-color: hsl(var(--chart-3)) !important;
+}
+.admin-shell [class*="text-warning-"] {
+  color: hsl(var(--chart-3)) !important;
+}
+.admin-shell [class*="border-warning-"] {
+  border-color: color-mix(in srgb, hsl(var(--chart-3)) 35%, transparent) !important;
+}
+
+.admin-shell [class*="bg-error-"] {
+  background-color: color-mix(in srgb, var(--destructive) 12%, transparent) !important;
+}
+.admin-shell [class*="bg-error-500"] {
+  background-color: var(--destructive) !important;
+}
+.admin-shell [class*="text-error-"] {
+  color: var(--destructive) !important;
+}
+.admin-shell [class*="border-error-"] {
+  border-color: color-mix(in srgb, var(--destructive) 35%, transparent) !important;
+}
+
+.admin-shell [class*="bg-info-"] {
+  background-color: color-mix(in srgb, hsl(var(--chart-1)) 12%, transparent) !important;
+}
+.admin-shell [class*="bg-info-500"] {
+  background-color: hsl(var(--chart-1)) !important;
+}
+.admin-shell [class*="text-info-"] {
+  color: hsl(var(--chart-1)) !important;
+}
+.admin-shell [class*="border-info-"] {
+  border-color: color-mix(in srgb, hsl(var(--chart-1)) 35%, transparent) !important;
+}
+
+.admin-shell [class*="bg-emerald-"],
+.admin-shell [class*="bg-green-"] {
+  background-color: color-mix(in srgb, hsl(var(--chart-2)) 12%, transparent) !important;
+}
+.admin-shell [class*="bg-emerald-500"],
+.admin-shell [class*="bg-green-500"] {
+  background-color: hsl(var(--chart-2)) !important;
+}
+.admin-shell [class*="text-emerald-"],
+.admin-shell [class*="text-green-"] {
+  color: hsl(var(--chart-2)) !important;
+}
+.admin-shell [class*="border-emerald-"],
+.admin-shell [class*="border-green-"] {
+  border-color: color-mix(in srgb, hsl(var(--chart-2)) 35%, transparent) !important;
+}
+
+.admin-shell [class*="bg-amber-"],
+.admin-shell [class*="bg-orange-"],
+.admin-shell [class*="bg-yellow-"] {
+  background-color: color-mix(in srgb, hsl(var(--chart-3)) 12%, transparent) !important;
+}
+.admin-shell [class*="bg-amber-500"],
+.admin-shell [class*="bg-orange-500"],
+.admin-shell [class*="bg-yellow-500"] {
+  background-color: hsl(var(--chart-3)) !important;
+}
+.admin-shell [class*="text-amber-"],
+.admin-shell [class*="text-orange-"],
+.admin-shell [class*="text-yellow-"] {
+  color: hsl(var(--chart-3)) !important;
+}
+.admin-shell [class*="border-amber-"],
+.admin-shell [class*="border-orange-"],
+.admin-shell [class*="border-yellow-"] {
+  border-color: color-mix(in srgb, hsl(var(--chart-3)) 35%, transparent) !important;
+}
+
+.admin-shell [class*="bg-blue-"],
+.admin-shell [class*="bg-sky-"],
+.admin-shell [class*="bg-indigo-"],
+.admin-shell [class*="bg-cyan-"] {
+  background-color: color-mix(in srgb, hsl(var(--chart-1)) 12%, transparent) !important;
+}
+.admin-shell [class*="bg-blue-500"],
+.admin-shell [class*="bg-sky-500"],
+.admin-shell [class*="bg-indigo-500"],
+.admin-shell [class*="bg-cyan-500"] {
+  background-color: hsl(var(--chart-1)) !important;
+}
+.admin-shell [class*="text-blue-"],
+.admin-shell [class*="text-sky-"],
+.admin-shell [class*="text-indigo-"],
+.admin-shell [class*="text-cyan-"] {
+  color: hsl(var(--chart-1)) !important;
+}
+.admin-shell [class*="border-blue-"],
+.admin-shell [class*="border-sky-"],
+.admin-shell [class*="border-indigo-"],
+.admin-shell [class*="border-cyan-"] {
+  border-color: color-mix(in srgb, hsl(var(--chart-1)) 35%, transparent) !important;
+}
+
+.admin-shell [class*="bg-purple-"],
+.admin-shell [class*="bg-violet-"],
+.admin-shell [class*="bg-fuchsia-"] {
+  background-color: color-mix(in srgb, hsl(var(--chart-1)) 12%, transparent) !important;
+}
+.admin-shell [class*="bg-purple-500"],
+.admin-shell [class*="bg-violet-500"],
+.admin-shell [class*="bg-fuchsia-500"] {
+  background-color: hsl(var(--chart-1)) !important;
+}
+.admin-shell [class*="text-purple-"],
+.admin-shell [class*="text-violet-"],
+.admin-shell [class*="text-fuchsia-"] {
+  color: hsl(var(--chart-1)) !important;
+}
+.admin-shell [class*="border-purple-"],
+.admin-shell [class*="border-violet-"],
+.admin-shell [class*="border-fuchsia-"] {
+  border-color: color-mix(in srgb, hsl(var(--chart-1)) 35%, transparent) !important;
+}
+
+.admin-shell [class*="bg-rose-50"],
+.admin-shell [class*="bg-rose-100"],
+.admin-shell [class*="bg-red-50"],
+.admin-shell [class*="bg-red-100"] {
+  background-color: color-mix(in srgb, var(--destructive) 12%, transparent) !important;
+}
+.admin-shell [class*="bg-rose-500"],
+.admin-shell [class*="bg-rose-600"],
+.admin-shell [class*="bg-rose-700"],
+.admin-shell [class*="bg-red-500"],
+.admin-shell [class*="bg-red-600"],
+.admin-shell [class*="bg-red-700"] {
+  background-color: var(--destructive) !important;
+}
+.admin-shell [class*="text-rose-"],
+.admin-shell [class*="text-red-"] {
+  color: var(--destructive) !important;
+}
+.admin-shell [class*="border-rose-"],
+.admin-shell [class*="border-red-"] {
+  border-color: color-mix(in srgb, var(--destructive) 35%, transparent) !important;
+}
+
+/* Shared admin controls: keep legacy Button/Switch primitives on the
+   Reference-2 palette without changing the customer-facing teal theme. */
+.admin-shell [data-ui-button-variant="primary"] {
+  background-color: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+}
+.admin-shell [data-ui-button-variant="primary"]:hover {
+  background-color: color-mix(in srgb, var(--primary) 88%, var(--foreground)) !important;
+}
+.admin-shell [data-ui-button-variant="secondary"],
+.admin-shell [data-ui-button-variant="outline"] {
+  background-color: color-mix(in srgb, var(--primary) 8%, var(--card)) !important;
+  border-color: color-mix(in srgb, var(--primary) 28%, var(--border)) !important;
+  color: var(--primary) !important;
+}
+.admin-shell [data-ui-button-variant="secondary"]:hover,
+.admin-shell [data-ui-button-variant="outline"]:hover {
+  background-color: color-mix(in srgb, var(--primary) 14%, var(--card)) !important;
+  color: var(--primary) !important;
+}
+.admin-shell [data-ui-button-variant="ghost"] {
+  background-color: transparent !important;
+  color: var(--muted-foreground) !important;
+}
+.admin-shell [data-ui-button-variant="ghost"]:hover {
+  background-color: color-mix(in srgb, var(--primary) 9%, transparent) !important;
+  color: var(--primary) !important;
+}
+.admin-shell [data-admin-switch="true"][data-state="checked"] [data-switch-track="true"] {
+  background-color: var(--primary) !important;
+}
+.admin-shell [data-admin-switch="true"][data-state="unchecked"] [data-switch-track="true"] {
+  background-color: color-mix(in srgb, var(--muted-foreground) 28%, transparent) !important;
+}
+.admin-shell [data-admin-switch="true"] [data-switch-thumb="true"] {
+  background-color: var(--card) !important;
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--foreground) 18%, transparent) !important;
+}
+
+/* Opaque admin navigation surfaces. The mobile sidebar is portaled to body,
+   so it cannot inherit .theme-zinc from the shell; give it an explicit light
+   fallback while preserving semantic text and borders.
+
+   ⚠️ z-index: 40 must apply ONLY to the desktop (non-modal) sidebar. On
+   mobile the same class lands on the Radix Sheet CONTENT — forcing it below
+   its own z-50 overlay made the overlay swallow every tap, so the mobile
+   sidebar looked open but was completely unclickable and unscrollable. */
+@media (min-width: 1024px) {
+  .admin-shell .admin-sidebar-surface,
+  .admin-sidebar-surface {
+    z-index: 40 !important;
+  }
+}
+.admin-shell .admin-sidebar-surface,
+.admin-sidebar-surface {
+  background-color: #ffffff !important;
+  color: var(--foreground) !important;
+}
+.admin-shell .admin-sidebar-surface [data-sidebar="sidebar"],
+.admin-sidebar-surface[data-sidebar="sidebar"] {
+  background-color: #ffffff !important;
+  color: var(--foreground) !important;
+}
+
+/* (Historic note: the old `[data-slot="sheet-content"][data-mobile="true"]`
+   z-index rule is gone — the mobile admin drawer no longer uses a Radix Sheet.
+   It mounts as a plain fixed drawer at z-[60] (see ui/sidebar.tsx), so the
+   opacity/transform state lives in component markup, not CSS overrides. */
+
+/* Active nav item — brand-teal accent (from the palette) on the white sidebar.
+   Uses the same teal as the brand identity so it reads clearly without
+   clashing with the opaque light surface. */
+.admin-shell .admin-sidebar-surface [data-active="true"],
+.admin-sidebar-surface [data-active="true"] {
+  background-color: #e6f0f2 !important; /* --color-brand-teal-50 */
+  color: #033d4a !important;            /* --color-brand-teal */
+  font-weight: 600;
+  box-shadow: inset 3px 0 0 0 #033d4a;
+}
+.admin-shell .admin-sidebar-surface [data-active="true"] > svg,
+.admin-sidebar-surface [data-active="true"] > svg {
+  color: #033d4a;
+}
+
+/* Portaled admin overlays must retain an opaque themed surface and sit above
+   sticky headers, tables, and the floating Customizer. */
+.admin-shell .admin-overlay-content,
+.admin-overlay-content {
+  background-color: var(--card) !important;
+  color: var(--card-foreground, var(--foreground)) !important;
+  border-color: var(--border) !important;
+  z-index: 200 !important;
+}
+.admin-shell .admin-sheet-content,
+.admin-sheet-content {
+  background-color: var(--card) !important;
+  color: var(--card-foreground, var(--foreground)) !important;
+  z-index: 200 !important;
+}
+.admin-shell .admin-dropdown-content,
+.admin-dropdown-content,
+.admin-shell .admin-dropdown-surface,
+.admin-dropdown-surface {
+  background-color: var(--card) !important;
+  color: var(--card-foreground, var(--foreground)) !important;
+  border-color: var(--border) !important;
+  z-index: 200 !important;
+}
+.admin-shell .admin-overlay-backdrop,
+.admin-overlay-backdrop {
+  background-color: hsl(0 0% 0% / 0.45) !important;
+}
+
+/* The compact summary cards intentionally use one horizontal row. */
+.admin-shell [data-dashboard-overview-card="true"][data-dashboard-overview-card-compact="true"] {
+  min-height: 0 !important;
+}
+
+/* Neutralize the remaining hard-coded light/dark hover surfaces. */
+.admin-shell [class*="hover:bg-gray-"],
+.admin-shell [class*="dark:hover:bg-gray-"] {
+  background-color: var(--accent) !important;
+}
+.admin-shell [class*="hover:text-gray-"] {
+  color: var(--foreground) !important;
+}
+
+/* Compact overview cards leave room for provider/content cards above the fold. */
+.admin-shell [data-dashboard-overview-card="true"] {
+  min-height: 0 !important;
+}
+.admin-shell [data-dashboard-overview-card="true"] > div:first-child {
+  padding: 0.875rem 1rem 0.5rem !important;
+}
+.admin-shell [data-dashboard-overview-card="true"][data-dashboard-overview-card-compact="true"] {
+  padding: 0 !important;
+}
+.admin-shell [data-dashboard-overview-card="true"][data-dashboard-overview-card-compact="true"] > div:first-child,
+.admin-shell [data-dashboard-overview-card="true"][data-dashboard-overview-card-compact="true"] > div:last-child {
+  padding: 0 !important;
+}
+.admin-shell [data-dashboard-overview-card="true"] > div:first-child > div:first-child > span {
+  width: 2.25rem !important;
+  height: 2.25rem !important;
+  border-radius: 0.625rem !important;
+}
+.admin-shell [data-dashboard-overview-card="true"] > div:last-child {
+  padding: 0 1rem 0.875rem !important;
+}
+.admin-shell [data-dashboard-overview-card="true"] > div:last-child > p {
+  font-size: 1.125rem !important;
+}
+
+/* ─── Premium Micro-Interactions ─────────────────────────── */
+
+/* Row entry animation - only on initial mount via class */
+@keyframes admin-row-enter {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.admin-shell .admin-table-viewport--animate-enter tbody tr {
+  animation: admin-row-enter 0.3s ease-out backwards;
+}
+
+/* Badge subtle scale on row hover — scoped to inline badge spans */
+.admin-shell .admin-table-viewport tbody td > span[class*="rounded-full"] {
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+.admin-shell .admin-table-viewport tbody tr:hover td > span[class*="rounded-full"] {
+  transform: scale(1.04);
+  box-shadow: 0 0 0 2px var(--card), 0 0 0 4px color-mix(in srgb, var(--primary) 12%, transparent);
+}
+
+/* Smooth gradient scrollbar for table viewport */
+.admin-shell .admin-table-viewport::-webkit-scrollbar {
+  height: 6px;
+}
+.admin-shell .admin-table-viewport::-webkit-scrollbar-track {
+  background: transparent;
+}
+.admin-shell .admin-table-viewport::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+.admin-shell .admin-table-viewport::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--muted-foreground) 40%, transparent);
+}
+
+/* ─── Admin mobile drawer scroll reliability (Dashboard + all tabs) ────────
+   Symptom: opening the mobile sidebar on the Dashboard tab, vertical swipes
+   did not scroll the nav. Root causes addressed:
+   1. The drawer clipped scrolling at TWO layers (frame overflow-hidden +
+      inner wrapper overflow-hidden) with only a thin inner <nav> scroller —
+      on devices/mains-thread-jank the inner scroller lost pan gestures.
+      We unwrap the middle layer so the nav is unambiguously the ONLY
+      scroll container (frame still clips horizontally for the slide-in).
+   2. iOS dynamic toolbar: inset-y-0 tracks the LAYOUT viewport, which can
+      leave the drawer's bottom (and its last nav items) under the toolbar.
+      100dvh tracks the real visual viewport.
+   3. Momentum panning: -webkit-overflow-scrolling for iOS rubber-band. */
+@media (max-width: 1023px) {
+  .admin-shell [data-mobile="true"][data-slot="sidebar"] {
+    overflow: hidden;
+    height: 100dvh;
+  }
+
+  /* Unwrap the scroll sandwich: the wrapper between drawer frame and nav
+     must never create a clipping/scroll context of its own. */
+  .admin-shell [data-mobile="true"][data-slot="sidebar"] > div {
+    overflow: visible;
+  }
+
+  .admin-shell [data-mobile="true"] [data-slot="sidebar-scroll"] {
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    overscroll-behavior-y: contain;
+    scrollbar-gutter: stable;
+  }
+}
+
+/* ─── Grid/flex blowout containment (Dashboard + all admin tabs) ────────────
+   CSS grids and flex rows size their tracks/items to the child's MIN-CONTENT
+   by default (min-width: auto). A wide data table inside an implicit `auto`
+   track therefore stretched the whole page (1177px on a 390px phone) instead
+   of scrolling inside its card. Allowing admin grid/flex children to shrink
+   (min-width: 0) pushes the overflow INTO the table's own viewport, which
+   already scrolls horizontally — the page never exceeds 100vw again. */
+.admin-shell .grid > *,
+.admin-shell .flex > * {
+  min-width: 0;
+}
+
+/* Tablet band safety: every table card must clamp to its grid track. The
+   page-level grids carry explicit templates too, but scoping the card here
+   also protects every other admin tab using admin-table-card. */
+@media (max-width: 1023px) {
+  .admin-shell .admin-table-card {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .admin-shell .admin-table-viewport {
+    max-width: 100%;
+  }
+}
+
+/* ─── Premium scroll affordance: gradient fade + scroll-linked reveal ───────
+   A soft edge fade hints "this scrolls" without a visible scrollbar. On
+   engines that support scroll-driven animations (Chromium 115+, Safari TP)
+   the fade dissolves once the user reaches the inline end, so it never
+   covers real content; on engines without support the static fade remains
+   and `prefers-reduced-motion` users get no animation either way. */
+.admin-shell .admin-table-viewport {
+  --table-fade-size: 18px;
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 var(--table-fade-size),
+    #000 calc(100% - var(--table-fade-size)),
+    transparent 100%
+  );
+  animation: admin-table-fade-reveal linear both;
+  animation-timeline: scroll(inline self);
+}
+
+@keyframes admin-table-fade-reveal {
+  from {
+    --table-fade-size: 18px;
+  }
+  to {
+    --table-fade-size: 0px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-shell .admin-table-viewport {
+    animation: none;
+  }
+}
+
+/* Register the fade variable so the scroll-linked animation interpolates
+   smoothly instead of stepping (unregistered custom props animate as
+   discrete flips in Chromium). */
+@property --table-fade-size {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+/* ─── Dashboard: mobile viewport-expansion containment ──────────────────────
+   Symptom: on phones the page scrolled horizontally revealing dead space on
+   the right, and every "responsive" breakpoint silently stopped applying.
+   Measured root cause: the mobile browser's shrink-to-fit expands the LAYOUT
+   viewport when any root-level content overflows (Observed: 390px → 1072/
+   1154px → all lg: breakpoints activate, fixed elements re-anchor). Once
+   expanded it never self-corrects. Clipping root overflow keeps the layout
+   viewport honest; inner overflow still scrolls inside each card's own
+   viewport (tables, code blocks). */
+/* Page-level horizontal scroll must NEVER appear on any admin page, at any
+   width (first load included): clip the root + shell, and let the flex
+   content column and <main> shrink instead of growing past the viewport.
+   Wide tables/code keep scrolling inside their own viewport wrappers. */
+html:has(.admin-shell),
+body:has(.admin-shell),
+.admin-shell {
+  overflow-x: clip;
+  max-width: 100%;
+}
+.admin-shell {
+  width: 100%;
+}
+.admin-shell > .flex-1,
+.admin-shell main {
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (max-width: 1023px) {
+  .admin-shell,
+  html:has(.admin-shell),
+  body:has(.admin-shell) {
+    overflow-x: clip;
+  }
+
+  /* Floating desktop affordance: the Customizer launcher is a fixed element
+     pinned to the inline edge — on an expanded mobile viewport it re-anchors
+     beyond 100vw and PERPETUATES the expansion cycle. It's a theming tool
+     for large screens; on phones the shell uses the tuned default theme. */
+  .admin-shell button[data-slot="sheet-trigger"],
+  .admin-shell .admin-customizer-launcher {
+    display: none !important;
+  }
+
+  /* Chart containers must never dictate track width — Recharts measures its
+     parent, so a blown-out parent feeds back a wider chart. */
+  .admin-shell [data-slot="chart-container"],
+  .admin-shell .recharts-responsive-container {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* Card-level blowout guard for every dashboard widget. */
+  .admin-shell .rounded-xl.border.bg-card {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+/* ─── Chart dropdowns: never exceed the visual viewport ─────────────────────
+   The card three-dot menus portal to <body> and align to the trigger's end
+   edge. Radix clamps them against the LAYOUT viewport — which on phones was
+   the expanded 1154px one, so menus landed beyond the visible 390px ("dropdown
+   breaks the page layout"). With the root containment above keeping the layout
+   viewport honest, Radix clamping works again; the cap here is belt-and-
+   suspenders for narrow cards. */
+.admin-dropdown-content {
+  max-width: calc(100vw - 16px);
+}

@@ -1,0 +1,40 @@
+CREATE TABLE "public"."ManualFlight" (
+  "id" TEXT NOT NULL,
+  "airlineId" TEXT,
+  "airlineName" TEXT,
+  "flightNumber" TEXT,
+  "originId" TEXT NOT NULL,
+  "originCity" TEXT,
+  "destinationId" TEXT NOT NULL,
+  "destinationCity" TEXT,
+  "departureDate" TIMESTAMP(3) NOT NULL,
+  "departureTime" TEXT NOT NULL,
+  "arrivalDate" TIMESTAMP(3),
+  "arrivalTime" TEXT NOT NULL,
+  "duration" TEXT,
+  "status" TEXT NOT NULL DEFAULT 'active',
+  "featured" BOOLEAN NOT NULL DEFAULT false,
+  "flightOrder" INTEGER NOT NULL DEFAULT 0,
+  "basePrice" DOUBLE PRECISION NOT NULL,
+  "currency" TEXT NOT NULL DEFAULT 'USD',
+  "childPricePercent" DOUBLE PRECISION NOT NULL DEFAULT 75,
+  "infantPricePercent" DOUBLE PRECISION NOT NULL DEFAULT 10,
+  "availableSeats" INTEGER NOT NULL DEFAULT 50,
+  "totalSeats" INTEGER NOT NULL DEFAULT 50,
+  "refundable" BOOLEAN NOT NULL DEFAULT false,
+  "cabinClass" TEXT NOT NULL DEFAULT 'economy',
+  "hasWifi" BOOLEAN NOT NULL DEFAULT false,
+  "hasMeal" BOOLEAN NOT NULL DEFAULT false,
+  "hasEntertainment" BOOLEAN NOT NULL DEFAULT false,
+  "hasPowerOutlet" BOOLEAN NOT NULL DEFAULT false,
+  "checkedBaggage" TEXT,
+  "cabinBaggage" TEXT,
+  "userId" TEXT,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL,
+
+  CONSTRAINT "ManualFlight_pkey" PRIMARY KEY ("id")
+);
+
+CREATE INDEX "ManualFlight_originId_destinationId_departureDate_status_idx" ON "public"."ManualFlight"("originId", "destinationId", "departureDate", "status");
+CREATE INDEX "ManualFlight_featured_status_flightOrder_idx" ON "public"."ManualFlight"("featured", "status", "flightOrder");

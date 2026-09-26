@@ -1,0 +1,182 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/content-client"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ═══════════════════════════════════════════════════════════════
+// content.db — the big, cold supplier content
+// Enrichment reads here by (provider, providerHotelId).
+// `canonicalHotelId` is a soft link to reference.db Hotels.id (no FK —
+// relations cannot cross database files).
+// ═══════════════════════════════════════════════════════════════
+
+/// Per-supplier hotel detail content (rooms, images, amenities...).
+model HotelContent {
+  id                String   @id @default(uuid())
+  provider          String
+  providerHotelId   String
+  canonicalHotelId  String?
+  language          String   @default("en")
+  name              String
+  address           String?
+  city              String?
+  country           String?
+  latitude          Float?
+  longitude         Float?
+  starRating        Float?
+  images            Json?
+  amenities         Json?
+  descriptions      Json?
+  rawPayload        Json?
+  lastSyncedAt      DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  accommodationType String?
+  addressLine       String?
+  categoryCode      String?
+  categoryName      String?
+  chainCode         String?
+  chainName         String?
+  checkInTime       String?
+  checkOutTime      String?
+  contentHash       String?
+  countryCode       String?
+  countryName       String?
+  descriptionFull   String?
+  descriptionShort  String?
+  email             String?
+  facilities        Json?
+  geohash           String?
+  minAge            Int?
+  nearby            Json?
+  normalizedName    String
+  phone             String?
+  policies          Json?
+  postalCode        String?
+  propertyType      String?
+  rooms             Json?
+  sourceUpdatedAt   DateTime?
+  state             String?
+  supplierHotelCode String?
+  supplierHotelHid  String?
+  supplierRegionId  String?
+  syncErrorCode     String?
+  syncErrorText     String?
+  syncStatus        String   @default("active")
+  website           String?
+  primaryImageUrl   String?
+  rawSummary        Json?
+
+  @@map("HotelStaticContent")
+  @@unique([provider, providerHotelId, language])
+  @@index([provider, providerHotelId])
+  @@index([canonicalHotelId])
+  @@index([language])
+  @@index([city, countryCode])
+  @@index([latitude, longitude])
+  @@index([syncStatus, lastSyncedAt])
+  @@index([contentHash])
+  @@index([normalizedName])
+  @@index([supplierRegionId])
+}
+
+/// Raw destination/region metadata per supplier (hotelbeds etc.).
+model SupplierDestinations {
+  id           String   @id @default(uuid())
+  provider     String
+  providerCode String
+  name         String
+  countryCode  String?
+  countryName  String?
+  parentCode   String?
+  type         String?
+  latitude     Float?
+  longitude    Float?
+  rawPayload   Json?
+  lastSyncedAt DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("HotelDestination")
+  @@unique([provider, providerCode])
+  @@index([countryCode])
+  @@index([name])
+}
+
+/// RateHawk/ETG region dump content.
+model SupplierRegions {
+  id           String   @id @default(uuid())
+  regionId     Int      @unique
+  name         Json
+  parentId     Int?
+  countryCode  String?
+  type         String?
+  hid          Int?
+  hotelCount   Int      @default(0)
+  rawPayload   Json?
+  lastSyncedAt DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("RatehawkRegionContent")
+  @@index([countryCode])
+  @@index([type])
+  @@index([parentId])
+}
+
+/// Tracks content import/sync runs.
+model ImportJobs {
+  id                String   @id @default(uuid())
+  provider          String
+  jobType           String
+  status            String   @default("pending")
+  requestedByUserId String?
+  inputPayload      Json?
+  totalItems        Int      @default(0)
+  processedItems    Int      @default(0)
+  createdItems      Int      @default(0)
+  updatedItems      Int      @default(0)
+  skippedItems      Int      @default(0)
+  failedItems       Int      @default(0)
+  startedAt         DateTime?
+  completedAt       DateTime?
+  lastCursor        String?
+  lastPage          Int?
+  errorCode         String?
+  errorText         String?
+  metadata          Json?
+  logs              Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("HotelContentSyncJob")
+  @@index([provider, status])
+  @@index([jobType, status])
+  @@index([createdAt])
+  @@index([status, startedAt])
+}
+
+/// Per-hotel sync diagnostics for failed or pending items.
+model ImportJobItems {
+  id              String   @id @default(uuid())
+  jobId           String
+  provider        String
+  providerHotelId String
+  status          String   @default("pending")
+  attempts        Int      @default(0)
+  errorCode       String?
+  errorText       String?
+  lastAttemptAt   DateTime?
+  rawSummary      Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("HotelContentSyncItem")
+  @@index([jobId])
+  @@index([provider, providerHotelId])
+  @@index([status, updatedAt])
+}

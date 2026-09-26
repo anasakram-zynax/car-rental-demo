@@ -1,0 +1,30 @@
+-- Auto-generated reference DB migration from prisma/reference.prisma
+-- Creates the small catalog tables (Hotels, links, destinations).
+
+CREATE TABLE IF NOT EXISTS "CanonicalHotel" ("id" TEXT NOT NULL PRIMARY KEY,"name" TEXT NOT NULL,"normalizedName" TEXT NOT NULL,"slug" TEXT,"addressLine" TEXT,"city" TEXT,"state" TEXT,"countryCode" TEXT,"countryName" TEXT,"postalCode" TEXT,"latitude" REAL,"longitude" REAL,"geohash" TEXT,"starRating" REAL,"propertyType" TEXT,"chainName" TEXT,"brandName" TEXT,"primaryImageUrl" TEXT,"descriptions" TEXT,"amenities" TEXT,"policies" TEXT,"mergeStatus" TEXT NOT NULL DEFAULT 'active',"confidenceScore" REAL,"manuallyReviewed" INTEGER NOT NULL DEFAULT 0,"createdAt" TEXT NOT NULL DEFAULT (datetime('now')),"updatedAt" TEXT NOT NULL DEFAULT (datetime('now')));
+CREATE TABLE IF NOT EXISTS "HotelProviderMapping" ("id" TEXT NOT NULL PRIMARY KEY,"canonicalHotelId" TEXT NOT NULL,"provider" TEXT NOT NULL,"providerHotelId" TEXT NOT NULL,"name" TEXT,"normalizedName" TEXT,"addressHash" TEXT,"latitude" REAL,"longitude" REAL,"confidence" REAL NOT NULL DEFAULT 0,"status" TEXT NOT NULL DEFAULT 'active',"payload" TEXT,"createdAt" TEXT NOT NULL DEFAULT (datetime('now')),"updatedAt" TEXT NOT NULL DEFAULT (datetime('now')),"matchMethod" TEXT NOT NULL DEFAULT 'imported',"notes" TEXT,"providerAddress" TEXT,"providerCity" TEXT,"providerCountryCode" TEXT,"providerLatitude" REAL,"providerLongitude" REAL,"providerName" TEXT,FOREIGN KEY ("canonicalHotelId") REFERENCES "CanonicalHotel"("id") ON DELETE CASCADE ON UPDATE CASCADE);
+CREATE TABLE IF NOT EXISTS "SupportedHotelDestination" ("id" TEXT NOT NULL PRIMARY KEY,"code" TEXT NOT NULL,"name" TEXT NOT NULL,"normalizedName" TEXT NOT NULL,"countryCode" TEXT,"countryName" TEXT,"cityName" TEXT,"latitude" REAL,"longitude" REAL,"enabled" INTEGER NOT NULL DEFAULT 0,"displayOrder" INTEGER NOT NULL DEFAULT 0,"searchAliases" TEXT,"contentStatus" TEXT NOT NULL DEFAULT 'missing',"lastContentSyncAt" TEXT,"contentCoverage" TEXT,"createdAt" TEXT NOT NULL DEFAULT (datetime('now')),"updatedAt" TEXT NOT NULL DEFAULT (datetime('now')));
+CREATE TABLE IF NOT EXISTS "SupportedHotelDestinationProvider" ("id" TEXT NOT NULL PRIMARY KEY,"destinationId" TEXT NOT NULL,"provider" TEXT NOT NULL,"providerCode" TEXT NOT NULL,"providerCodeType" TEXT NOT NULL DEFAULT 'destination_code',"enabled" INTEGER NOT NULL DEFAULT 1,"metadata" TEXT,"lastSyncedAt" TEXT,"syncStatus" TEXT NOT NULL DEFAULT 'missing',"syncErrorText" TEXT,"createdAt" TEXT NOT NULL DEFAULT (datetime('now')),"updatedAt" TEXT NOT NULL DEFAULT (datetime('now')),FOREIGN KEY ("destinationId") REFERENCES "SupportedHotelDestination"("id") ON DELETE CASCADE ON UPDATE CASCADE);
+CREATE UNIQUE INDEX IF NOT EXISTS "CanonicalHotel_slug_key" ON "CanonicalHotel"("slug");
+CREATE INDEX IF NOT EXISTS "CanonicalHotel_normalizedName_idx" ON "CanonicalHotel"("normalizedName");
+CREATE UNIQUE INDEX IF NOT EXISTS "HotelProviderMapping_provider_providerHotelId_key" ON "HotelProviderMapping"("provider","providerHotelId");
+CREATE UNIQUE INDEX IF NOT EXISTS "SupportedHotelDestination_code_key" ON "SupportedHotelDestination"("code");
+CREATE INDEX IF NOT EXISTS "SupportedHotelDestination_normalizedName_idx" ON "SupportedHotelDestination"("normalizedName");
+CREATE UNIQUE INDEX IF NOT EXISTS "SupportedHotelDestinationProvider_destinationId_provider_key" ON "SupportedHotelDestinationProvider"("destinationId","provider");
+
+-- Flight suggestion tables (airports, airlines, flight locations).
+CREATE TABLE IF NOT EXISTS "FlightLocation" ("id" TEXT NOT NULL PRIMARY KEY,"code" TEXT NOT NULL,"type" TEXT NOT NULL,"name" TEXT NOT NULL,"cityName" TEXT,"countryCode" TEXT,"countryName" TEXT,"iataCityCode" TEXT,"latitude" REAL,"longitude" REAL,"timezone" TEXT,"aliases" TEXT,"enabled" INTEGER NOT NULL DEFAULT 1,"popularityScore" INTEGER NOT NULL DEFAULT 0,"createdAt" TEXT NOT NULL DEFAULT (datetime('now')),"updatedAt" TEXT NOT NULL DEFAULT (datetime('now')));
+CREATE UNIQUE INDEX IF NOT EXISTS "FlightLocation_code_type_key" ON "FlightLocation"("code","type");
+CREATE INDEX IF NOT EXISTS "FlightLocation_type_idx" ON "FlightLocation"("type");
+CREATE INDEX IF NOT EXISTS "FlightLocation_cityName_idx" ON "FlightLocation"("cityName");
+CREATE INDEX IF NOT EXISTS "FlightLocation_countryCode_idx" ON "FlightLocation"("countryCode");
+CREATE INDEX IF NOT EXISTS "FlightLocation_enabled_popularityScore_idx" ON "FlightLocation"("enabled","popularityScore");
+CREATE TABLE IF NOT EXISTS "AirportReference" ("id" TEXT NOT NULL PRIMARY KEY,"iataCode" TEXT NOT NULL,"icaoCode" TEXT,"name" TEXT NOT NULL,"cityName" TEXT,"countryCode" TEXT,"countryName" TEXT,"latitude" REAL,"longitude" REAL,"timezone" TEXT,"duffelCityId" TEXT,"duffelPlaceId" TEXT,"source" TEXT NOT NULL DEFAULT 'duffel',"enabled" INTEGER NOT NULL DEFAULT 1,"createdAt" TEXT NOT NULL DEFAULT (datetime('now')),"updatedAt" TEXT NOT NULL DEFAULT (datetime('now')));
+CREATE UNIQUE INDEX IF NOT EXISTS "AirportReference_iataCode_key" ON "AirportReference"("iataCode");
+CREATE INDEX IF NOT EXISTS "AirportReference_countryCode_idx" ON "AirportReference"("countryCode");
+CREATE INDEX IF NOT EXISTS "AirportReference_enabled_idx" ON "AirportReference"("enabled");
+CREATE INDEX IF NOT EXISTS "AirportReference_cityName_idx" ON "AirportReference"("cityName");
+CREATE TABLE IF NOT EXISTS "AirlineReference" ("id" TEXT NOT NULL PRIMARY KEY,"iataCode" TEXT NOT NULL,"icaoCode" TEXT,"name" TEXT NOT NULL,"countryCode" TEXT,"logoSymbolUrl" TEXT,"logoLockupUrl" TEXT,"conditionsOfCarriageUrl" TEXT,"source" TEXT NOT NULL DEFAULT 'duffel',"enabled" INTEGER NOT NULL DEFAULT 1,"createdAt" TEXT NOT NULL DEFAULT (datetime('now')),"updatedAt" TEXT NOT NULL DEFAULT (datetime('now')));
+CREATE UNIQUE INDEX IF NOT EXISTS "AirlineReference_iataCode_key" ON "AirlineReference"("iataCode");
+CREATE INDEX IF NOT EXISTS "AirlineReference_countryCode_idx" ON "AirlineReference"("countryCode");
+CREATE INDEX IF NOT EXISTS "AirlineReference_enabled_idx" ON "AirlineReference"("enabled");

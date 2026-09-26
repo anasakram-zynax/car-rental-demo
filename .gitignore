@@ -8,6 +8,23 @@ car-rental-frontend/node_modules/
 car-rental-frontend/.next/
 car-rental-frontend/.env.local
 
+# TravelsOTA reference build
+travelsota-code/backend/node_modules/
+travelsota-code/backend/dist/
+travelsota-code/backend/.env
+travelsota-code/backend/src/generated/
+travelsota-code/backend/*.tsbuildinfo
+travelsota-code/backend/*.db
+travelsota-code/backend/*.db-shm
+travelsota-code/backend/*.db-wal
+travelsota-code/backend/*.stackdump
+travelsota-code/backend/storage/
+travelsota-code/frontend/node_modules/
+travelsota-code/frontend/.next/
+travelsota-code/frontend/.env
+travelsota-code/frontend/.env.local
+!travelsota-code/**/.env.example
+
 # General
 .DS_Store
 Thumbs.db

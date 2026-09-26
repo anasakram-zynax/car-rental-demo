@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="ag" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#003DA5"/>
+      <stop offset="100%" stop-color="#0052CC"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="20" fill="url(#ag)"/>
+  <path d="M64 20c-14 0-26 6-34 16l4 4c6-8 18-12 30-12s24 4 30 12l4-4c-8-10-20-16-34-16z" fill="#fff" opacity="0.3"/>
+  <path d="M36 44c-10 12-14 28-10 42l6-2c-4-12 0-26 8-36l-4-4z" fill="#fff" opacity="0.25"/>
+  <path d="M92 44l-4 4c8 10 12 24 8 36l6 2c4-14 0-30-10-42z" fill="#fff" opacity="0.25"/>
+  <circle cx="64" cy="56" r="22" fill="none" stroke="#fff" stroke-width="4" opacity="0.6"/>
+  <circle cx="64" cy="56" r="14" fill="#fff" opacity="0.15"/>
+  <path d="M52 56h24M56 50l8 6-8 6M72 50l-8 6 8 6" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/>
+  <circle cx="64" cy="56" r="5" fill="#003DA5"/>
+  <text x="64" y="112" text-anchor="middle" fill="#fff" font-family="system-ui,-apple-system,sans-serif" font-weight="800" font-size="14" letter-spacing="2">AMADEUS</text>
+</svg>

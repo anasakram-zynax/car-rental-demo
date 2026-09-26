@@ -1,0 +1,41 @@
+# Force consistent line endings across platforms.
+# Repo stores LF; checkouts also use LF (no CRLF conversion on Windows).
+* text=auto eol=lf
+
+# Mark specific files as text so they are always normalized.
+*.ts       text
+*.tsx      text
+*.js       text
+*.mjs      text
+*.cjs      text
+*.json     text
+*.md       text
+*.yml      text
+*.yaml     text
+*.html     text
+*.css      text
+*.scss     text
+*.prisma   text
+*.sql      text
+*.env.example text
+*.gitignore text
+*.toml     text
+*.svg      text
+*.sh       text eol=lf
+
+# Binary files must NOT be normalized (leave line endings alone).
+*.png      binary
+*.jpg      binary
+*.jpeg     binary
+*.gif      binary
+*.ico      binary
+*.woff     binary
+*.woff2    binary
+*.ttf      binary
+*.eot      binary
+*.mp4      binary
+*.webm     binary
+*.pdf      binary
+*.zst      binary
+*.wasm     binary
+graphify-out/graph.json merge=graphify
