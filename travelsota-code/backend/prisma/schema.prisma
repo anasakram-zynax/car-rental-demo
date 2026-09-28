@@ -9,51 +9,52 @@ datasource db {
 }
 
 model User {
-  id                    String                 @id @default(uuid())
-  email                 String                 @unique
-  passwordHash          String?
-  googleId              String?
-  avatarUrl             String?
-  firstName             String?
-  lastName              String?
-  createdAt             DateTime               @default(now())
-  updatedAt             DateTime               @updatedAt
-  emailVerified         Boolean                @default(false)
-  lastLoginAt           DateTime?
-  phone                 String?
-  dateOfBirth           DateTime?
-  nationality           String?
-  preferredCurrency     String?
-  preferredLanguage     String?
-  roleId                String?
-  userType              UserType               @default(CUSTOMER)
-  status                UserStatus             @default(ACTIVE)
-  credentialsVersion    Int                    @default(0)
-  passwordResetToken    String?
-  passwordResetExpiry   DateTime?
-  emailVerificationToken String?
+  id                      String                   @id @default(uuid())
+  email                   String                   @unique
+  passwordHash            String?
+  googleId                String?
+  avatarUrl               String?
+  firstName               String?
+  lastName                String?
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  emailVerified           Boolean                  @default(false)
+  lastLoginAt             DateTime?
+  phone                   String?
+  dateOfBirth             DateTime?
+  nationality             String?
+  preferredCurrency       String?
+  preferredLanguage       String?
+  roleId                  String?
+  userType                UserType                 @default(CUSTOMER)
+  status                  UserStatus               @default(ACTIVE)
+  credentialsVersion      Int                      @default(0)
+  passwordResetToken      String?
+  passwordResetExpiry     DateTime?
+  emailVerificationToken  String?
   emailVerificationExpiry DateTime?
-  emailVerifiedAt       DateTime?
-  deletedAt             DateTime?
-  createdById           String?
+  emailVerifiedAt         DateTime?
+  deletedAt               DateTime?
+  createdById             String?
   /// Customer wallet (prepaid, no credit line). Customer bookings can spend
   /// from here via the same reserve-commit hold pattern as agent wallets.
-  walletBalance         Decimal                @default(0)
-  walletCurrency        String                 @default("USD")
-  agentProfile          AgentProfile?
-  auditLogs             AuditLog[]
-  flightBookings        FlightBooking[]
-  flightOfferSnapshots  FlightOfferSnapshot[]
-  hotelBookings         HotelBooking[]
-  paymentGatewayConfigs PaymentGatewayConfig[]
-  providerConfigs       ProviderConfig[]
-  refreshTokens         RefreshToken[]
-  role                  Role?                  @relation(fields: [roleId], references: [id])
-  notificationRecipients NotificationRecipient[]
+  walletBalance           Decimal                  @default(0)
+  walletCurrency          String                   @default("USD")
+  agentProfile            AgentProfile?
+  auditLogs               AuditLog[]
+  flightBookings          FlightBooking[]
+  flightOfferSnapshots    FlightOfferSnapshot[]
+  hotelBookings           HotelBooking[]
+  carBookings             CarBooking[]
+  paymentGatewayConfigs   PaymentGatewayConfig[]
+  providerConfigs         ProviderConfig[]
+  refreshTokens           RefreshToken[]
+  role                    Role?                    @relation(fields: [roleId], references: [id])
+  notificationRecipients  NotificationRecipient[]
   notificationPreferences NotificationPreference[]
-  promoRedemptions       PromoRedemption[]
-  agentInviteTokens      AgentInviteToken[]
-  blogPosts              BlogPost[]
+  promoRedemptions        PromoRedemption[]
+  agentInviteTokens       AgentInviteToken[]
+  blogPosts               BlogPost[]
 
   @@index([deletedAt])
   @@index([status])
@@ -64,18 +65,18 @@ model User {
 }
 
 model Role {
-  id          String           @id @default(uuid())
-  name        String           @unique
-  description String?
-  isDefault   Boolean          @default(false)
-  priority    Int              @default(0)
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  isProtected Boolean          @default(false)
-  createdById String?
-  updatedById String?
-  permissions RolePermission[]
-  users       User[]
+  id                    String                 @id @default(uuid())
+  name                  String                 @unique
+  description           String?
+  isDefault             Boolean                @default(false)
+  priority              Int                    @default(0)
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  isProtected           Boolean                @default(false)
+  createdById           String?
+  updatedById           String?
+  permissions           RolePermission[]
+  users                 User[]
   notificationRuleRoles NotificationRuleRole[]
 
   @@index([priority])
@@ -105,56 +106,56 @@ model RolePermission {
 }
 
 model AgentProfile {
-  id                   String          @id @default(uuid())
-  userId               String          @unique
-  creditLimit          Decimal         @default(0)
-  creditUsed           Decimal         @default(0)
-  commissionRate       Decimal         @default(0)
-  flightMarkup         Decimal         @default(0)
-  hotelMarkup          Decimal         @default(0)
-  companyName          String?
-  companyPhone         String?
-  companyAddress       String?
-  taxId                String?
-  isApproved           Boolean         @default(false)
-  approvedBy           String?
-  approvedAt           DateTime?
-  createdAt            DateTime        @default(now())
-  updatedAt            DateTime        @updatedAt
-  autoSuspendThreshold Int             @default(100)
-  branding             Json?
-  commissionTierId     String?
-  isSuspended          Boolean         @default(false)
-  kycDocuments         Json?
-  kycStatus            KycStatus       @default(PENDING)
-  markupRules          Json?
-  parentAgentId        String?
-  suspensionReason     String?
-  walletBalance        Decimal         @default(0)
+  id                     String          @id @default(uuid())
+  userId                 String          @unique
+  creditLimit            Decimal         @default(0)
+  creditUsed             Decimal         @default(0)
+  commissionRate         Decimal         @default(0)
+  flightMarkup           Decimal         @default(0)
+  hotelMarkup            Decimal         @default(0)
+  companyName            String?
+  companyPhone           String?
+  companyAddress         String?
+  taxId                  String?
+  isApproved             Boolean         @default(false)
+  approvedBy             String?
+  approvedAt             DateTime?
+  createdAt              DateTime        @default(now())
+  updatedAt              DateTime        @updatedAt
+  autoSuspendThreshold   Int             @default(100)
+  branding               Json?
+  commissionTierId       String?
+  isSuspended            Boolean         @default(false)
+  kycDocuments           Json?
+  kycStatus              KycStatus       @default(PENDING)
+  markupRules            Json?
+  parentAgentId          String?
+  suspensionReason       String?
+  walletBalance          Decimal         @default(0)
   /// Currency the wallet balance, credit limit/used, holds and shell-derived
   /// values are denominated in. Single-currency ledger: foreign amounts are
   /// converted into this currency at operation time (see WalletService).
-  walletCurrency       String          @default("USD")
-  permissionOverrides  Json?
-  maxSubAgents         Int             @default(5)
-  maxCreditPerSub      Decimal         @default(0)
-  inheritMarkups       Boolean         @default(true)
-  inheritCommission    Boolean         @default(false)
-  pricingMode          String           @default("with_markup")
-  subAgentDefaultRoleId String?
-  canManageSubAgents   Boolean         @default(false)
-  segregatedCredit     Boolean         @default(false)
+  walletCurrency         String          @default("USD")
+  permissionOverrides    Json?
+  maxSubAgents           Int             @default(5)
+  maxCreditPerSub        Decimal         @default(0)
+  inheritMarkups         Boolean         @default(true)
+  inheritCommission      Boolean         @default(false)
+  pricingMode            String          @default("with_markup")
+  subAgentDefaultRoleId  String?
+  canManageSubAgents     Boolean         @default(false)
+  segregatedCredit       Boolean         @default(false)
   allowedSubAgentRoleIds Json?
   /// Admin-controlled access lists (null/empty = all allowed).
   /// Flight/hotel supplier keys (e.g. ["travelport"], ["hotelbeds","ratehawk"]).
   allowedFlightProviders Json?
-  allowedHotelProviders Json?
+  allowedHotelProviders  Json?
   /// Payment gateway keys for agent checkout (e.g. ["stripe","bank_transfer"]).
-  allowedGateways Json?
-  commissionTier       CommissionTier? @relation(fields: [commissionTierId], references: [id])
-  parentAgent          AgentProfile?   @relation("AgentHierarchy", fields: [parentAgentId], references: [id])
-  subAgents            AgentProfile[]  @relation("AgentHierarchy")
-  user                 User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  allowedGateways        Json?
+  commissionTier         CommissionTier? @relation(fields: [commissionTierId], references: [id])
+  parentAgent            AgentProfile?   @relation("AgentHierarchy", fields: [parentAgentId], references: [id])
+  subAgents              AgentProfile[]  @relation("AgentHierarchy")
+  user                   User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([parentAgentId])
   @@index([kycStatus])
@@ -163,19 +164,19 @@ model AgentProfile {
 }
 
 model AgentInviteToken {
-  id          String   @id @default(uuid())
-  token       String   @unique
-  inviterId   String
-  email       String
-  firstName   String?
-  lastName    String?
-  roleId      String?
-  creditLimit Decimal? @db.Decimal(12,2)
+  id                  String    @id @default(uuid())
+  token               String    @unique
+  inviterId           String
+  email               String
+  firstName           String?
+  lastName            String?
+  roleId              String?
+  creditLimit         Decimal?  @db.Decimal(12, 2)
   permissionOverrides Json?
-  expiresAt   DateTime
-  acceptedAt  DateTime?
-  createdAt   DateTime @default(now())
-  inviter     User     @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+  expiresAt           DateTime
+  acceptedAt          DateTime?
+  createdAt           DateTime  @default(now())
+  inviter             User      @relation(fields: [inviterId], references: [id], onDelete: Cascade)
 
   @@index([token])
   @@index([email])
@@ -247,45 +248,45 @@ model Payment {
 }
 
 model FlightBooking {
-  id                String               @id @default(uuid())
-  publicRef         String?
-  provider          String               @default("travelport")
-  status            String
-  offerSnapshot     Json
-  travelerSnapshot  Json
-  workbenchId       String?
-  reservationId     String?
-  locatorCode       String?
-  holdExpiresAt     DateTime?
+  id                    String               @id @default(uuid())
+  publicRef             String?
+  provider              String               @default("travelport")
+  status                String
+  offerSnapshot         Json
+  travelerSnapshot      Json
+  workbenchId           String?
+  reservationId         String?
+  locatorCode           String?
+  holdExpiresAt         DateTime?
   /// Supplier-side hold deadline (Travelport PNR hold window). The effective
   /// deadline below is min(supplier, admin).
   supplierHoldExpiresAt DateTime?
   /// Admin-set hold deadline (pay-later / bank-transfer window).
   adminHoldExpiresAt    DateTime?
-  receiptUrl        String?
-  message           String?
-  createdAt         DateTime             @default(now())
-  updatedAt         DateTime             @updatedAt
-  amount            Float?
-  currency          String?
-  userId            String?
-  baseAmount        Float?
-  workflowSummary   Json?
-  extrasStatus      String?
-  extrasTotalAmount Decimal?             @db.Decimal(10, 2)
-  extrasCurrency    String?
-  lastExtrasSyncAt  DateTime?
-  markupSnapshot    Json?
+  receiptUrl            String?
+  message               String?
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  amount                Float?
+  currency              String?
+  userId                String?
+  baseAmount            Float?
+  workflowSummary       Json?
+  extrasStatus          String?
+  extrasTotalAmount     Decimal?             @db.Decimal(10, 2)
+  extrasCurrency        String?
+  lastExtrasSyncAt      DateTime?
+  markupSnapshot        Json?
   /// Display currency + exchange rate used at booking-creation time (mirrors
   /// HotelBooking.rateSnapshot.chargeExchangeRate) — lets refunds/invoices
   /// reconstruct the exact amount shown to the customer without re-converting
   /// against today's (possibly different) rate. Shape: { displayCurrency,
   /// displayExchangeRate }.
-  rateSnapshot      Json?
-  user              User?                @relation(fields: [userId], references: [id])
-  extras            FlightBookingExtra[]
-  snapshot          FlightOfferSnapshot? @relation(fields: [snapshotId], references: [id])
-  snapshotId        String?
+  rateSnapshot          Json?
+  user                  User?                @relation(fields: [userId], references: [id])
+  extras                FlightBookingExtra[]
+  snapshot              FlightOfferSnapshot? @relation(fields: [snapshotId], references: [id])
+  snapshotId            String?
 
   @@index([userId, createdAt])
   @@index([createdAt])
@@ -297,39 +298,39 @@ model FlightBooking {
 }
 
 model ManualFlight {
-  id                String   @id @default(uuid())
-  airlineId         String?
-  airlineName       String?
-  flightNumber      String?
-  originId          String
-  originCity        String?
-  destinationId     String
-  destinationCity   String?
-  departureDate     DateTime
-  departureTime     String
-  arrivalDate       DateTime?
-  arrivalTime       String
-  duration          String?
-  status            String   @default("active")
-  featured          Boolean  @default(false)
-  flightOrder       Int      @default(0)
-  basePrice         Float
-  currency          String   @default("USD")
-  childPricePercent Float    @default(75)
-  infantPricePercent Float   @default(10)
-  availableSeats    Int      @default(50)
-  totalSeats        Int      @default(50)
-  refundable        Boolean  @default(false)
-  cabinClass        String   @default("economy")
-  hasWifi           Boolean  @default(false)
-  hasMeal           Boolean  @default(false)
-  hasEntertainment  Boolean  @default(false)
-  hasPowerOutlet    Boolean  @default(false)
-  checkedBaggage    String?
-  cabinBaggage      String?
-  userId            String?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id                 String    @id @default(uuid())
+  airlineId          String?
+  airlineName        String?
+  flightNumber       String?
+  originId           String
+  originCity         String?
+  destinationId      String
+  destinationCity    String?
+  departureDate      DateTime
+  departureTime      String
+  arrivalDate        DateTime?
+  arrivalTime        String
+  duration           String?
+  status             String    @default("active")
+  featured           Boolean   @default(false)
+  flightOrder        Int       @default(0)
+  basePrice          Float
+  currency           String    @default("USD")
+  childPricePercent  Float     @default(75)
+  infantPricePercent Float     @default(10)
+  availableSeats     Int       @default(50)
+  totalSeats         Int       @default(50)
+  refundable         Boolean   @default(false)
+  cabinClass         String    @default("economy")
+  hasWifi            Boolean   @default(false)
+  hasMeal            Boolean   @default(false)
+  hasEntertainment   Boolean   @default(false)
+  hasPowerOutlet     Boolean   @default(false)
+  checkedBaggage     String?
+  cabinBaggage       String?
+  userId             String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   @@index([originId, destinationId, departureDate, status])
   @@index([featured, status, flightOrder])
@@ -337,22 +338,22 @@ model ManualFlight {
 }
 
 model FlightOfferSnapshot {
-  id                String   @id @default(uuid())
-  provider          String
-  userId            String?
-  agentId           String?
-  searchKey         String
-  offerId           String
-  tripType          String   @default("one_way")
-  contentSource     String?
-  supplierContext   Json
-  normalizedOffer   Json
-  pricingSnapshot   Json
-  expiresAt         DateTime
-  createdAt         DateTime @default(now())
+  id              String   @id @default(uuid())
+  provider        String
+  userId          String?
+  agentId         String?
+  searchKey       String
+  offerId         String
+  tripType        String   @default("one_way")
+  contentSource   String?
+  supplierContext Json
+  normalizedOffer Json
+  pricingSnapshot Json
+  expiresAt       DateTime
+  createdAt       DateTime @default(now())
 
-  user              User?    @relation(fields: [userId], references: [id])
-  bookings          FlightBooking[]
+  user     User?           @relation(fields: [userId], references: [id])
+  bookings FlightBooking[]
 
   @@index([userId])
   @@index([searchKey, offerId])
@@ -512,22 +513,22 @@ model HotelBooking {
 }
 
 model ManualHotel {
-  id                    String             @id @default(uuid())
+  id                    String            @id @default(uuid())
   name                  String
-  slug                  String             @unique
-  status                String             @default("active")
-  featured              Boolean            @default(false)
-  hotelOrder            Int                @default(0)
+  slug                  String            @unique
+  status                String            @default("active")
+  featured              Boolean           @default(false)
+  hotelOrder            Int               @default(0)
   stars                 Int?
   rating                Float?
   accommodationType     String?
   description           String?
-  currency              String             @default("USD")
+  currency              String            @default("USD")
   discount              Float?
-  refundable            Boolean            @default(false)
-  checkinTime           String             @default("14:00")
-  checkoutTime          String             @default("12:00")
-  bookingAgeRequirement Int                @default(18)
+  refundable            Boolean           @default(false)
+  checkinTime           String            @default("14:00")
+  checkoutTime          String            @default("12:00")
+  bookingAgeRequirement Int               @default(18)
   email                 String?
   phone                 String?
   website               String?
@@ -546,8 +547,8 @@ model ManualHotel {
   destinationCode       String?
   destinationName       String?
   userId                String?
-  createdAt             DateTime           @default(now())
-  updatedAt             DateTime           @updatedAt
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
   rooms                 ManualHotelRoom[]
 
   @@index([status])
@@ -558,33 +559,106 @@ model ManualHotel {
 }
 
 model ManualHotelRoom {
-  id                 String       @id @default(uuid())
-  hotelId            String
-  hotel              ManualHotel  @relation(fields: [hotelId], references: [id], onDelete: Cascade)
-  name               String
-  roomType           String?
-  description        String?
-  maxAdults          Int          @default(2)
-  maxChildren        Int          @default(0)
-  basePrice          Float
-  currency           String       @default("USD")
-  discountPercent    Float?
-  extraBedAvailable  Boolean      @default(false)
-  extraBedCharge     Float?
-  breakfastIncluded  Boolean      @default(false)
-  cancellationFree   Boolean      @default(false)
-  refundable         Boolean      @default(false)
-  availableQuantity  Int          @default(1)
-  boardType          String?
-  amenities          Json?
-  images             Json?
-  translations       Json?
-  status             String       @default("active")
-  createdAt          DateTime     @default(now())
-  updatedAt          DateTime     @updatedAt
+  id                String      @id @default(uuid())
+  hotelId           String
+  hotel             ManualHotel @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  name              String
+  roomType          String?
+  description       String?
+  maxAdults         Int         @default(2)
+  maxChildren       Int         @default(0)
+  basePrice         Float
+  currency          String      @default("USD")
+  discountPercent   Float?
+  extraBedAvailable Boolean     @default(false)
+  extraBedCharge    Float?
+  breakfastIncluded Boolean     @default(false)
+  cancellationFree  Boolean     @default(false)
+  refundable        Boolean     @default(false)
+  availableQuantity Int         @default(1)
+  boardType         String?
+  amenities         Json?
+  images            Json?
+  translations      Json?
+  status            String      @default("active")
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
 
   @@index([hotelId])
   @@index([hotelId, status])
+  @@schema("public")
+}
+
+model CarFleet {
+  id                 String       @id @default(uuid())
+  displayName        String
+  brand              String?
+  model              String?
+  category           String
+  description        String?
+  passengerCapacity  Int
+  luggageCapacity    Int?
+  transmission       String?
+  quantity           Int          @default(1)
+  rentalEnabled      Boolean      @default(true)
+  transferEnabled    Boolean      @default(false)
+  rentalPriceMinor   Int?
+  transferPriceMinor Int?
+  currency           String       @default("USD")
+  baseLocation       String
+  images             Json?
+  isActive           Boolean      @default(true)
+  displayOrder       Int          @default(0)
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  bookings           CarBooking[]
+
+  @@index([isActive, displayOrder])
+  @@index([isActive, baseLocation, category])
+  @@schema("public")
+}
+
+model CarBooking {
+  id                   String         @id @default(uuid())
+  publicRef            String         @unique
+  userId               String?
+  fleetId              String
+  serviceType          CarServiceType
+  status               String
+  quantity             Int            @default(1)
+  pickupLocation       String
+  dropoffLocation      String
+  pickupAt             DateTime
+  dropoffAt            DateTime?
+  rentalDays           Int?
+  customerSnapshot     Json
+  fleetSnapshot        Json
+  pricingSnapshot      Json
+  subtotalMinor        Int
+  discountMinor        Int            @default(0)
+  totalMinor           Int
+  currency             String
+  promoCode            String?
+  cancelledAt          DateTime?
+  cancellationReason   String?
+  cancellationFeeMinor Int            @default(0)
+  workflowTrace        Json?
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  user                 User?          @relation(fields: [userId], references: [id])
+  fleet                CarFleet       @relation(fields: [fleetId], references: [id], onDelete: Restrict)
+
+  @@index([userId, createdAt])
+  @@index([fleetId, createdAt])
+  @@index([status, createdAt])
+  @@index([fleetId, serviceType, status, pickupAt, dropoffAt])
+  @@schema("public")
+}
+
+enum CarServiceType {
+  rental
+  transfer
+
   @@schema("public")
 }
 
@@ -640,28 +714,28 @@ model Language {
 }
 
 model MarkupRule {
-  id          String    @id @default(uuid())
-  name        String
-  type        String
-  applyTo     String
-  markupType  String
-  markupValue Decimal
+  id               String    @id @default(uuid())
+  name             String
+  type             String
+  applyTo          String
+  markupType       String
+  markupValue      Decimal
   /// Currency markupValue is denominated in — only meaningful for
   /// markupType 'fixed' (percentage rules are currency-agnostic). Null means
   /// legacy/unset — the fixed amount is added raw to whatever currency the
   /// offer happens to be in (ambiguous; see MarkupService.applyRules).
-  currency    String?
-  priority    Int       @default(0)
-  agentId     String?
-  supplierId  String?
+  currency         String?
+  priority         Int       @default(0)
+  agentId          String?
+  supplierId       String?
   sourceTemplateId String?
-  routeFrom   String?
-  routeTo     String?
-  startDate   DateTime?
-  endDate     DateTime?
-  isActive    Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  routeFrom        String?
+  routeTo          String?
+  startDate        DateTime?
+  endDate          DateTime?
+  isActive         Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   @@index([type])
   @@index([applyTo])
@@ -674,29 +748,29 @@ model MarkupRule {
 }
 
 model WalletTransaction {
-  id             String   @id @default(uuid())
+  id               String   @id @default(uuid())
   /// Agent ledger owner (null for customer-owned rows).
-  agentProfileId String?
+  agentProfileId   String?
   /// Customer ledger owner (null for agent-owned rows).
-  userId         String?
-  type           String
-  amount         Decimal
+  userId           String?
+  type             String
+  amount           Decimal
   /// Wallet-domain currency of `amount` (== the agent's walletCurrency).
-  currency       String   @default("USD")
+  currency         String   @default("USD")
   /// Pre-conversion values when the money moved in a foreign currency.
   originalAmount   Decimal?
   originalCurrency String?
-  balanceBefore  Decimal
-  balanceAfter   Decimal
-  reference      String?
-  description    String?
+  balanceBefore    Decimal
+  balanceAfter     Decimal
+  reference        String?
+  description      String?
   /// Receipt/proof URL for offline top-up requests.
-  evidenceUrl    String?
-  status         String   @default("completed")
-  paymentId      String?
-  bookingId      String?
-  bookingType    String?
-  createdAt      DateTime @default(now())
+  evidenceUrl      String?
+  status           String   @default("completed")
+  paymentId        String?
+  bookingId        String?
+  bookingType      String?
+  createdAt        DateTime @default(now())
 
   @@index([agentProfileId])
   @@index([userId])
@@ -787,7 +861,7 @@ model CreditShell {
   remainingAmount Decimal
   /// Currency both amounts above are denominated in (booking currency at
   /// creation; consumption converts when the target booking differs).
-  currency        String   @default("USD")
+  currency        String    @default("USD")
   status          String    @default("active")
   expiresAt       DateTime?
   createdAt       DateTime  @default(now())
@@ -977,7 +1051,7 @@ model MarkupTemplate {
 model FlightLocation {
   id              String   @id @default(uuid())
   code            String
-  type            String   // AIRPORT | CITY | METRO_AREA
+  type            String // AIRPORT | CITY | METRO_AREA
   name            String
   cityName        String?
   countryCode     String?
@@ -1023,7 +1097,7 @@ model SupplierWebhookEvent {
 /// ── Notification System ─────────────────────────────────────
 
 model Notification {
-  id             String                  @id @default(uuid())
+  id             String   @id @default(uuid())
   type           String
   title          String
   message        String?
@@ -1033,10 +1107,10 @@ model Notification {
   entityId       String?
   actorUserId    String?
   metadata       Json?
-  idempotencyKey String                  @unique
-  createdAt      DateTime                @default(now())
+  idempotencyKey String   @unique
+  createdAt      DateTime @default(now())
 
-  recipients     NotificationRecipient[]
+  recipients NotificationRecipient[]
 
   @@index([type])
   @@index([severity, createdAt])
@@ -1045,16 +1119,16 @@ model Notification {
 }
 
 model NotificationRecipient {
-  id             String       @id @default(uuid())
+  id             String    @id @default(uuid())
   notificationId String
   userId         String
   deliveredAt    DateTime?
   readAt         DateTime?
   dismissedAt    DateTime?
-  createdAt      DateTime     @default(now())
+  createdAt      DateTime  @default(now())
 
-  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([notificationId, userId])
   @@index([userId, readAt, createdAt])
@@ -1071,24 +1145,24 @@ model NotificationPreference {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, type, channel])
   @@schema("public")
 }
 
 model NotificationRule {
-  id          String                 @id @default(uuid())
-  type        String                 @unique
+  id          String   @id @default(uuid())
+  type        String   @unique
   category    String?
   severity    String
-  enabled     Boolean                @default(true)
-  critical    Boolean                @default(false)
+  enabled     Boolean  @default(true)
+  critical    Boolean  @default(false)
   description String?
-  createdAt   DateTime               @default(now())
-  updatedAt   DateTime               @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  roles       NotificationRuleRole[]
+  roles NotificationRuleRole[]
 
   @@schema("public")
 }
@@ -1107,23 +1181,23 @@ model NotificationRuleRole {
 // ─── Email Module ────────────────────────────────────────────────────────────────
 
 model EmailMessage {
-  id               String    @id @default(uuid())
-  type             String
-  templateKey      String
-  subject          String
-  html             String
-  text             String?
-  status           String    @default("queued") // queued | sending | sent | failed | dead_letter | skipped
-  severity         String    @default("info")   // info | critical
-  aggregateType    String?
-  aggregateId      String?
-  idempotencyKey   String    @unique
-  retryCount       Int       @default(0)
-  metadata         Json?
-  scheduledAt      DateTime  @default(now())
-  sentAt           DateTime?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  id             String    @id @default(uuid())
+  type           String
+  templateKey    String
+  subject        String
+  html           String
+  text           String?
+  status         String    @default("queued") // queued | sending | sent | failed | dead_letter | skipped
+  severity       String    @default("info") // info | critical
+  aggregateType  String?
+  aggregateId    String?
+  idempotencyKey String    @unique
+  retryCount     Int       @default(0)
+  metadata       Json?
+  scheduledAt    DateTime  @default(now())
+  sentAt         DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   recipients       EmailRecipient[]
   deliveryAttempts EmailDeliveryAttempt[]
@@ -1135,16 +1209,16 @@ model EmailMessage {
 }
 
 model EmailRecipient {
-  id              String       @id @default(uuid())
-  emailMessageId  String
-  email           String
-  recipientType   String       @default("customer") // customer | agent | staff | admin
-  status          String       @default("queued")   // queued | sent | failed
+  id                String   @id @default(uuid())
+  emailMessageId    String
+  email             String
+  recipientType     String   @default("customer") // customer | agent | staff | admin
+  status            String   @default("queued") // queued | sent | failed
   providerMessageId String?
-  lastError       String?
-  createdAt       DateTime     @default(now())
+  lastError         String?
+  createdAt         DateTime @default(now())
 
-  emailMessage    EmailMessage @relation(fields: [emailMessageId], references: [id], onDelete: Cascade)
+  emailMessage EmailMessage @relation(fields: [emailMessageId], references: [id], onDelete: Cascade)
 
   @@index([emailMessageId])
   @@index([email, createdAt])
@@ -1152,35 +1226,35 @@ model EmailRecipient {
 }
 
 model EmailDeliveryAttempt {
-  id              String       @id @default(uuid())
-  emailMessageId  String
-  recipientEmail  String
-  provider        String       @default("resend") // resend | smtp | mock
-  attempt         Int          @default(1)
-  status          String       @default("pending") // pending | sent | failed
-  error           String?
-  response        Json?
-  createdAt       DateTime     @default(now())
+  id             String   @id @default(uuid())
+  emailMessageId String
+  recipientEmail String
+  provider       String   @default("resend") // resend | smtp | mock
+  attempt        Int      @default(1)
+  status         String   @default("pending") // pending | sent | failed
+  error          String?
+  response       Json?
+  createdAt      DateTime @default(now())
 
-  emailMessage    EmailMessage @relation(fields: [emailMessageId], references: [id], onDelete: Cascade)
+  emailMessage EmailMessage @relation(fields: [emailMessageId], references: [id], onDelete: Cascade)
 
   @@index([emailMessageId, attempt])
   @@schema("public")
 }
 
 model EmailRule {
-  id              String    @id @default(uuid())
-  type            String    @unique
-  enabled         Boolean   @default(true)
-  templateKey     String?
-  sendToCustomer  Boolean   @default(true)
-  sendToAgent     Boolean   @default(false)
-  sendToAdmin     Boolean   @default(true)
-  sendToRoles     String[]  // role IDs that receive admin copies
-  critical        Boolean   @default(false)
-  description     String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id             String   @id @default(uuid())
+  type           String   @unique
+  enabled        Boolean  @default(true)
+  templateKey    String?
+  sendToCustomer Boolean  @default(true)
+  sendToAgent    Boolean  @default(false)
+  sendToAdmin    Boolean  @default(true)
+  sendToRoles    String[] // role IDs that receive admin copies
+  critical       Boolean  @default(false)
+  description    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   @@schema("public")
 }
@@ -1260,41 +1334,41 @@ enum PromoRedemptionStatus {
 }
 
 model PromoCode {
-  id                      String           @id @default(uuid())
-  code                    String           @unique
-  name                    String
-  description             String?
-  status                  PromoCodeStatus  @default(DRAFT)
-  discountType            PromoDiscountType
-  discountValueMinor      Int              // fixed amount in minor units, or percentage basis points
-  discountPercentBps      Int?             // basis points (1000 = 10%), used when discountType=PERCENTAGE
-  maxDiscountMinor        Int?             // cap for percentage discounts
-  minBookingAmountMinor   Int?             // minimum booking subtotal
-  currency                String?          // null = any currency
-  startsAt                DateTime?
-  endsAt                  DateTime?
-  timezone                String?          @default("UTC")
-  totalUsageLimit         Int?
-  perUserLimit            Int?             @default(1)
-  firstBookingOnly        Boolean          @default(false)
-  customerType            PromoCustomerType @default(ALL)
-  productTypes            String[]         @default(["flights", "hotels"]) // flights | hotels | all
-  eligibleRoutes          String[]         // e.g. ["DXB-JED", "RUH-LHR"]
-  eligibleAirlines        String[]         // IATA codes
-  eligibleCabins          String[]         // e.g. ["economy", "business"]
-  eligibleHotelIds        String[]         // Hotelbeds hotel IDs
-  eligibleDestinations    String[]         // city/airport codes
-  excludedProviders       String[]         // provider keys to exclude
-  isPublic                Boolean          @default(true)
-  createdById             String?
-  updatedById             String?
-  version                 Int              @default(1)
-  createdAt               DateTime         @default(now())
-  updatedAt               DateTime         @updatedAt
-  deletedAt               DateTime?
+  id                    String            @id @default(uuid())
+  code                  String            @unique
+  name                  String
+  description           String?
+  status                PromoCodeStatus   @default(DRAFT)
+  discountType          PromoDiscountType
+  discountValueMinor    Int // fixed amount in minor units, or percentage basis points
+  discountPercentBps    Int? // basis points (1000 = 10%), used when discountType=PERCENTAGE
+  maxDiscountMinor      Int? // cap for percentage discounts
+  minBookingAmountMinor Int? // minimum booking subtotal
+  currency              String? // null = any currency
+  startsAt              DateTime?
+  endsAt                DateTime?
+  timezone              String?           @default("UTC")
+  totalUsageLimit       Int?
+  perUserLimit          Int?              @default(1)
+  firstBookingOnly      Boolean           @default(false)
+  customerType          PromoCustomerType @default(ALL)
+  productTypes          String[]          @default(["flights", "hotels"]) // flights | hotels | all
+  eligibleRoutes        String[] // e.g. ["DXB-JED", "RUH-LHR"]
+  eligibleAirlines      String[] // IATA codes
+  eligibleCabins        String[] // e.g. ["economy", "business"]
+  eligibleHotelIds      String[] // Hotelbeds hotel IDs
+  eligibleDestinations  String[] // city/airport codes
+  excludedProviders     String[] // provider keys to exclude
+  isPublic              Boolean           @default(true)
+  createdById           String?
+  updatedById           String?
+  version               Int               @default(1)
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  deletedAt             DateTime?
 
-  redemptions             PromoRedemption[]
-  auditLogs               PromoAuditLog[]
+  redemptions PromoRedemption[]
+  auditLogs   PromoAuditLog[]
 
   @@index([status])
   @@index([startsAt, endsAt])
@@ -1303,26 +1377,26 @@ model PromoCode {
 }
 
 model PromoRedemption {
-  id                      String               @id @default(uuid())
-  promoCodeId             String
-  userId                  String?
-  guestEmailHash          String?
-  bookingId               String?
-  bookingType             String?              // FLIGHT | HOTEL
-  paymentId               String?
-  status                  PromoRedemptionStatus @default(RESERVED)
-  discountMinor           Int
-  currency                String
-  bookingSubtotalMinor    Int
-  idempotencyKey          String               @unique
-  expiresAt               DateTime
-  createdAt               DateTime             @default(now())
-  redeemedAt              DateTime?
-  releasedAt              DateTime?
-  voidedAt                DateTime?
+  id                   String                @id @default(uuid())
+  promoCodeId          String
+  userId               String?
+  guestEmailHash       String?
+  bookingId            String?
+  bookingType          String? // FLIGHT | HOTEL
+  paymentId            String?
+  status               PromoRedemptionStatus @default(RESERVED)
+  discountMinor        Int
+  currency             String
+  bookingSubtotalMinor Int
+  idempotencyKey       String                @unique
+  expiresAt            DateTime
+  createdAt            DateTime              @default(now())
+  redeemedAt           DateTime?
+  releasedAt           DateTime?
+  voidedAt             DateTime?
 
-  promoCode               PromoCode            @relation(fields: [promoCodeId], references: [id])
-  user                    User?                @relation(fields: [userId], references: [id])
+  promoCode PromoCode @relation(fields: [promoCodeId], references: [id])
+  user      User?     @relation(fields: [userId], references: [id])
 
   @@unique([promoCodeId, bookingId], name: "unique_promo_per_booking")
   @@index([promoCodeId, status])
@@ -1333,15 +1407,15 @@ model PromoRedemption {
 }
 
 model PromoAuditLog {
-  id                      String   @id @default(uuid())
-  promoCodeId             String
-  actorId                 String?
-  action                  String   // create | update | pause | resume | archive | status_change
-  beforeJson              Json?
-  afterJson               Json?
-  createdAt               DateTime @default(now())
+  id          String   @id @default(uuid())
+  promoCodeId String
+  actorId     String?
+  action      String // create | update | pause | resume | archive | status_change
+  beforeJson  Json?
+  afterJson   Json?
+  createdAt   DateTime @default(now())
 
-  promoCode               PromoCode @relation(fields: [promoCodeId], references: [id], onDelete: Cascade)
+  promoCode PromoCode @relation(fields: [promoCodeId], references: [id], onDelete: Cascade)
 
   @@index([promoCodeId, createdAt])
   @@schema("public")
@@ -1361,8 +1435,8 @@ model AirportReference {
   latitude      Float?
   longitude     Float?
   timezone      String?
-  duffelCityId  String?  // Duffel city ID for cross-reference
-  duffelPlaceId String?  // Duffel airport place ID
+  duffelCityId  String? // Duffel city ID for cross-reference
+  duffelPlaceId String? // Duffel airport place ID
   source        String   @default("duffel") // duffel | zcars | merged
   enabled       Boolean  @default(true)
   createdAt     DateTime @default(now())
@@ -1381,8 +1455,8 @@ model AirlineReference {
   icaoCode                String?
   name                    String
   countryCode             String?
-  logoSymbolUrl           String?  // Duffel SVG logo (light bg)
-  logoLockupUrl           String?  // Duffel SVG lockup logo
+  logoSymbolUrl           String? // Duffel SVG logo (light bg)
+  logoLockupUrl           String? // Duffel SVG lockup logo
   conditionsOfCarriageUrl String?
   source                  String   @default("duffel") // duffel | manual | merged
   enabled                 Boolean  @default(true)
@@ -1413,12 +1487,12 @@ enum BlogPostStatus {
 }
 
 model BlogCategory {
-  id          String      @id @default(uuid())
+  id          String     @id @default(uuid())
   name        String
-  slug        String      @unique
+  slug        String     @unique
   description String?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
   posts       BlogPost[]
 
   @@index([name])
@@ -1446,8 +1520,8 @@ model BlogPost {
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 
-  category        BlogCategory?  @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  author          User?          @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  category BlogCategory? @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  author   User?         @relation(fields: [authorId], references: [id], onDelete: SetNull)
 
   @@index([status, publishedAt])
   @@index([categoryId])
@@ -1503,24 +1577,24 @@ model CmsPage {
 }
 
 model CmsMenu {
-  id                String      @id @default(uuid())
-  label             String
-  linkType          CmsLinkType @default(PAGE)
-  pageId            String?
-  url               String?
-  target            CmsTarget   @default(SELF)
-  position          CmsPosition @default(HEADER)
-  parentId          String?
-  sortOrder         Int         @default(0)
-  isActive          Boolean     @default(true)
-  footerCategoryId  String?
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
+  id               String      @id @default(uuid())
+  label            String
+  linkType         CmsLinkType @default(PAGE)
+  pageId           String?
+  url              String?
+  target           CmsTarget   @default(SELF)
+  position         CmsPosition @default(HEADER)
+  parentId         String?
+  sortOrder        Int         @default(0)
+  isActive         Boolean     @default(true)
+  footerCategoryId String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
 
-  page            CmsMenu?             @relation("CmsMenuHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
-  children        CmsMenu[]            @relation("CmsMenuHierarchy")
-  cmsPage         CmsPage?             @relation(fields: [pageId], references: [id], onDelete: SetNull)
-  footerCategory  CmsFooterCategory?   @relation(fields: [footerCategoryId], references: [id], onDelete: Cascade)
+  page           CmsMenu?           @relation("CmsMenuHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children       CmsMenu[]          @relation("CmsMenuHierarchy")
+  cmsPage        CmsPage?           @relation(fields: [pageId], references: [id], onDelete: SetNull)
+  footerCategory CmsFooterCategory? @relation(fields: [footerCategoryId], references: [id], onDelete: Cascade)
 
   @@index([position, isActive])
   @@index([parentId])
@@ -1528,13 +1602,13 @@ model CmsMenu {
 }
 
 model CmsFooterCategory {
-  id        String    @id @default(uuid())
+  id        String   @id @default(uuid())
   name      String
-  slug      String    @unique
-  sortOrder Int       @default(0)
-  isActive  Boolean   @default(true)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  slug      String   @unique
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   menus CmsMenu[]
 
@@ -1546,16 +1620,16 @@ model CmsFooterCategory {
 // Singleton row for admin-editable site-wide contact info + social links.
 
 model SiteSettings {
-  id                  String   @id @default("default")
-  siteName            String?
-  tagline             String?
-  phone               String?
-  whatsapp            String?
-  email               String?
-  location            String?
-  socialLinks         Json?
-  showPriceBreakdown  Boolean  @default(false)
-  updatedAt           DateTime @updatedAt
+  id                 String   @id @default("default")
+  siteName           String?
+  tagline            String?
+  phone              String?
+  whatsapp           String?
+  email              String?
+  location           String?
+  socialLinks        Json?
+  showPriceBreakdown Boolean  @default(false)
+  updatedAt          DateTime @updatedAt
 
   @@schema("public")
 }
@@ -1585,13 +1659,13 @@ model DemoLead {
 }
 
 model DemoVerification {
-  id        String    @id @default(uuid())
-  requestId String    @unique
-  token     String    @unique
+  id        String   @id @default(uuid())
+  requestId String   @unique
+  token     String   @unique
   email     String
-  consumed  Boolean   @default(false)
+  consumed  Boolean  @default(false)
   expiresAt DateTime
-  createdAt DateTime  @default(now())
+  createdAt DateTime @default(now())
 
   @@schema("public")
 }
@@ -1646,8 +1720,8 @@ model DemoActivity {
 model DemoConfigOverride {
   id         String   @id @default(uuid())
   sessionId  String
-  entityType String   // 'provider' | 'gateway'
-  entityKey  String   // 'travelport' | 'hotelbeds' | 'stripe' | 'paypal'
+  entityType String // 'provider' | 'gateway'
+  entityKey  String // 'travelport' | 'hotelbeds' | 'stripe' | 'paypal'
   field      String
   value      String
   expiresAt  DateTime
