@@ -1,6 +1,7 @@
 import type { CarFleetRepositoryPort } from '../ports/car-fleet-repository.port';
 import type { CarLocationRepositoryPort } from '../ports/car-location-repository.port';
 import type { CarTransferPackageRepositoryPort } from '../ports/car-transfer-package-repository.port';
+import type { CarBookingRepositoryPort } from '../ports/car-booking-repository.port';
 import type { CarFleetEntity } from '../../domain/entities/car-fleet.entity';
 import type { CarLocationEntity } from '../../domain/entities/car-location.entity';
 import { CarsService, type CreateCarFleetCommand } from './cars.service';
@@ -70,6 +71,7 @@ describe('CarsService', () => {
   let fleets: jest.Mocked<CarFleetRepositoryPort>;
   let locations: jest.Mocked<CarLocationRepositoryPort>;
   let packages: jest.Mocked<CarTransferPackageRepositoryPort>;
+  let bookings: jest.Mocked<CarBookingRepositoryPort>;
   let service: CarsService;
 
   beforeEach(() => {
@@ -122,7 +124,18 @@ describe('CarsService', () => {
       }),
       findDropoffLocations: jest.fn().mockResolvedValue([]),
     };
-    service = new CarsService(fleets, locations, packages);
+    bookings = {
+      create: jest.fn(),
+      update: jest.fn(),
+      findById: jest.fn(),
+      findByPublicRef: jest.fn(),
+      findByUserId: jest.fn(),
+      findOverlappingRentals: jest.fn(),
+      sumOverlappingRentalQuantity: jest.fn().mockResolvedValue(0),
+      allocateRental: jest.fn(),
+      atomicClaimStatus: jest.fn(),
+    };
+    service = new CarsService(fleets, locations, packages, bookings);
   });
 
   it.each(['Automatic', 'AUTOMATIC', ' automatic '])(
@@ -233,6 +246,21 @@ describe('CarsService', () => {
     );
   });
 
+  it('excludes rentals without enough authoritative unit availability', async () => {
+    bookings.sumOverlappingRentalQuantity.mockResolvedValue(1);
+    const result = await service.search({
+      serviceType: 'rental',
+      locationId: location.id,
+      pickupAt: '2026-10-01T10:00:00Z',
+      dropoffAt: '2026-10-02T10:00:00Z',
+      quantity: 1,
+    });
+    expect(result.items).toEqual([]);
+    expect(bookings.sumOverlappingRentalQuantity).toHaveBeenCalledWith(
+      expect.objectContaining({ statuses: ['booked'] }),
+    );
+  });
+
   it('searches only repository-qualified transfer routes at package price', async () => {
     const result = await service.search({
       serviceType: 'transfer',
@@ -318,5 +346,92 @@ describe('CarsService', () => {
       location.id,
       undefined,
     );
+  });
+
+  it('returns authoritative availability using summed booking quantities', async () => {
+    fleets.findById.mockResolvedValue({ ...fleet, quantity: 5 });
+    bookings.sumOverlappingRentalQuantity.mockResolvedValue(3);
+    await expect(
+      service.getRentalAvailability(
+        fleet.id,
+        '2026-10-01T10:00:00Z',
+        '2026-10-02T10:00:00Z',
+        2,
+      ),
+    ).resolves.toEqual({
+      totalQuantity: 5,
+      reservedQuantity: 3,
+      availableQuantity: 2,
+      requestedQuantity: 2,
+      isAvailable: true,
+    });
+  });
+
+  it.each([
+    [{ ...fleet, isActive: false }, 'inactive'],
+    [{ ...fleet, rentalEnabled: false }, 'disabled'],
+  ])(
+    'rejects unavailable fleet configuration',
+    async (configuredFleet, message) => {
+      fleets.findById.mockResolvedValue(configuredFleet);
+      await expect(
+        service.getRentalAvailability(
+          fleet.id,
+          '2026-10-01T10:00:00Z',
+          '2026-10-02T10:00:00Z',
+          1,
+        ),
+      ).rejects.toThrow(message);
+    },
+  );
+
+  it('rejects invalid rental quantity and date order', async () => {
+    await expect(
+      service.getRentalAvailability(fleet.id, '2026-10-01', '2026-10-02', 0),
+    ).rejects.toThrow('positive integer');
+    await expect(
+      service.getRentalAvailability(fleet.id, '2026-10-02', '2026-10-01', 1),
+    ).rejects.toThrow('before drop-off');
+  });
+
+  it('creates a booked rental through the atomic allocation boundary', async () => {
+    bookings.allocateRental.mockImplementation(async ({ booking }) => ({
+      outcome: 'created',
+      booking: { ...booking, id: 'booking-1', createdAt: now, updatedAt: now },
+      reservedQuantity: booking.quantity,
+    }));
+    const result = await service.reserveRental({
+      publicRef: 'CAR-1',
+      fleetId: fleet.id,
+      pickupLocation: 'DXB',
+      dropoffLocation: 'DXB',
+      pickupAt: '2026-10-01T10:00:00Z',
+      dropoffAt: '2026-10-02T10:00:00Z',
+      quantity: 1,
+    });
+    expect(result.status).toBe('booked');
+    expect(bookings.allocateRental).toHaveBeenCalledWith(
+      expect.objectContaining({ statuses: ['booked'] }),
+    );
+    expect(fleets.update).not.toHaveBeenCalled();
+  });
+
+  it('rejects insufficient atomic allocation', async () => {
+    bookings.allocateRental.mockResolvedValue({
+      outcome: 'insufficient',
+      totalQuantity: 1,
+      reservedQuantity: 1,
+    });
+    await expect(
+      service.reserveRental({
+        publicRef: 'CAR-2',
+        fleetId: fleet.id,
+        pickupLocation: 'DXB',
+        dropoffLocation: 'DXB',
+        pickupAt: '2026-10-01T10:00:00Z',
+        dropoffAt: '2026-10-02T10:00:00Z',
+        quantity: 1,
+      }),
+    ).rejects.toMatchObject({ status: 409 });
   });
 });

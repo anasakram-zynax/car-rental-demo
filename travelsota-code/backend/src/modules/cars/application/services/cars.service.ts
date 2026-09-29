@@ -1,6 +1,10 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { BusinessError } from '../../../../shared/errors/business-error';
 import {
+  CarBookingRepositoryPortToken,
+  type CarBookingRepositoryPort,
+} from '../ports/car-booking-repository.port';
+import {
   CarFleetRepositoryPortToken,
   type CarFleetRepositoryPort,
 } from '../ports/car-fleet-repository.port';
@@ -18,6 +22,10 @@ import type {
   CarLocationType,
   CreateCarLocationInput,
 } from '../../domain/entities/car-location.entity';
+import {
+  CAR_RENTAL_RESERVING_STATUSES,
+  calculateRentalAvailability,
+} from '../../domain/rental-availability.policy';
 
 export interface CarFleetImageInput {
   url: string;
@@ -63,6 +71,7 @@ export interface CarSearchQuery {
   returnAt?: string;
   category?: string;
   passengerCapacity?: number;
+  quantity?: number;
   transmission?: string;
   minPrice?: number;
   maxPrice?: number;
@@ -70,10 +79,17 @@ export interface CarSearchQuery {
   pageSize?: number;
 }
 
-const RENTAL_AVAILABILITY_POLICY = {
-  authoritative: false,
-  reason: 'Inventory-reserving booking statuses are finalized in Phase 3.',
-} as const;
+export interface ReserveRentalCommand {
+  publicRef: string;
+  fleetId: string;
+  userId?: string;
+  pickupLocation: string;
+  dropoffLocation: string;
+  pickupAt: string | Date;
+  dropoffAt: string | Date;
+  quantity: number;
+  customerSnapshot?: Record<string, unknown>;
+}
 
 @Injectable()
 export class CarsService {
@@ -84,6 +100,8 @@ export class CarsService {
     private readonly locationRepository: CarLocationRepositoryPort,
     @Inject(CarTransferPackageRepositoryPortToken)
     private readonly transferPackageRepository: CarTransferPackageRepositoryPort,
+    @Inject(CarBookingRepositoryPortToken)
+    private readonly bookingRepository: CarBookingRepositoryPort,
   ) {}
 
   async create(input: CreateCarFleetCommand) {
@@ -228,6 +246,122 @@ export class CarsService {
     );
   }
 
+  async getRentalAvailability(
+    fleetId: string,
+    pickupAtInput: string | Date,
+    dropoffAtInput: string | Date,
+    requestedQuantity = 1,
+  ) {
+    const fleet = await this.fleetRepository.findById(fleetId);
+    if (!fleet)
+      throw new BusinessError(
+        'CAR_FLEET_NOT_FOUND',
+        `Car fleet with id "${fleetId}" not found.`,
+        HttpStatus.NOT_FOUND,
+      );
+    this.validateRentalFleet(fleet);
+    const { pickupAt, dropoffAt } = this.validateRentalWindow(
+      pickupAtInput,
+      dropoffAtInput,
+      requestedQuantity,
+    );
+    return this.availabilityForFleet(
+      fleet,
+      pickupAt,
+      dropoffAt,
+      requestedQuantity,
+    );
+  }
+
+  async reserveRental(input: ReserveRentalCommand) {
+    const fleet = await this.fleetRepository.findById(input.fleetId);
+    if (!fleet)
+      throw new BusinessError(
+        'CAR_FLEET_NOT_FOUND',
+        `Car fleet with id "${input.fleetId}" not found.`,
+        HttpStatus.NOT_FOUND,
+      );
+    const { pickupAt, dropoffAt } = this.validateRentalWindow(
+      input.pickupAt,
+      input.dropoffAt,
+      input.quantity,
+    );
+    const rentalDays = Math.ceil(
+      (dropoffAt.getTime() - pickupAt.getTime()) / 86_400_000,
+    );
+    const subtotal = (fleet.rentalPrice ?? 0) * rentalDays * input.quantity;
+    const result = await this.bookingRepository.allocateRental({
+      statuses: CAR_RENTAL_RESERVING_STATUSES,
+      booking: {
+        publicRef: input.publicRef.trim(),
+        userId: input.userId ?? null,
+        fleetId: fleet.id,
+        transferPackageId: null,
+        serviceType: 'rental',
+        status: 'booked',
+        quantity: input.quantity,
+        pickupLocation: input.pickupLocation,
+        dropoffLocation: input.dropoffLocation,
+        pickupAt,
+        dropoffAt,
+        rentalDays,
+        customerSnapshot: input.customerSnapshot ?? {},
+        fleetSnapshot: this.toPublicFleet(fleet),
+        pricingSnapshot: {
+          rentalPrice: fleet.rentalPrice,
+          rentalDays,
+          quantity: input.quantity,
+        },
+        subtotal,
+        discount: 0,
+        total: subtotal,
+        currency: fleet.currency,
+        promoCode: null,
+        cancelledAt: null,
+        cancellationReason: null,
+        cancellationFee: 0,
+        workflowTrace: null,
+      },
+    });
+
+    if (result.outcome === 'created') return result.booking;
+    if (result.outcome === 'duplicate')
+      throw new BusinessError(
+        'CAR_RENTAL_DUPLICATE_ALLOCATION',
+        'This rental allocation reference already exists.',
+        HttpStatus.CONFLICT,
+      );
+    if (result.outcome === 'fleet_not_found')
+      throw new BusinessError(
+        'CAR_FLEET_NOT_FOUND',
+        `Car fleet with id "${input.fleetId}" not found.`,
+        HttpStatus.NOT_FOUND,
+      );
+    if (result.outcome === 'fleet_inactive')
+      throw new BusinessError(
+        'CAR_RENTAL_FLEET_INACTIVE',
+        'The selected fleet is inactive.',
+        HttpStatus.CONFLICT,
+      );
+    if (result.outcome === 'rental_disabled')
+      throw new BusinessError(
+        'CAR_RENTAL_DISABLED',
+        'Rental service is disabled for this fleet.',
+        HttpStatus.CONFLICT,
+      );
+    if (result.outcome === 'insufficient')
+      throw new BusinessError(
+        'CAR_RENTAL_INSUFFICIENT_AVAILABILITY',
+        'The requested rental quantity is no longer available.',
+        HttpStatus.CONFLICT,
+        {
+          totalQuantity: result.totalQuantity,
+          reservedQuantity: result.reservedQuantity,
+        },
+      );
+    throw new BusinessError('CAR_RENTAL_ALLOCATION_FAILED');
+  }
+
   private async searchRentals(query: CarSearchQuery) {
     const result = await this.fleetRepository.list({
       page: this.positiveIntegerOr(query.page, 1),
@@ -243,14 +377,25 @@ export class CarsService {
       minPrice: query.minPrice,
       maxPrice: query.maxPrice,
     });
-    return {
-      ...result,
-      items: result.items.map((fleet) => ({
+    const pickupAt = new Date(query.pickupAt!);
+    const dropoffAt = new Date(query.dropoffAt ?? query.returnAt!);
+    const requestedQuantity = query.quantity ?? 1;
+    const withAvailability = await Promise.all(
+      result.items.map(async (fleet) => ({
         ...this.toPublicFleet(fleet),
         serviceType: 'rental' as const,
         price: fleet.rentalPrice,
-        availability: RENTAL_AVAILABILITY_POLICY,
+        availability: await this.availabilityForFleet(
+          fleet,
+          pickupAt,
+          dropoffAt,
+          requestedQuantity,
+        ),
       })),
+    );
+    return {
+      ...result,
+      items: withAvailability.filter((item) => item.availability.isAvailable),
     };
   }
 
@@ -429,6 +574,11 @@ export class CarsService {
         'CAR_SEARCH_INVALID_PRICE_RANGE',
         'Minimum price cannot exceed maximum price.',
       );
+    if (query.quantity !== undefined && query.quantity <= 0)
+      throw new BusinessError(
+        'CAR_RENTAL_INVALID_QUANTITY',
+        'Requested rental quantity must be a positive integer.',
+      );
     if (query.serviceType === 'rental') {
       if (!query.location?.trim() && !query.locationId)
         throw new BusinessError(
@@ -461,6 +611,65 @@ export class CarsService {
         'CAR_SEARCH_TRANSFER_ROUTE_REQUIRED',
         'Transfer pickup time and selected pickup/drop-off locations are required.',
       );
+  }
+
+  private async availabilityForFleet(
+    fleet: CarFleetEntity,
+    pickupAt: Date,
+    dropoffAt: Date,
+    requestedQuantity: number,
+  ) {
+    const reservedQuantity =
+      await this.bookingRepository.sumOverlappingRentalQuantity({
+        fleetId: fleet.id,
+        pickupAt,
+        dropoffAt,
+        statuses: CAR_RENTAL_RESERVING_STATUSES,
+      });
+    return calculateRentalAvailability({
+      totalQuantity: fleet.quantity,
+      reservedQuantity,
+      requestedQuantity,
+    });
+  }
+
+  private validateRentalFleet(fleet: CarFleetEntity) {
+    if (!fleet.isActive)
+      throw new BusinessError(
+        'CAR_RENTAL_FLEET_INACTIVE',
+        'The selected fleet is inactive.',
+        HttpStatus.CONFLICT,
+      );
+    if (!fleet.rentalEnabled)
+      throw new BusinessError(
+        'CAR_RENTAL_DISABLED',
+        'Rental service is disabled for this fleet.',
+        HttpStatus.CONFLICT,
+      );
+  }
+
+  private validateRentalWindow(
+    pickupAtInput: string | Date,
+    dropoffAtInput: string | Date,
+    requestedQuantity: number,
+  ) {
+    if (!Number.isInteger(requestedQuantity) || requestedQuantity <= 0)
+      throw new BusinessError(
+        'CAR_RENTAL_INVALID_QUANTITY',
+        'Requested rental quantity must be a positive integer.',
+      );
+    const pickupAt = new Date(pickupAtInput);
+    const dropoffAt = new Date(dropoffAtInput);
+    if (
+      !Number.isFinite(pickupAt.getTime()) ||
+      !Number.isFinite(dropoffAt.getTime()) ||
+      pickupAt >= dropoffAt
+    )
+      throw new BusinessError(
+        'CAR_SEARCH_INVALID_RENTAL_DATES',
+        'Rental pickup must be before drop-off.',
+      );
+    return { pickupAt, dropoffAt };
   }
 
   private normalizeIdentity(value: string) {

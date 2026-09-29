@@ -25,6 +25,21 @@ export interface OverlappingRentalCriteria {
   excludeBookingId?: string;
 }
 
+export interface AllocateRentalInput {
+  booking: CreateCarBookingInput;
+  statuses: readonly BookingStatus[];
+}
+
+export type AllocateRentalResult =
+  | { outcome: 'created'; booking: CarBookingEntity; reservedQuantity: number }
+  | { outcome: 'duplicate'; booking: CarBookingEntity }
+  | { outcome: 'fleet_not_found' | 'fleet_inactive' | 'rental_disabled' }
+  | {
+      outcome: 'insufficient';
+      totalQuantity: number;
+      reservedQuantity: number;
+    };
+
 export interface CarBookingRepositoryPort {
   create(data: CreateCarBookingInput): Promise<CarBookingEntity>;
   update(id: string, patch: UpdateCarBookingInput): Promise<CarBookingEntity>;
@@ -37,6 +52,10 @@ export interface CarBookingRepositoryPort {
   findOverlappingRentals(
     criteria: OverlappingRentalCriteria,
   ): Promise<CarBookingEntity[]>;
+  sumOverlappingRentalQuantity(
+    criteria: OverlappingRentalCriteria,
+  ): Promise<number>;
+  allocateRental(input: AllocateRentalInput): Promise<AllocateRentalResult>;
   atomicClaimStatus(
     id: string,
     expectedStatus: BookingStatus,
