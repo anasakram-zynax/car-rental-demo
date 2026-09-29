@@ -133,6 +133,8 @@ describe('CarsService', () => {
       findOverlappingRentals: jest.fn(),
       sumOverlappingRentalQuantity: jest.fn().mockResolvedValue(0),
       allocateRental: jest.fn(),
+      expirePendingPaymentRentals: jest.fn(),
+      atomicCancel: jest.fn(),
       atomicClaimStatus: jest.fn(),
     };
     service = new CarsService(fleets, locations, packages, bookings);
@@ -257,7 +259,9 @@ describe('CarsService', () => {
     });
     expect(result.items).toEqual([]);
     expect(bookings.sumOverlappingRentalQuantity).toHaveBeenCalledWith(
-      expect.objectContaining({ statuses: ['booked'] }),
+      expect.objectContaining({
+        statuses: ['pending_payment', 'booking_in_progress', 'booked'],
+      }),
     );
   });
 
@@ -411,7 +415,9 @@ describe('CarsService', () => {
     });
     expect(result.status).toBe('booked');
     expect(bookings.allocateRental).toHaveBeenCalledWith(
-      expect.objectContaining({ statuses: ['booked'] }),
+      expect.objectContaining({
+        statuses: ['pending_payment', 'booking_in_progress', 'booked'],
+      }),
     );
     expect(fleets.update).not.toHaveBeenCalled();
   });

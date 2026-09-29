@@ -32,6 +32,8 @@
     "seed:dashboard": "ts-node --transpile-only src/scripts/seed-dashboard.ts",
     "seed:hotel-destinations": "ts-node --transpile-only src/scripts/seed-hotel-destinations.ts",
     "seed:flight-locations": "ts-node --transpile-only src/scripts/seed-flight-locations.ts",
+    "seed:cars": "ts-node --transpile-only src/scripts/seed-cars.ts",
+    "import:car-images": "ts-node --transpile-only src/scripts/import-car-images.ts",
     "import:geonames": "ts-node --transpile-only src/scripts/import-geonames.ts",
     "enrich:hotel-geo": "ts-node --transpile-only src/scripts/enrich-hotel-geo.ts",
     "migrate:provider-config": "ts-node --transpile-only src/scripts/migrate-provider-config-to-db.ts",
