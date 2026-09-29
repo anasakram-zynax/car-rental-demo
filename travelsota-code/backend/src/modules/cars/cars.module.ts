@@ -10,11 +10,20 @@ import { CarLocationRepositoryPortToken } from './application/ports/car-location
 import { CarTransferPackageRepositoryPortToken } from './application/ports/car-transfer-package-repository.port';
 import { PrismaCarLocationRepository } from './infrastructure/repositories/prisma-car-location.repository';
 import { PrismaCarTransferPackageRepository } from './infrastructure/repositories/prisma-car-transfer-package.repository';
+import { PaymentsModule } from '../payment/payments.module';
+import { CarCheckoutService } from './application/services/car-checkout.service';
+import { CarPaymentListener } from './application/services/car-payment.listener';
+import { CarCancellationService } from './application/services/car-cancellation.service';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
+  imports: [PaymentsModule, NotificationsModule],
   controllers: [CarsAdminController, CarsPublicController],
   providers: [
     CarsService,
+    CarCheckoutService,
+    CarPaymentListener,
+    CarCancellationService,
     {
       provide: CarFleetRepositoryPortToken,
       useClass: PrismaCarFleetRepository,

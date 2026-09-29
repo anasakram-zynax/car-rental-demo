@@ -182,6 +182,36 @@ export class PrismaCarBookingRepository implements CarBookingRepositoryPort {
     return result.count === 1;
   }
 
+  async expirePendingPaymentRentals(cutoff: Date): Promise<number> {
+    const result = await this.prisma.carBooking.updateMany({
+      where: {
+        serviceType: 'rental',
+        status: 'pending_payment',
+        createdAt: { lte: cutoff },
+      },
+      data: { status: 'payment_expired' },
+    });
+    return result.count;
+  }
+
+  async atomicCancel(
+    id: string,
+    expectedStatuses: readonly BookingStatus[],
+    reason: string,
+    cancelledAt: Date,
+  ): Promise<boolean> {
+    const result = await this.prisma.carBooking.updateMany({
+      where: { id, status: { in: [...expectedStatuses] } },
+      data: {
+        status: 'cancelled',
+        cancellationReason: reason,
+        cancelledAt,
+        cancellationFee: 0,
+      },
+    });
+    return result.count === 1;
+  }
+
   private overlapWhere(
     criteria: OverlappingRentalCriteria,
   ): Prisma.CarBookingWhereInput {

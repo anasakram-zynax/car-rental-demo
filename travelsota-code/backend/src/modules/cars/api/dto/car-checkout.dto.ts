@@ -1,0 +1,87 @@
+import { Type } from 'class-transformer';
+import {
+  IsEmail,
+  IsEnum,
+  IsISO8601,
+  IsInt,
+  IsNumber,
+  IsOptional,
+  IsPositive,
+  IsString,
+  MaxLength,
+  Min,
+  MinLength,
+} from 'class-validator';
+import { PaymentGateway } from '../../../payment/domain/enums/payment-gateway.enum';
+
+export class CarRentalCheckoutDto {
+  @IsString()
+  @MinLength(1)
+  fleetId!: string;
+
+  @IsString()
+  @MinLength(1)
+  @MaxLength(200)
+  pickupLocation!: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  dropoffLocation?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  returnAt?: string;
+
+  @IsISO8601({ strict: true })
+  pickupAt!: string;
+
+  @IsISO8601({ strict: true })
+  dropoffAt!: string;
+
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  quantity!: number;
+
+  @IsString()
+  @MinLength(1)
+  @MaxLength(120)
+  contactName!: string;
+
+  @IsEmail()
+  @MaxLength(200)
+  contactEmail!: string;
+
+  @IsString()
+  @MinLength(3)
+  @MaxLength(40)
+  contactPhone!: string;
+
+  @IsEnum(PaymentGateway)
+  gateway!: PaymentGateway;
+
+  @IsString()
+  @MinLength(8)
+  @MaxLength(100)
+  idempotencyKey!: string;
+
+  @IsOptional()
+  @IsString()
+  successUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  cancelUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  customerId?: string;
+
+  // Accepted only for compatibility/debugging; checkout never trusts it.
+  @IsOptional()
+  @IsNumber()
+  @IsPositive()
+  clientTotal?: number;
+}

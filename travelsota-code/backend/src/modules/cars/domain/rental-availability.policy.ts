@@ -1,6 +1,8 @@
 import type { BookingStatus } from '../../../shared/booking/booking-state-machine';
 
 export const CAR_RENTAL_RESERVING_STATUSES = [
+  'pending_payment',
+  'booking_in_progress',
   'booked',
 ] as const satisfies readonly BookingStatus[];
 

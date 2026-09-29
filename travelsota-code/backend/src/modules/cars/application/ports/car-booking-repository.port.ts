@@ -56,6 +56,13 @@ export interface CarBookingRepositoryPort {
     criteria: OverlappingRentalCriteria,
   ): Promise<number>;
   allocateRental(input: AllocateRentalInput): Promise<AllocateRentalResult>;
+  expirePendingPaymentRentals(cutoff: Date): Promise<number>;
+  atomicCancel(
+    id: string,
+    expectedStatuses: readonly BookingStatus[],
+    reason: string,
+    cancelledAt: Date,
+  ): Promise<boolean>;
   atomicClaimStatus(
     id: string,
     expectedStatus: BookingStatus,

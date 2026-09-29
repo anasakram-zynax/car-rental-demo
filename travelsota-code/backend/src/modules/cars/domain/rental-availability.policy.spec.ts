@@ -5,12 +5,13 @@ import {
 } from './rental-availability.policy';
 
 describe('Cars rental availability policy', () => {
-  it('reserves inventory only for booked Cars rentals', () => {
-    expect(CAR_RENTAL_RESERVING_STATUSES).toEqual(['booked']);
+  it('reserves inventory only while payment is pending or booking is booked', () => {
+    expect(CAR_RENTAL_RESERVING_STATUSES).toEqual([
+      'pending_payment',
+      'booking_in_progress',
+      'booked',
+    ]);
     expect(CAR_RENTAL_RESERVING_STATUSES).not.toContain('cancelled' as never);
-    expect(CAR_RENTAL_RESERVING_STATUSES).not.toContain(
-      'pending_payment' as never,
-    );
   });
 
   it.each([

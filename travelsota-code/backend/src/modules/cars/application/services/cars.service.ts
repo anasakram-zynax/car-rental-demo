@@ -1,5 +1,6 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { BusinessError } from '../../../../shared/errors/business-error';
+import type { BookingStatus } from '../../../../shared/booking/booking-state-machine';
 import {
   CarBookingRepositoryPortToken,
   type CarBookingRepositoryPort,
@@ -274,6 +275,18 @@ export class CarsService {
   }
 
   async reserveRental(input: ReserveRentalCommand) {
+    return this.allocateRental(input, 'booked', false);
+  }
+
+  async reserveRentalForCheckout(input: ReserveRentalCommand) {
+    return this.allocateRental(input, 'pending_payment', true);
+  }
+
+  private async allocateRental(
+    input: ReserveRentalCommand,
+    status: BookingStatus,
+    returnDuplicate: boolean,
+  ) {
     const fleet = await this.fleetRepository.findById(input.fleetId);
     if (!fleet)
       throw new BusinessError(
@@ -298,7 +311,7 @@ export class CarsService {
         fleetId: fleet.id,
         transferPackageId: null,
         serviceType: 'rental',
-        status: 'booked',
+        status,
         quantity: input.quantity,
         pickupLocation: input.pickupLocation,
         dropoffLocation: input.dropoffLocation,
@@ -311,6 +324,12 @@ export class CarsService {
           rentalPrice: fleet.rentalPrice,
           rentalDays,
           quantity: input.quantity,
+          pickupAt: pickupAt.toISOString(),
+          dropoffAt: dropoffAt.toISOString(),
+          pickupLocation: input.pickupLocation,
+          dropoffLocation: input.dropoffLocation,
+          total: subtotal,
+          currency: fleet.currency,
         },
         subtotal,
         discount: 0,
@@ -325,6 +344,8 @@ export class CarsService {
     });
 
     if (result.outcome === 'created') return result.booking;
+    if (result.outcome === 'duplicate' && returnDuplicate)
+      return result.booking;
     if (result.outcome === 'duplicate')
       throw new BusinessError(
         'CAR_RENTAL_DUPLICATE_ALLOCATION',
