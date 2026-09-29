@@ -40,6 +40,7 @@ import { UploadModule } from './modules/upload/upload.module';
 import { LanguageModule } from './modules/language/language.module';
 import { DemoLeadsModule } from './modules/demo-leads/demo-leads.module';
 import { SiteSettingsModule } from './modules/site-settings/site-settings.module';
+import { CarsModule } from './modules/cars/cars.module';
 
 @Module({
   imports: [
@@ -79,6 +80,7 @@ import { SiteSettingsModule } from './modules/site-settings/site-settings.module
     LanguageModule,
     DemoLeadsModule,
     SiteSettingsModule,
+    CarsModule,
   ],
   controllers: [HealthController, HealthReadyController],
   providers: [

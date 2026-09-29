@@ -590,66 +590,114 @@ model ManualHotelRoom {
 }
 
 model CarFleet {
-  id                 String       @id @default(uuid())
-  displayName        String
-  brand              String?
-  model              String?
-  category           String
-  description        String?
-  passengerCapacity  Int
-  luggageCapacity    Int?
-  transmission       String?
-  quantity           Int          @default(1)
-  rentalEnabled      Boolean      @default(true)
-  transferEnabled    Boolean      @default(false)
-  rentalPriceMinor   Int?
-  transferPriceMinor Int?
-  currency           String       @default("USD")
-  baseLocation       String
-  images             Json?
-  isActive           Boolean      @default(true)
-  displayOrder       Int          @default(0)
-  createdAt          DateTime     @default(now())
-  updatedAt          DateTime     @updatedAt
-  bookings           CarBooking[]
+  id                    String               @id @default(uuid())
+  displayName           String
+  normalizedDisplayName String
+  brand                 String?
+  model                 String?
+  category              String
+  description           String?
+  passengerCapacity     Int
+  luggageCapacity       Int?
+  transmission          String?
+  quantity              Int                  @default(1)
+  rentalEnabled         Boolean              @default(true)
+  transferEnabled       Boolean              @default(false)
+  rentalPrice           Float?
+  currency              String               @default("USD")
+  locationId            String
+  images                Json?
+  isActive              Boolean              @default(true)
+  displayOrder          Int                  @default(0)
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  location              CarLocation          @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  bookings              CarBooking[]
+  transferPackages      CarTransferPackage[]
 
+  @@unique([normalizedDisplayName, locationId])
   @@index([isActive, displayOrder])
-  @@index([isActive, baseLocation, category])
+  @@index([isActive, locationId, category])
+  @@schema("public")
+}
+
+model CarLocation {
+  id              String               @id @default(uuid())
+  identity        String               @unique
+  label           String
+  name            String
+  city            String
+  region          String?
+  country         String
+  type            CarLocationType
+  code            String?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  fleets          CarFleet[]
+  pickupPackages  CarTransferPackage[] @relation("CarTransferPickup")
+  dropoffPackages CarTransferPackage[] @relation("CarTransferDropoff")
+
+  @@index([city, country, type])
+  @@index([label])
+  @@schema("public")
+}
+
+model CarTransferPackage {
+  id                String       @id @default(uuid())
+  fleetId           String
+  pickupLocationId  String
+  dropoffLocationId String
+  price             Float
+  currency          String
+  isActive          Boolean      @default(true)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  fleet             CarFleet     @relation(fields: [fleetId], references: [id], onDelete: Restrict)
+  pickupLocation    CarLocation  @relation("CarTransferPickup", fields: [pickupLocationId], references: [id], onDelete: Restrict)
+  dropoffLocation   CarLocation  @relation("CarTransferDropoff", fields: [dropoffLocationId], references: [id], onDelete: Restrict)
+  bookings          CarBooking[]
+
+  @@unique([fleetId, pickupLocationId, dropoffLocationId])
+  @@index([pickupLocationId, dropoffLocationId, isActive])
+  @@index([fleetId, isActive])
   @@schema("public")
 }
 
 model CarBooking {
-  id                   String         @id @default(uuid())
-  publicRef            String         @unique
-  userId               String?
-  fleetId              String
-  serviceType          CarServiceType
-  status               String
-  quantity             Int            @default(1)
-  pickupLocation       String
-  dropoffLocation      String
-  pickupAt             DateTime
-  dropoffAt            DateTime?
-  rentalDays           Int?
-  customerSnapshot     Json
-  fleetSnapshot        Json
-  pricingSnapshot      Json
-  subtotalMinor        Int
-  discountMinor        Int            @default(0)
-  totalMinor           Int
-  currency             String
-  promoCode            String?
-  cancelledAt          DateTime?
-  cancellationReason   String?
-  cancellationFeeMinor Int            @default(0)
-  workflowTrace        Json?
-  createdAt            DateTime       @default(now())
-  updatedAt            DateTime       @updatedAt
-  user                 User?          @relation(fields: [userId], references: [id])
-  fleet                CarFleet       @relation(fields: [fleetId], references: [id], onDelete: Restrict)
+  id                 String              @id @default(uuid())
+  publicRef          String              @unique
+  userId             String?
+  fleetId            String
+  transferPackageId  String?
+  serviceType        CarServiceType
+  status             String
+  quantity           Int                 @default(1)
+  pickupLocation     String
+  dropoffLocation    String
+  pickupAt           DateTime
+  dropoffAt          DateTime?
+  rentalDays         Int?
+  customerSnapshot   Json
+  fleetSnapshot      Json
+  pricingSnapshot    Json
+  subtotal           Float
+  discount           Float               @default(0)
+  total              Float
+  currency           String
+  promoCode          String?
+  cancelledAt        DateTime?
+  cancellationReason String?
+  cancellationFee    Float               @default(0)
+  workflowTrace      Json?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  user               User?               @relation(fields: [userId], references: [id])
+  fleet              CarFleet            @relation(fields: [fleetId], references: [id], onDelete: Restrict)
+  transferPackage    CarTransferPackage? @relation(fields: [transferPackageId], references: [id], onDelete: SetNull)
 
   @@index([userId, createdAt])
   @@index([fleetId, createdAt])
+  @@index([transferPackageId])
   @@index([status, createdAt])
   @@index([fleetId, serviceType, status, pickupAt, dropoffAt])
   @@schema("public")
@@ -658,6 +706,14 @@ model CarBooking {
 enum CarServiceType {
   rental
   transfer
+
+  @@schema("public")
+}
+
+enum CarLocationType {
+  airport
+  city
+  area
 
   @@schema("public")
 }
