@@ -1,6 +1,9 @@
+import type { CarLocationEntity } from './car-location.entity';
+
 export interface CarFleetEntity {
   id: string;
   displayName: string;
+  normalizedDisplayName: string;
   brand: string | null;
   model: string | null;
   category: string;
@@ -11,10 +14,10 @@ export interface CarFleetEntity {
   quantity: number;
   rentalEnabled: boolean;
   transferEnabled: boolean;
-  rentalPriceMinor: number | null;
-  transferPriceMinor: number | null;
+  rentalPrice: number | null;
   currency: string;
-  baseLocation: string;
+  locationId: string;
+  location: CarLocationEntity;
   images: unknown[] | null;
   isActive: boolean;
   displayOrder: number;
@@ -24,11 +27,11 @@ export interface CarFleetEntity {
 
 export type CreateCarFleetInput = Omit<
   CarFleetEntity,
-  'id' | 'createdAt' | 'updatedAt'
+  'id' | 'location' | 'createdAt' | 'updatedAt'
 > & {
   id?: string;
 };
 
 export type UpdateCarFleetInput = Partial<
-  Omit<CarFleetEntity, 'id' | 'createdAt' | 'updatedAt'>
+  Omit<CarFleetEntity, 'id' | 'location' | 'createdAt' | 'updatedAt'>
 >;

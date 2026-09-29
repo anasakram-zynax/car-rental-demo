@@ -6,6 +6,7 @@ export interface CarBookingEntity {
   publicRef: string;
   userId: string | null;
   fleetId: string;
+  transferPackageId: string | null;
   serviceType: CarServiceType;
   status: BookingStatus;
   quantity: number;
@@ -17,14 +18,14 @@ export interface CarBookingEntity {
   customerSnapshot: Record<string, unknown>;
   fleetSnapshot: Record<string, unknown>;
   pricingSnapshot: Record<string, unknown>;
-  subtotalMinor: number;
-  discountMinor: number;
-  totalMinor: number;
+  subtotal: number;
+  discount: number;
+  total: number;
   currency: string;
   promoCode: string | null;
   cancelledAt: Date | null;
   cancellationReason: string | null;
-  cancellationFeeMinor: number;
+  cancellationFee: number;
   workflowTrace: Record<string, unknown> | null;
   createdAt: Date;
   updatedAt: Date;
