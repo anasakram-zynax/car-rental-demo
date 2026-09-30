@@ -1,5 +1,7 @@
 import {
   CAR_FLEET_SEEDS,
+  CAR_FLEET_CONTENT,
+  CAR_FLEET_CONTENT,
   CAR_LOCATION_SEEDS,
   CAR_TRANSFER_PACKAGE_SEEDS,
   seedCars,
@@ -81,6 +83,40 @@ describe('Cars seed', () => {
     expect(new Set(logicalKeys).size).toBe(CAR_FLEET_SEEDS.length);
   });
 
+  it('provides distinct detailed descriptions and normalized amenities for every fleet', () => {
+    const content = CAR_FLEET_SEEDS.map(
+      (fleet) => CAR_FLEET_CONTENT[fleet.assetSlug],
+    );
+    expect(content.every(Boolean)).toBe(true);
+    expect(new Set(content.map((item) => item.description)).size).toBe(30);
+    for (const item of content) {
+      const wordCount = item.description.trim().split(/\s+/).length;
+      expect(wordCount).toBeGreaterThanOrEqual(70);
+      expect(wordCount).toBeLessThanOrEqual(120);
+      expect(item.amenities.length).toBeGreaterThan(0);
+      expect(
+        new Set(item.amenities.map((value) => value.toLowerCase())).size,
+      ).toBe(item.amenities.length);
+    }
+  });
+
+  it('provides distinct detailed descriptions and normalized amenities for every fleet', () => {
+    const content = CAR_FLEET_SEEDS.map(
+      (fleet) => CAR_FLEET_CONTENT[fleet.assetSlug],
+    );
+    expect(content.every(Boolean)).toBe(true);
+    expect(new Set(content.map((item) => item.description)).size).toBe(30);
+    for (const item of content) {
+      const wordCount = item.description.trim().split(/\s+/).length;
+      expect(wordCount).toBeGreaterThanOrEqual(70);
+      expect(wordCount).toBeLessThanOrEqual(120);
+      expect(item.amenities.length).toBeGreaterThan(0);
+      expect(
+        new Set(item.amenities.map((value) => value.toLowerCase())).size,
+      ).toBe(item.amenities.length);
+    }
+  });
+
   it('writes ordered URL metadata and keeps transfer prices package-owned', async () => {
     const prisma = prismaMock();
     await seedCars(prisma as never, manifest);
@@ -90,6 +126,14 @@ describe('Cars seed', () => {
       );
       expect(call.create.images[0].url).toMatch(/^https:\/\//);
       expect(call.create).not.toHaveProperty('transferPrice');
+      expect(call.create.description).toEqual(expect.any(String));
+      expect(call.create.amenities.length).toBeGreaterThan(0);
+      expect(call.create.description).toEqual(expect.any(String));
+      expect(call.create.amenities.length).toBeGreaterThan(0);
+      expect(call.create.currency).toBe('USD');
+      expect(call.update.currency).toBe('USD');
+      expect(call.create.rentalPrice).toBeGreaterThan(0);
+      expect(call.create.rentalPrice).toBeLessThanOrEqual(300);
     }
     const fleetNames = new Set(
       CAR_FLEET_SEEDS.map((fleet) => fleet.displayName),
@@ -97,6 +141,12 @@ describe('Cars seed', () => {
     expect(
       CAR_TRANSFER_PACKAGE_SEEDS.every(([name]) => fleetNames.has(name)),
     ).toBe(true);
+    for (const [call] of prisma.carTransferPackage.upsert.mock.calls) {
+      expect(call.create.currency).toBe('USD');
+      expect(call.update.currency).toBe('USD');
+      expect(call.create.price).toBeGreaterThan(0);
+      expect(call.create.price).toBeLessThanOrEqual(100);
+    }
   });
 
   it('fails clearly when image import has not supplied a fleet', async () => {

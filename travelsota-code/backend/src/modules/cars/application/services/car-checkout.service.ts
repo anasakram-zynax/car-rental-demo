@@ -37,27 +37,38 @@ export class CarCheckoutService {
       input.dropoffLocation?.trim() ||
       input.returnAt?.trim() ||
       input.pickupLocation.trim();
-    const booking = await this.carsService.reserveRentalForCheckout({
-      publicRef,
-      fleetId: input.fleetId,
-      userId,
+    const customerSnapshot = {
+      contactName: input.contactName.trim(),
+      contactEmail: input.contactEmail.trim().toLowerCase(),
+      contactPhone: input.contactPhone.trim(),
       pickupLocation: input.pickupLocation.trim(),
       dropoffLocation: returnLocation,
+      returnAt: input.returnAt?.trim() || null,
       pickupAt: input.pickupAt,
-      dropoffAt: input.dropoffAt,
+      dropoffAt: input.dropoffAt ?? null,
       quantity: input.quantity,
-      customerSnapshot: {
-        contactName: input.contactName.trim(),
-        contactEmail: input.contactEmail.trim().toLowerCase(),
-        contactPhone: input.contactPhone.trim(),
-        pickupLocation: input.pickupLocation.trim(),
-        dropoffLocation: returnLocation,
-        returnAt: input.returnAt?.trim() || null,
-        pickupAt: input.pickupAt,
-        dropoffAt: input.dropoffAt,
-        quantity: input.quantity,
-      },
-    });
+    };
+    const booking =
+      input.serviceType === 'transfer'
+        ? await this.carsService.reserveTransferForCheckout({
+            publicRef,
+            transferPackageId: input.transferPackageId!,
+            userId,
+            pickupAt: input.pickupAt,
+            quantity: input.quantity,
+            customerSnapshot,
+          })
+        : await this.carsService.reserveRentalForCheckout({
+            publicRef,
+            fleetId: input.fleetId!,
+            userId,
+            pickupLocation: input.pickupLocation.trim(),
+            dropoffLocation: returnLocation,
+            pickupAt: input.pickupAt,
+            dropoffAt: input.dropoffAt!,
+            quantity: input.quantity,
+            customerSnapshot,
+          });
 
     if (booking.userId !== userId) {
       throw new BusinessError(

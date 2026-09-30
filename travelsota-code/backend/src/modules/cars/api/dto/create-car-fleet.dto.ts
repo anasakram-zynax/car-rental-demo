@@ -1,5 +1,6 @@
 import { Transform, Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
   IsArray,
   IsBoolean,
   IsIn,
@@ -91,6 +92,27 @@ export class CreateCarFleetDto {
   @IsString()
   @MaxLength(2000)
   description?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(20)
+  @IsString({ each: true })
+  @MaxLength(80, { each: true })
+  @Transform(({ value }: { value: unknown }) => {
+    if (!Array.isArray(value)) return value;
+    const items: unknown[] = value;
+    const seen = new Set<string>();
+    return items
+      .map((item): unknown => (typeof item === 'string' ? item.trim() : item))
+      .filter((item) => {
+        if (typeof item !== 'string') return true;
+        const key = item.toLowerCase();
+        if (!item || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+  })
+  amenities?: string[];
 
   @IsInt()
   @Min(1)

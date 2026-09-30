@@ -47,6 +47,7 @@ export interface CreateCarFleetCommand {
   model?: string;
   category: string;
   description?: string;
+  amenities?: string[];
   passengerCapacity: number;
   luggageCapacity?: number;
   transmission?: string;
@@ -72,10 +73,12 @@ export interface CarSearchQuery {
   returnAt?: string;
   category?: string;
   passengerCapacity?: number;
+  luggageCapacity?: number;
   quantity?: number;
   transmission?: string;
   minPrice?: number;
   maxPrice?: number;
+  sort?: 'recommended' | 'price_asc' | 'price_desc';
   page?: number;
   pageSize?: number;
 }
@@ -88,6 +91,15 @@ export interface ReserveRentalCommand {
   dropoffLocation: string;
   pickupAt: string | Date;
   dropoffAt: string | Date;
+  quantity: number;
+  customerSnapshot?: Record<string, unknown>;
+}
+
+export interface ReserveTransferCommand {
+  publicRef: string;
+  transferPackageId: string;
+  userId?: string;
+  pickupAt: string | Date;
   quantity: number;
   customerSnapshot?: Record<string, unknown>;
 }
@@ -120,6 +132,7 @@ export class CarsService {
       model: this.optionalTrim(input.model),
       category: normalized.category,
       description: this.optionalTrim(input.description),
+      amenities: this.normalizeAmenities(input.amenities),
       passengerCapacity: input.passengerCapacity,
       luggageCapacity: input.luggageCapacity ?? null,
       transmission: normalized.transmission ?? null,
@@ -148,6 +161,7 @@ export class CarsService {
       model: input.model ?? existing.model ?? undefined,
       category: input.category ?? existing.category,
       description: input.description ?? existing.description ?? undefined,
+      amenities: input.amenities ?? existing.amenities,
       passengerCapacity: input.passengerCapacity ?? existing.passengerCapacity,
       luggageCapacity:
         input.luggageCapacity ?? existing.luggageCapacity ?? undefined,
@@ -176,6 +190,7 @@ export class CarsService {
       model: this.optionalTrim(merged.model),
       category: normalized.category,
       description: this.optionalTrim(merged.description),
+      amenities: this.normalizeAmenities(merged.amenities),
       passengerCapacity: merged.passengerCapacity,
       luggageCapacity: merged.luggageCapacity ?? null,
       transmission: normalized.transmission ?? null,
@@ -240,6 +255,17 @@ export class CarsService {
       : this.locationRepository.searchTransferPickupLocations(term, limit);
   }
 
+  async getLocationById(id: string) {
+    const location = await this.locationRepository.findById(id);
+    if (!location)
+      throw new BusinessError(
+        'CAR_LOCATION_NOT_FOUND',
+        `Car location with id "${id}" not found.`,
+        HttpStatus.NOT_FOUND,
+      );
+    return location;
+  }
+
   findTransferDropoffs(pickupLocationId: string, query?: string) {
     return this.transferPackageRepository.findDropoffLocations(
       pickupLocationId,
@@ -280,6 +306,79 @@ export class CarsService {
 
   async reserveRentalForCheckout(input: ReserveRentalCommand) {
     return this.allocateRental(input, 'pending_payment', true);
+  }
+
+  async reserveTransferForCheckout(input: ReserveTransferCommand) {
+    const duplicate = await this.bookingRepository.findByPublicRef(
+      input.publicRef.trim(),
+    );
+    if (duplicate) return duplicate;
+    const transferPackage = await this.transferPackageRepository.findById(
+      input.transferPackageId,
+    );
+    if (!transferPackage?.fleet || !transferPackage.isActive)
+      throw new BusinessError(
+        'CAR_TRANSFER_PACKAGE_UNAVAILABLE',
+        'The selected transfer package is no longer available.',
+        HttpStatus.CONFLICT,
+      );
+    if (
+      !transferPackage.fleet.isActive ||
+      !transferPackage.fleet.transferEnabled
+    )
+      throw new BusinessError(
+        'CAR_TRANSFER_FLEET_UNAVAILABLE',
+        'The selected transfer fleet is no longer available.',
+        HttpStatus.CONFLICT,
+      );
+    if (!Number.isInteger(input.quantity) || input.quantity < 1)
+      throw new BusinessError('CAR_TRANSFER_INVALID_QUANTITY');
+    if (input.quantity > transferPackage.fleet.quantity)
+      throw new BusinessError(
+        'CAR_TRANSFER_INSUFFICIENT_AVAILABILITY',
+        `Only ${transferPackage.fleet.quantity} vehicle(s) are available for this transfer.`,
+        HttpStatus.CONFLICT,
+      );
+    const pickupAt = new Date(input.pickupAt);
+    if (!Number.isFinite(pickupAt.getTime()))
+      throw new BusinessError('CAR_TRANSFER_INVALID_PICKUP_TIME');
+    const total = transferPackage.price * input.quantity;
+    return this.bookingRepository.create({
+      publicRef: input.publicRef.trim(),
+      userId: input.userId ?? null,
+      fleetId: transferPackage.fleet.id,
+      transferPackageId: transferPackage.id,
+      serviceType: 'transfer',
+      status: 'pending_payment',
+      quantity: input.quantity,
+      pickupLocation:
+        transferPackage.pickupLocation?.label ??
+        transferPackage.pickupLocationId,
+      dropoffLocation:
+        transferPackage.dropoffLocation?.label ??
+        transferPackage.dropoffLocationId,
+      pickupAt,
+      dropoffAt: null,
+      rentalDays: null,
+      customerSnapshot: input.customerSnapshot ?? {},
+      fleetSnapshot: this.toPublicFleet(transferPackage.fleet),
+      pricingSnapshot: {
+        transferPackageId: transferPackage.id,
+        packagePrice: transferPackage.price,
+        quantity: input.quantity,
+        total,
+        currency: transferPackage.currency,
+      },
+      subtotal: total,
+      discount: 0,
+      total,
+      currency: transferPackage.currency,
+      promoCode: null,
+      cancelledAt: null,
+      cancellationReason: null,
+      cancellationFee: 0,
+      workflowTrace: null,
+    });
   }
 
   private async allocateRental(
@@ -394,9 +493,11 @@ export class CarsService {
       locationId: query.locationId,
       category: query.category,
       passengerCapacity: query.passengerCapacity,
+      luggageCapacity: query.luggageCapacity,
       transmission: query.transmission,
       minPrice: query.minPrice,
       maxPrice: query.maxPrice,
+      sort: query.sort,
     });
     const pickupAt = new Date(query.pickupAt!);
     const dropoffAt = new Date(query.dropoffAt ?? query.returnAt!);
@@ -425,10 +526,12 @@ export class CarsService {
       pickupLocationId: query.pickupLocationId!,
       dropoffLocationId: query.dropoffLocationId,
       passengerCapacity: query.passengerCapacity,
+      luggageCapacity: query.luggageCapacity,
       category: query.category,
       transmission: query.transmission,
       minPrice: query.minPrice,
       maxPrice: query.maxPrice,
+      sort: query.sort,
       page: this.positiveIntegerOr(query.page, 1),
       pageSize: Math.min(this.positiveIntegerOr(query.pageSize, 20), 100),
     });
@@ -454,6 +557,7 @@ export class CarsService {
       model: fleet.model,
       category: fleet.category,
       description: fleet.description,
+      amenities: fleet.amenities,
       passengerCapacity: fleet.passengerCapacity,
       luggageCapacity: fleet.luggageCapacity,
       transmission: fleet.transmission,
@@ -470,7 +574,20 @@ export class CarsService {
       ...input,
       category: input.category.trim().toLowerCase(),
       transmission: input.transmission?.trim().toLowerCase(),
+      amenities: this.normalizeAmenities(input.amenities),
     };
+  }
+  private normalizeAmenities(values?: string[]) {
+    if (!values) return [];
+    const seen = new Set<string>();
+    return values
+      .map((value) => value.trim())
+      .filter((value) => {
+        const key = value.toLowerCase();
+        if (!value || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
   }
   private normalizeSearchQuery(query: CarSearchQuery): CarSearchQuery {
     return {
@@ -540,6 +657,14 @@ export class CarsService {
       throw new BusinessError(
         'CAR_FLEET_INVALID_CURRENCY',
         'Currency must be a three-letter code.',
+      );
+    if (
+      (input.amenities?.length ?? 0) > 20 ||
+      input.amenities?.some((amenity) => amenity.length > 80)
+    )
+      throw new BusinessError(
+        'CAR_FLEET_INVALID_AMENITIES',
+        'Amenities may contain up to 20 items of 80 characters each.',
       );
     if (
       !Number.isInteger(input.passengerCapacity) ||

@@ -597,6 +597,7 @@ model CarFleet {
   model                 String?
   category              String
   description           String?
+  amenities             String[]             @default([])
   passengerCapacity     Int
   luggageCapacity       Int?
   transmission          String?

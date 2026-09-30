@@ -62,6 +62,9 @@ export class PrismaCarTransferPackageRepository implements CarTransferPackageRep
         ...(criteria.passengerCapacity === undefined
           ? {}
           : { passengerCapacity: { gte: criteria.passengerCapacity } }),
+        ...(criteria.luggageCapacity === undefined
+          ? {}
+          : { luggageCapacity: { gte: criteria.luggageCapacity } }),
         ...(criteria.category
           ? {
               category: {
@@ -84,7 +87,10 @@ export class PrismaCarTransferPackageRepository implements CarTransferPackageRep
       this.prisma.carTransferPackage.findMany({
         where,
         include: this.detailsInclude(),
-        orderBy: [{ price: 'asc' }, { createdAt: 'desc' }],
+        orderBy:
+          criteria.sort === 'price_desc'
+            ? [{ price: 'desc' }, { createdAt: 'desc' }]
+            : [{ price: 'asc' }, { createdAt: 'desc' }],
         skip: (criteria.page - 1) * criteria.pageSize,
         take: criteria.pageSize,
       }),
@@ -95,6 +101,7 @@ export class PrismaCarTransferPackageRepository implements CarTransferPackageRep
       total,
       page: criteria.page,
       pageSize: criteria.pageSize,
+      totalPages: Math.ceil(total / criteria.pageSize),
     };
   }
 

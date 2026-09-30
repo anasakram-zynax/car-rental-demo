@@ -46,6 +46,12 @@ export class CarsPublicController {
     );
   }
 
+  @Get('locations/:id')
+  @ResponseMessage('Cars location details.')
+  locationById(@Param('id') id: string) {
+    return this.carsService.getLocationById(id);
+  }
+
   @Get('transfers/dropoffs')
   @ResponseMessage('Cars transfer drop-off locations.')
   transferDropoffs(@Query() query: CarTransferDropoffsDto) {

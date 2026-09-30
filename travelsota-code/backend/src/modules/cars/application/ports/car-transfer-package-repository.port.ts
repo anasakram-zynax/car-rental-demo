@@ -9,10 +9,12 @@ export interface TransferPackageSearchCriteria {
   pickupLocationId: string;
   dropoffLocationId?: string;
   passengerCapacity?: number;
+  luggageCapacity?: number;
   category?: string;
   transmission?: string;
   minPrice?: number;
   maxPrice?: number;
+  sort?: 'recommended' | 'price_asc' | 'price_desc';
   page: number;
   pageSize: number;
 }
@@ -22,6 +24,7 @@ export interface TransferPackageSearchResult {
   total: number;
   page: number;
   pageSize: number;
+  totalPages?: number;
 }
 
 export interface CarTransferPackageRepositoryPort {

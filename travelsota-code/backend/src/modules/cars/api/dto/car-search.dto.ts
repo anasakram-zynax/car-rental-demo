@@ -66,6 +66,12 @@ export class CarSearchDto {
 
   @IsOptional()
   @IsInt()
+  @Min(0)
+  @Type(() => Number)
+  luggageCapacity?: number;
+
+  @IsOptional()
+  @IsInt()
   @Min(1)
   @Type(() => Number)
   quantity?: number;
@@ -88,6 +94,13 @@ export class CarSearchDto {
   @Min(0)
   @Type(() => Number)
   maxPrice?: number;
+
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.trim().toLowerCase() : value,
+  )
+  @IsIn(['recommended', 'price_asc', 'price_desc'])
+  sort?: 'recommended' | 'price_asc' | 'price_desc';
 
   @IsOptional()
   @IsInt()

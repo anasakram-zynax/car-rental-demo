@@ -17,9 +17,11 @@ export interface CarFleetListCriteria {
   transferEnabled?: boolean;
   serviceType?: CarServiceType;
   passengerCapacity?: number;
+  luggageCapacity?: number;
   transmission?: string;
   minPrice?: number;
   maxPrice?: number;
+  sort?: 'recommended' | 'price_asc' | 'price_desc';
 }
 
 export interface CarFleetListResult {
@@ -27,6 +29,7 @@ export interface CarFleetListResult {
   total: number;
   page: number;
   pageSize: number;
+  totalPages?: number;
 }
 
 export interface CarFleetRepositoryPort {
