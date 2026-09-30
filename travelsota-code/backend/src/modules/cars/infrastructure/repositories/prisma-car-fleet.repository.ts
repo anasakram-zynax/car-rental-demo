@@ -138,6 +138,9 @@ export class PrismaCarFleetRepository implements CarFleetRepositoryPort {
       ...(criteria.passengerCapacity === undefined
         ? {}
         : { passengerCapacity: { gte: criteria.passengerCapacity } }),
+      ...(criteria.luggageCapacity === undefined
+        ? {}
+        : { luggageCapacity: { gte: criteria.luggageCapacity } }),
       ...(criteria.transmission
         ? {
             transmission: {
@@ -161,7 +164,21 @@ export class PrismaCarFleetRepository implements CarFleetRepositoryPort {
     const [items, total] = await Promise.all([
       this.prisma.carFleet.findMany({
         where,
-        orderBy: [{ displayOrder: 'asc' }, { createdAt: 'desc' }],
+        orderBy:
+          criteria.sort === 'price_asc'
+            ? [
+                { rentalPrice: 'asc' as const },
+                { displayOrder: 'asc' as const },
+              ]
+            : criteria.sort === 'price_desc'
+              ? [
+                  { rentalPrice: 'desc' as const },
+                  { displayOrder: 'asc' as const },
+                ]
+              : [
+                  { displayOrder: 'asc' as const },
+                  { createdAt: 'desc' as const },
+                ],
         include: { location: true },
         skip: (page - 1) * pageSize,
         take: pageSize,
@@ -174,6 +191,7 @@ export class PrismaCarFleetRepository implements CarFleetRepositoryPort {
       total,
       page,
       pageSize,
+      totalPages: Math.ceil(total / pageSize),
     };
   }
 

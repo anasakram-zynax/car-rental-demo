@@ -28,6 +28,7 @@ const fleet: CarFleetEntity = {
   model: 'Corolla',
   category: 'economy',
   description: null,
+  amenities: [],
   passengerCapacity: 5,
   luggageCapacity: 2,
   transmission: 'automatic',
@@ -174,6 +175,16 @@ describe('CarsService', () => {
     expect(result).not.toHaveProperty('transferPrice');
   });
 
+  it('trims, removes empty values, and deduplicates amenities', async () => {
+    await service.create({
+      ...command,
+      amenities: [' Bluetooth ', '', 'bluetooth', 'USB Charging'],
+    });
+    expect(fleets.create).toHaveBeenCalledWith(
+      expect.objectContaining({ amenities: ['Bluetooth', 'USB Charging'] }),
+    );
+  });
+
   it('creates a transfer-enabled fleet without a fleet transfer price', async () => {
     await expect(service.create(command)).resolves.toEqual(fleet);
     expect(fleets.create).toHaveBeenCalledWith(
@@ -230,21 +241,25 @@ describe('CarsService', () => {
       pickupAt: '2026-10-01T10:00:00.000Z',
       returnAt: '2026-10-02T10:00:00.000Z',
       passengerCapacity: 5,
+      luggageCapacity: 3,
       transmission: 'AUTOMATIC',
       minPrice: 35,
       maxPrice: 35,
+      sort: 'price_desc',
     });
     expect(fleets.list).toHaveBeenCalledWith(
       expect.objectContaining({
         locationId: location.id,
         passengerCapacity: 5,
+        luggageCapacity: 3,
         transmission: 'automatic',
         minPrice: 35,
         maxPrice: 35,
+        sort: 'price_desc',
       }),
     );
     expect(result.items[0]).toEqual(
-      expect.objectContaining({ price: 35, location }),
+      expect.objectContaining({ price: 35, location, amenities: [] }),
     );
   });
 
@@ -350,6 +365,23 @@ describe('CarsService', () => {
       location.id,
       undefined,
     );
+  });
+
+  it('resolves a location by its authoritative id', async () => {
+    locations.findById.mockResolvedValue(location);
+
+    await expect(service.getLocationById(location.id)).resolves.toEqual(
+      location,
+    );
+    expect(locations.findById).toHaveBeenCalledWith(location.id);
+  });
+
+  it('rejects an unknown location id', async () => {
+    locations.findById.mockResolvedValue(null);
+
+    await expect(service.getLocationById('missing')).rejects.toMatchObject({
+      response: expect.objectContaining({ code: 'CAR_LOCATION_NOT_FOUND' }),
+    });
   });
 
   it('returns authoritative availability using summed booking quantities', async () => {

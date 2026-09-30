@@ -8,6 +8,7 @@ export interface CarFleetEntity {
   model: string | null;
   category: string;
   description: string | null;
+  amenities: string[];
   passengerCapacity: number;
   luggageCapacity: number | null;
   transmission: string | null;

@@ -15,6 +15,7 @@ describe('PrismaCarFleetRepository uniqueness handling', () => {
         model: null,
         category: 'economy',
         description: null,
+        amenities: [],
         passengerCapacity: 5,
         luggageCapacity: null,
         transmission: 'automatic',
@@ -29,5 +30,32 @@ describe('PrismaCarFleetRepository uniqueness handling', () => {
         displayOrder: 0,
       }),
     ).rejects.toMatchObject({ status: 409 });
+  });
+
+  it('applies luggage filtering, price sorting, and pagination metadata', async () => {
+    const prisma = {
+      carFleet: {
+        findMany: jest.fn().mockResolvedValue([]),
+        count: jest.fn().mockResolvedValue(13),
+      },
+    };
+    const repository = new PrismaCarFleetRepository(prisma as never);
+    await expect(
+      repository.list({
+        page: 2,
+        pageSize: 5,
+        serviceType: 'rental',
+        luggageCapacity: 3,
+        sort: 'price_desc',
+      }),
+    ).resolves.toMatchObject({ page: 2, pageSize: 5, totalPages: 3 });
+    expect(prisma.carFleet.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ luggageCapacity: { gte: 3 } }),
+        orderBy: [{ rentalPrice: 'desc' }, { displayOrder: 'asc' }],
+        skip: 5,
+        take: 5,
+      }),
+    );
   });
 });

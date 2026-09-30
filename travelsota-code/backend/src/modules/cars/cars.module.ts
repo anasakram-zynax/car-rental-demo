@@ -15,9 +15,10 @@ import { CarCheckoutService } from './application/services/car-checkout.service'
 import { CarPaymentListener } from './application/services/car-payment.listener';
 import { CarCancellationService } from './application/services/car-cancellation.service';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { SettingsModule } from '../settings/settings.module';
 
 @Module({
-  imports: [PaymentsModule, NotificationsModule],
+  imports: [PaymentsModule, NotificationsModule, SettingsModule],
   controllers: [CarsAdminController, CarsPublicController],
   providers: [
     CarsService,

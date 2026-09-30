@@ -21,6 +21,9 @@ import {
 import { CarRentalCheckoutDto } from './dto/car-checkout.dto';
 import { CancelCarBookingDto } from './dto/cancel-car-booking.dto';
 import { CarCancellationService } from '../application/services/car-cancellation.service';
+import { GuestBookingGuard } from '../../settings/api/guards/guest-booking.guard';
+import { BusinessError } from '../../../shared/errors/business-error';
+import { HttpStatus } from '@nestjs/common';
 
 @Controller('cars')
 export class CarsPublicController {
@@ -46,6 +49,12 @@ export class CarsPublicController {
     );
   }
 
+  @Get('locations/:id')
+  @ResponseMessage('Cars location details.')
+  locationById(@Param('id') id: string) {
+    return this.carsService.getLocationById(id);
+  }
+
   @Get('transfers/dropoffs')
   @ResponseMessage('Cars transfer drop-off locations.')
   transferDropoffs(@Query() query: CarTransferDropoffsDto) {
@@ -56,14 +65,19 @@ export class CarsPublicController {
   }
 
   @Post('bookings/checkout')
-  @UseGuards(AuthGuard('jwt'))
-  @UserTypes('customer')
+  @UseGuards(GuestBookingGuard)
   @ResponseMessage('Cars checkout initiated — proceed to payment.')
   checkout(
     @Body() input: CarRentalCheckoutDto,
-    @CurrentUser() user: { id: string },
+    @CurrentUser() user?: { id: string; userType: string },
   ) {
-    return this.checkoutService.checkout(input, user.id);
+    if (user && user.userType !== 'CUSTOMER')
+      throw new BusinessError(
+        'AUTH_INSUFFICIENT_PERMISSIONS',
+        'Cars checkout is available to customers and guests only.',
+        HttpStatus.FORBIDDEN,
+      );
+    return this.checkoutService.checkout(input, user?.id);
   }
 
   @Post('bookings/:id/cancel')

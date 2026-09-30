@@ -21,7 +21,7 @@ export class CarCheckoutService {
     private readonly bookingRepository: CarBookingRepositoryPort,
   ) {}
 
-  async checkout(input: CarRentalCheckoutDto, userId: string) {
+  async checkout(input: CarRentalCheckoutDto, userId?: string) {
     if (
       input.gateway !== PaymentGateway.STRIPE &&
       input.gateway !== PaymentGateway.PAYPAL
@@ -32,34 +32,45 @@ export class CarCheckoutService {
       );
     }
 
-    const publicRef = this.publicRef(userId, input.idempotencyKey);
+    const publicRef = this.publicRef(userId, input);
     const returnLocation =
       input.dropoffLocation?.trim() ||
       input.returnAt?.trim() ||
       input.pickupLocation.trim();
-    const booking = await this.carsService.reserveRentalForCheckout({
-      publicRef,
-      fleetId: input.fleetId,
-      userId,
+    const customerSnapshot = {
+      contactName: input.contactName.trim(),
+      contactEmail: input.contactEmail.trim().toLowerCase(),
+      contactPhone: input.contactPhone.trim(),
       pickupLocation: input.pickupLocation.trim(),
       dropoffLocation: returnLocation,
+      returnAt: input.returnAt?.trim() || null,
       pickupAt: input.pickupAt,
-      dropoffAt: input.dropoffAt,
+      dropoffAt: input.dropoffAt ?? null,
       quantity: input.quantity,
-      customerSnapshot: {
-        contactName: input.contactName.trim(),
-        contactEmail: input.contactEmail.trim().toLowerCase(),
-        contactPhone: input.contactPhone.trim(),
-        pickupLocation: input.pickupLocation.trim(),
-        dropoffLocation: returnLocation,
-        returnAt: input.returnAt?.trim() || null,
-        pickupAt: input.pickupAt,
-        dropoffAt: input.dropoffAt,
-        quantity: input.quantity,
-      },
-    });
+    };
+    const booking =
+      input.serviceType === 'transfer'
+        ? await this.carsService.reserveTransferForCheckout({
+            publicRef,
+            transferPackageId: input.transferPackageId!,
+            userId,
+            pickupAt: input.pickupAt,
+            quantity: input.quantity,
+            customerSnapshot,
+          })
+        : await this.carsService.reserveRentalForCheckout({
+            publicRef,
+            fleetId: input.fleetId!,
+            userId,
+            pickupLocation: input.pickupLocation.trim(),
+            dropoffLocation: returnLocation,
+            pickupAt: input.pickupAt,
+            dropoffAt: input.dropoffAt!,
+            quantity: input.quantity,
+            customerSnapshot,
+          });
 
-    if (booking.userId !== userId) {
+    if ((userId && booking.userId !== userId) || (!userId && booking.userId)) {
       throw new BusinessError(
         'CAR_RENTAL_DUPLICATE_ALLOCATION',
         'This checkout reference is already in use.',
@@ -106,9 +117,21 @@ export class CarCheckoutService {
     }
   }
 
-  private publicRef(userId: string, idempotencyKey: string) {
+  private publicRef(userId: string | undefined, input: CarRentalCheckoutDto) {
+    const scope = userId
+      ? userId
+      : [
+          'guest',
+          input.serviceType,
+          input.fleetId ?? input.transferPackageId ?? '',
+          input.pickupLocation.trim(),
+          input.dropoffLocation?.trim() ?? input.returnAt?.trim() ?? '',
+          input.pickupAt,
+          input.dropoffAt ?? '',
+          input.quantity,
+        ].join(':');
     const digest = createHash('sha256')
-      .update(`car-checkout:${userId}:${idempotencyKey.trim()}`)
+      .update(`car-checkout:${scope}:${input.idempotencyKey.trim()}`)
       .digest('hex')
       .slice(0, 20)
       .toUpperCase();

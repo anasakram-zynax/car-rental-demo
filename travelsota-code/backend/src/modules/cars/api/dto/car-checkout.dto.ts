@@ -8,16 +8,27 @@ import {
   IsOptional,
   IsPositive,
   IsString,
+  IsIn,
   MaxLength,
   Min,
   MinLength,
+  ValidateIf,
 } from 'class-validator';
 import { PaymentGateway } from '../../../payment/domain/enums/payment-gateway.enum';
 
 export class CarRentalCheckoutDto {
+  @IsIn(['rental', 'transfer'])
+  serviceType!: 'rental' | 'transfer';
+
+  @ValidateIf((input: CarRentalCheckoutDto) => input.serviceType === 'rental')
   @IsString()
   @MinLength(1)
-  fleetId!: string;
+  fleetId?: string;
+
+  @ValidateIf((input: CarRentalCheckoutDto) => input.serviceType === 'transfer')
+  @IsString()
+  @MinLength(1)
+  transferPackageId?: string;
 
   @IsString()
   @MinLength(1)
@@ -37,8 +48,9 @@ export class CarRentalCheckoutDto {
   @IsISO8601({ strict: true })
   pickupAt!: string;
 
+  @ValidateIf((input: CarRentalCheckoutDto) => input.serviceType === 'rental')
   @IsISO8601({ strict: true })
-  dropoffAt!: string;
+  dropoffAt?: string;
 
   @IsInt()
   @Min(1)
