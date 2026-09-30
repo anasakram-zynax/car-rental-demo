@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   FormEvent,
@@ -21,6 +21,7 @@ import { PremiumError } from "@/components/ui/state/premium-states";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrencyDisplay } from "@/context/CurrencyContext";
 import { useCountries } from "@/features/reference/hooks";
+import { getGuestBookingStatus } from "@/features/admin/api/admin-settings";
 import { useAuth } from "@/hooks/useAuth";
 import { normalizePhoneParts } from "@/lib/utils/validation";
 import { useCarCheckout, useCarLocation, useCarsSearch } from "../../hooks";
@@ -31,6 +32,7 @@ import type {
 } from "../../types";
 import type { CarResultsContext } from "../../utils/car-results-route";
 import { toCarsSearchQuery } from "../../utils/car-results-route";
+import { resolveCarContactName } from "../../utils/car-checkout";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 const inputClass =
@@ -56,6 +58,7 @@ function createIdempotencyKey() {
 
 export function CarCheckoutPage({ id }: { id: string }) {
   const params = useSearchParams();
+  const router = useRouter();
   const auth = useAuth();
   const reducedMotion = useReducedMotion();
   const { data: countries = [] } = useCountries();
@@ -70,6 +73,11 @@ export function CarCheckoutPage({ id }: { id: string }) {
   const [countryCode, setCountryCode] = useState("");
   const [phone, setPhone] = useState("");
   const [bookingForOther, setBookingForOther] = useState(false);
+  const [bookingMode, setBookingMode] = useState<"guest" | "login">("guest");
+  const [guestBookingEnabled, setGuestBookingEnabled] = useState(true);
+  const [driverTitle, setDriverTitle] = useState("");
+  const [driverFirstName, setDriverFirstName] = useState("");
+  const [driverLastName, setDriverLastName] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -86,7 +94,23 @@ export function CarCheckoutPage({ id }: { id: string }) {
     setLastName(auth.user.lastName ?? "");
     setEmail(auth.user.email ?? "");
     setPhone(auth.user.phone ?? "");
+    setBookingMode("login");
   }, [auth.user]);
+
+  useEffect(() => {
+    getGuestBookingStatus()
+      .then((status) => setGuestBookingEnabled(status.enabled))
+      .catch(() => undefined);
+  }, []);
+
+  function toggleBookingForOther(checked: boolean) {
+    if (checked && !bookingForOther) {
+      setDriverTitle(title);
+      setDriverFirstName(firstName);
+      setDriverLastName(lastName);
+    }
+    setBookingForOther(checked);
+  }
 
   const context = useMemo<CarResultsContext | null>(() => {
     const serviceType = params.get("serviceType");
@@ -175,6 +199,14 @@ export function CarCheckoutPage({ id }: { id: string }) {
     setPaymentError(null);
     if (!result || !fleet || !context) return;
     if (
+      bookingMode === "guest" &&
+      !auth.isAuthenticated &&
+      !guestBookingEnabled
+    ) {
+      setFormError("Guest booking is currently disabled. Sign in to continue.");
+      return;
+    }
+    if (
       !title ||
       !firstName.trim() ||
       !lastName.trim() ||
@@ -183,6 +215,13 @@ export function CarCheckoutPage({ id }: { id: string }) {
       !phone.trim()
     ) {
       setFormError("Complete all required customer details before continuing.");
+      return;
+    }
+    if (
+      bookingForOther &&
+      (!driverTitle || !driverFirstName.trim() || !driverLastName.trim())
+    ) {
+      setFormError("Complete the primary driver details before continuing.");
       return;
     }
     if (!agreeTerms) return;
@@ -204,7 +243,15 @@ export function CarCheckoutPage({ id }: { id: string }) {
       dropoffLocation,
       pickupAt: context.pickupAt,
       quantity,
-      contactName: `${title} ${firstName.trim()} ${lastName.trim()}`,
+      contactName: resolveCarContactName({
+        bookingForOther,
+        guest: { title, firstName, lastName },
+        driver: {
+          title: driverTitle,
+          firstName: driverFirstName,
+          lastName: driverLastName,
+        },
+      }),
       contactEmail: email.trim(),
       contactPhone: normalizePhoneParts(countryCode, phone, knownDialCodes)
         .e164,
@@ -302,10 +349,10 @@ export function CarCheckoutPage({ id }: { id: string }) {
           secure payment method.
         </p>
       </motion.header>
-      {!auth.isAuthenticated || auth.isAgent || auth.isAdmin ? (
+      {auth.isAgent || auth.isAdmin ? (
         <AuthRequired
           redirect={`/booking/cars/${encodeURIComponent(id)}/details?${params.toString()}`}
-          wrongAccount={auth.isAuthenticated}
+          wrongAccount
         />
       ) : (
         <form onSubmit={submit}>
@@ -314,16 +361,37 @@ export function CarCheckoutPage({ id }: { id: string }) {
             <div className="grid grid-cols-2 gap-3">
               <BookingModeCard
                 title="Guest Booking"
-                subtitle="Guest checkout is not supported for Cars."
-                selected={false}
-                disabled
+                subtitle={
+                  guestBookingEnabled
+                    ? "Book without an account."
+                    : "Guest booking is currently disabled."
+                }
+                selected={bookingMode === "guest"}
+                disabled={!guestBookingEnabled}
+                onClick={() => setBookingMode("guest")}
               />
               <BookingModeCard
                 title="Login to Book"
                 subtitle="Use your account details and manage this booking."
-                selected
+                selected={bookingMode === "login"}
+                onClick={() => {
+                  if (auth.isAuthenticated) {
+                    setBookingMode("login");
+                    return;
+                  }
+                  const redirect = `/booking/cars/${encodeURIComponent(id)}/details?${params.toString()}`;
+                  router.push(
+                    `/signin?redirect=${encodeURIComponent(redirect)}`,
+                  );
+                }}
               />
             </div>
+            {!guestBookingEnabled && !auth.isAuthenticated ? (
+              <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
+                Guest booking is currently disabled. Choose Login to Book to
+                continue with an account.
+              </p>
+            ) : null}
           </motion.section>
 
           <motion.section
@@ -407,7 +475,7 @@ export function CarCheckoutPage({ id }: { id: string }) {
                 <input
                   type="checkbox"
                   checked={bookingForOther}
-                  onChange={(e) => setBookingForOther(e.target.checked)}
+                  onChange={(e) => toggleBookingForOther(e.target.checked)}
                   className="mt-0.5 h-4 w-4 rounded border-zinc-300 accent-brand-teal"
                 />
                 <span>
@@ -415,7 +483,7 @@ export function CarCheckoutPage({ id }: { id: string }) {
                     I’m booking for someone else
                   </span>
                   <span className="mt-0.5 block text-xs text-zinc-500">
-                    Enter the primary customer’s contact details above.
+                    Enter separate primary driver details below.
                   </span>
                 </span>
               </label>
@@ -440,23 +508,42 @@ export function CarCheckoutPage({ id }: { id: string }) {
                     Primary customer
                   </span>
                 </div>
-                <span className="text-[10px] italic text-zinc-400">
-                  Synced with customer details
-                </span>
+                {!bookingForOther ? (
+                  <span className="text-[10px] italic text-zinc-400">
+                    Synced with guest details
+                  </span>
+                ) : null}
               </div>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <Field label="Title">
+                <Field label="Title" required>
+                  <select
+                    value={bookingForOther ? driverTitle : title}
+                    onChange={(e) => setDriverTitle(e.target.value)}
+                    disabled={!bookingForOther}
+                    className={`${inputClass} ${!bookingForOther ? "cursor-not-allowed bg-zinc-50 text-zinc-500" : ""}`}
+                  >
+                    <option value="">Select</option>
+                    <option>Mr</option>
+                    <option>Mrs</option>
+                    <option>Miss</option>
+                    <option>Ms</option>
+                    <option>Dr</option>
+                  </select>
+                </Field>
+                <Field label="First name" required>
                   <input
-                    value={title}
-                    disabled
-                    className={`${inputClass} cursor-not-allowed bg-zinc-50 text-zinc-500`}
+                    value={bookingForOther ? driverFirstName : firstName}
+                    onChange={(e) => setDriverFirstName(e.target.value)}
+                    disabled={!bookingForOther}
+                    className={`${inputClass} ${!bookingForOther ? "cursor-not-allowed bg-zinc-50 text-zinc-500" : ""}`}
                   />
                 </Field>
-                <Field label="Name">
+                <Field label="Last name" required>
                   <input
-                    value={`${firstName} ${lastName}`.trim()}
-                    disabled
-                    className={`${inputClass} cursor-not-allowed bg-zinc-50 text-zinc-500`}
+                    value={bookingForOther ? driverLastName : lastName}
+                    onChange={(e) => setDriverLastName(e.target.value)}
+                    disabled={!bookingForOther}
+                    className={`${inputClass} ${!bookingForOther ? "cursor-not-allowed bg-zinc-50 text-zinc-500" : ""}`}
                   />
                 </Field>
               </div>
@@ -598,7 +685,10 @@ export function CarCheckoutPage({ id }: { id: string }) {
                 type="submit"
                 size="lg"
                 loading={mutation.isPending}
-                disabled={returnLocation.isLoading}
+                disabled={
+                  returnLocation.isLoading ||
+                  (!auth.isAuthenticated && !guestBookingEnabled)
+                }
                 className="w-full"
               >
                 <LockIcon />
@@ -883,14 +973,21 @@ function BookingModeCard({
   subtitle,
   selected,
   disabled,
+  onClick,
 }: {
   title: string;
   subtitle: string;
   selected: boolean;
   disabled?: boolean;
+  onClick: () => void;
 }) {
   return (
-    <motion.div
+    <motion.button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      whileHover={disabled ? undefined : { y: -1 }}
+      whileTap={disabled ? undefined : { scale: 0.98 }}
       className={`relative flex flex-col items-start gap-1 rounded-lg border-2 p-4 text-left ${disabled ? "border-zinc-100 bg-zinc-50 opacity-45" : selected ? "border-zinc-900 bg-zinc-900/[0.02]" : "border-zinc-200 bg-white"}`}
     >
       {selected ? (
@@ -900,7 +997,7 @@ function BookingModeCard({
       ) : null}
       <span className="text-sm font-semibold text-zinc-900">{title}</span>
       <span className="text-xs text-zinc-500">{subtitle}</span>
-    </motion.div>
+    </motion.button>
   );
 }
 function PaymentCard({

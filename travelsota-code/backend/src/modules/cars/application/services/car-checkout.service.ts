@@ -21,7 +21,7 @@ export class CarCheckoutService {
     private readonly bookingRepository: CarBookingRepositoryPort,
   ) {}
 
-  async checkout(input: CarRentalCheckoutDto, userId: string) {
+  async checkout(input: CarRentalCheckoutDto, userId?: string) {
     if (
       input.gateway !== PaymentGateway.STRIPE &&
       input.gateway !== PaymentGateway.PAYPAL
@@ -32,7 +32,7 @@ export class CarCheckoutService {
       );
     }
 
-    const publicRef = this.publicRef(userId, input.idempotencyKey);
+    const publicRef = this.publicRef(userId, input);
     const returnLocation =
       input.dropoffLocation?.trim() ||
       input.returnAt?.trim() ||
@@ -70,7 +70,7 @@ export class CarCheckoutService {
             customerSnapshot,
           });
 
-    if (booking.userId !== userId) {
+    if ((userId && booking.userId !== userId) || (!userId && booking.userId)) {
       throw new BusinessError(
         'CAR_RENTAL_DUPLICATE_ALLOCATION',
         'This checkout reference is already in use.',
@@ -117,9 +117,21 @@ export class CarCheckoutService {
     }
   }
 
-  private publicRef(userId: string, idempotencyKey: string) {
+  private publicRef(userId: string | undefined, input: CarRentalCheckoutDto) {
+    const scope = userId
+      ? userId
+      : [
+          'guest',
+          input.serviceType,
+          input.fleetId ?? input.transferPackageId ?? '',
+          input.pickupLocation.trim(),
+          input.dropoffLocation?.trim() ?? input.returnAt?.trim() ?? '',
+          input.pickupAt,
+          input.dropoffAt ?? '',
+          input.quantity,
+        ].join(':');
     const digest = createHash('sha256')
-      .update(`car-checkout:${userId}:${idempotencyKey.trim()}`)
+      .update(`car-checkout:${scope}:${input.idempotencyKey.trim()}`)
       .digest('hex')
       .slice(0, 20)
       .toUpperCase();

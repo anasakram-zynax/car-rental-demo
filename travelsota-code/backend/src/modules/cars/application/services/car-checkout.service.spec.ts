@@ -34,11 +34,18 @@ describe('CarCheckoutService', () => {
 
   beforeEach(() => {
     carsService = {
-      reserveRentalForCheckout: jest.fn().mockResolvedValue(booking),
-      reserveTransferForCheckout: jest.fn().mockResolvedValue({
-        ...booking,
-        transferPackageId: 'package-1',
-      }),
+      reserveRentalForCheckout: jest
+        .fn()
+        .mockImplementation((command) =>
+          Promise.resolve({ ...booking, userId: command.userId ?? null }),
+        ),
+      reserveTransferForCheckout: jest.fn().mockImplementation((command) =>
+        Promise.resolve({
+          ...booking,
+          userId: command.userId ?? null,
+          transferPackageId: 'package-1',
+        }),
+      ),
     };
     payment = {
       execute: jest.fn().mockResolvedValue({
@@ -80,6 +87,32 @@ describe('CarCheckoutService', () => {
     const second =
       carsService.reserveRentalForCheckout.mock.calls[1][0].publicRef;
     expect(second).toBe(first);
+  });
+
+  it('creates a guest reservation with null ownership', async () => {
+    await service.checkout(input);
+    expect(carsService.reserveRentalForCheckout).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: undefined }),
+    );
+  });
+
+  it('uses stable guest idempotency scoped to the booking context', async () => {
+    await service.checkout(input);
+    await service.checkout({ ...input, contactEmail: 'another@example.com' });
+    await service.checkout({ ...input, fleetId: 'fleet-2' });
+    const calls = carsService.reserveRentalForCheckout.mock.calls;
+    expect(calls[1][0].publicRef).toBe(calls[0][0].publicRef);
+    expect(calls[2][0].publicRef).not.toBe(calls[0][0].publicRef);
+  });
+
+  it('does not let a guest reuse an authenticated booking reference', async () => {
+    carsService.reserveRentalForCheckout.mockResolvedValueOnce({
+      ...booking,
+      userId: 'another-user',
+    });
+    await expect(service.checkout(input)).rejects.toThrow(
+      'This checkout reference is already in use.',
+    );
   });
 
   it('checks out transfers using the package-authoritative reservation', async () => {

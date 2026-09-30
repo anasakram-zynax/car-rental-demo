@@ -13,6 +13,7 @@ import {
   toCarsSearchQuery,
   type CarResultsContext,
 } from "@/features/cars/utils/car-results-route";
+import { buildCarsCheckoutPath } from "@/features/cars/utils/car-checkout";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -85,7 +86,6 @@ function Detail({ id, context }: { id: string; context?: CarResultsContext }) {
       ? context.returnLocationId
       : undefined;
   const returnLocation = useCarLocation(differentReturnLocationId);
-  const reviewing = params.get("step") === "review";
   const result = search.data?.items.find(
     (item) =>
       (item.serviceType === "rental" ? item.id : item.packageId) ===
@@ -164,25 +164,14 @@ function Detail({ id, context }: { id: string; context?: CarResultsContext }) {
           ...(pickupAt ? [["Pick-up time", formatSchedule(pickupAt)]] : []),
           ...(dropoffAt ? [["Drop-off time", formatSchedule(dropoffAt)]] : []),
         ];
-  const checkoutParams = new URLSearchParams();
   const detailParams = new URLSearchParams(params.toString());
-  detailParams.delete("step");
-  checkoutParams.set(
-    "returnTo",
-    `${pathname}${detailParams.size ? `?${detailParams.toString()}` : ""}`,
-  );
-  if (context) {
-    checkoutParams.set("serviceType", context.serviceType);
-    checkoutParams.set("pickupLocationId", context.pickupLocationId);
-    checkoutParams.set("pickupAt", decodeCarsPathValue(context.pickupAt));
-    if (context.serviceType === "rental") {
-      checkoutParams.set("returnLocationId", context.returnLocationId);
-      checkoutParams.set("dropoffAt", decodeCarsPathValue(context.dropoffAt));
-    } else {
-      checkoutParams.set("dropoffLocationId", context.dropoffLocationId);
-    }
-  }
-  const checkoutHref = `/booking/cars/${encodeURIComponent(decodeURIComponent(id))}/details?${checkoutParams.toString()}`;
+  const checkoutHref = context
+    ? buildCarsCheckoutPath(
+        id,
+        `${pathname}${detailParams.size ? `?${detailParams.toString()}` : ""}`,
+        context,
+      )
+    : "/cars";
   return (
     <div className="min-h-dvh bg-white pb-32">
       <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
@@ -354,67 +343,7 @@ function Detail({ id, context }: { id: string; context?: CarResultsContext }) {
         </div>
       </main>
       <AnimatePresence>
-        {reviewing && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25, ease }}
-            className="fixed inset-0 z-[60] flex items-end justify-center bg-slate-950/35 p-4 sm:items-center"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Review selected car"
-          >
-            <motion.div
-              initial={{ opacity: 0, y: 24, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 16 }}
-              transition={{ duration: 0.3, ease }}
-              className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
-            >
-              <p className="text-xs font-semibold uppercase tracking-wide text-brand-teal">
-                Selection summary
-              </p>
-              <h2 className="mt-2 text-xl font-bold text-slate-900">
-                {fleet.displayName}
-              </h2>
-              <p className="mt-2 text-sm text-slate-600">
-                {result.serviceType === "rental"
-                  ? "Rental dates preserved from your search"
-                  : `${result.pickupLocation.label} → ${result.dropoffLocation.label}`}
-              </p>
-              <p className="mt-4 text-lg font-bold text-slate-900">
-                {formatPrice(result.price, currency)}{" "}
-                <span className="text-xs font-normal text-slate-500">
-                  display price
-                </span>
-              </p>
-              <p className="mt-3 text-xs leading-5 text-slate-500">
-                Final availability and pricing will be revalidated by the Cars
-                checkout service.
-              </p>
-              <button
-                type="button"
-                onClick={() => router.push(checkoutHref)}
-                className="mt-5 min-h-11 w-full rounded-xl bg-brand-teal px-5 text-sm font-semibold text-white shadow-lg shadow-brand-teal/20 transition hover:bg-[#012830] active:scale-[0.98]"
-              >
-                Continue to checkout
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  const next = new URLSearchParams(params.toString());
-                  next.delete("step");
-                  router.replace(`${pathname}?${next.toString()}`);
-                }}
-                className="mt-3 min-h-11 w-full rounded-xl border border-slate-200 text-sm font-semibold text-slate-700"
-              >
-                Back to car details
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-        {selected && !reviewing && (
+        {selected && (
           <motion.div
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
@@ -452,11 +381,7 @@ function Detail({ id, context }: { id: string; context?: CarResultsContext }) {
               </div>
               <button
                 type="button"
-                onClick={() => {
-                  const next = new URLSearchParams(params.toString());
-                  next.set("step", "review");
-                  router.push(`${pathname}?${next.toString()}`);
-                }}
+                onClick={() => router.push(checkoutHref)}
                 className="min-h-11 shrink-0 rounded-xl bg-brand-teal px-6 text-sm font-semibold text-white shadow-lg shadow-brand-teal/20 transition hover:-translate-y-0.5 hover:bg-[#012830] active:scale-[0.97]"
               >
                 Continue
